@@ -20,3 +20,5 @@ export { foldTrip } from "./fold.ts";
 export { balances, expenseShares, suggestSettlements } from "./balances.ts";
 export type { Balances, SuggestedSettlement } from "./balances.ts";
 export type * from "./trip.ts";
+export { findDuplicateSettlement } from "./duplicates.ts";
+export type { SettlementDraft } from "./duplicates.ts";

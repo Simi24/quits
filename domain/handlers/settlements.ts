@@ -20,4 +20,9 @@ export const settlementHandlers: Handlers = {
     if (!record) return ignore("unknown_target");
     record.deleted = true;
   },
+  SettlementRestored({ trip, ignore }, op) {
+    const record = trip.settlements.find((s) => s.id === op.settlementId);
+    if (!record) return ignore("unknown_target");
+    record.deleted = false;
+  },
 };
