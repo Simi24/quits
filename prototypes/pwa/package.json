@@ -1,0 +1,20 @@
+{
+  "name": "quits-prototype-pwa",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "PROTOTYPE, throw me away: does the trip link, identity and outbox survive PWA install on iOS and Android? (issue #11)",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host"
+  },
+  "dependencies": {
+    "idb": "^8.0.3"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^8.3.2",
+    "vite-plugin-pwa": "^2.0.0"
+  }
+}
