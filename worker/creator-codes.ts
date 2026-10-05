@@ -11,7 +11,8 @@ export const normaliseCode = (code: string) => code.trim().toUpperCase();
 export const hashCode = (code: string) => sha256Hex(normaliseCode(code));
 
 /** The label of the person a code belongs to, or null when the code is wrong or was revoked. */
-export async function labelOfCode(code: string, secret: string): Promise<string | null> {
+export async function labelOfCode(code: string, secret: string | undefined): Promise<string | null> {
+  if (secret === undefined) return null; // a Worker deployed before the secret is set: the list is empty
   const entries = creatorCodesSchema.parse(JSON.parse(secret));
   const hash = await hashCode(code);
   return entries.find((entry) => entry.hash === hash)?.label ?? null;
