@@ -1,4 +1,4 @@
-import { useDevice } from "../../device";
+import { useDevice } from "../device";
 
 interface AmountFieldProps {
   id: string;

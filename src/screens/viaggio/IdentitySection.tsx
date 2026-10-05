@@ -3,7 +3,12 @@ import { useDevice } from "../../device";
 import { avatarIndex, useTrip } from "../../trip";
 import { Setting } from "./Setting";
 
-export const IdentitySection = ({ onNotMe }: { onNotMe: () => void }) => {
+interface IdentitySectionProps {
+  onNotMe: () => void;
+}
+
+/** "Su questo dispositivo": who this device is in the trip, and "Non sono io" (SPEC.md §7.6 item 12). */
+export const IdentitySection = ({ onNotMe }: IdentitySectionProps) => {
   const { t } = useDevice();
   const { trip, meId, nameOf } = useTrip();
   return (

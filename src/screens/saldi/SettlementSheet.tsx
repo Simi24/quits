@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { Button, ErrorLine, Notice, SelectField, Sheet, TextField, useSingleFlight } from "../../components";
+import { AmountField, Button, ErrorLine, Notice, SelectField, Sheet, TextField, useSingleFlight } from "../../components";
 import { useDevice } from "../../device";
 import { expenseSnapshotSchema, findDuplicateSettlement } from "../../../domain";
 import type { SuggestedSettlement } from "../../../domain";
 import { amountToInput, parseAmount, todayIso } from "../../format";
 import { useTrip } from "../../trip";
-import { AmountField } from "../expense";
 
 interface SettlementSheetProps {
   /** A suggestion to prefill, or null for "Registra un altro pagamento". */

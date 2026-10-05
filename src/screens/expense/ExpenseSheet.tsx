@@ -1,12 +1,11 @@
 import { useMemo, useState } from "react";
-import { Button, ErrorLine, Segmented, Sheet, TextField, useSingleFlight } from "../../components";
+import { AmountField, Button, ErrorLine, Segmented, Sheet, TextField, useSingleFlight } from "../../components";
 import { useDevice } from "../../device";
 import { draftFromSnapshot, evaluateDraft, isLiveIssue, issueMessage, newDraft } from "../../expense-draft";
 import type { ExpenseDraft } from "../../expense-draft";
 import { todayIso } from "../../format";
 import type { ExpenseRecord } from "../../../domain";
 import { useTrip } from "../../trip";
-import { AmountField } from "./AmountField";
 import { CategoryChips } from "./CategoryChips";
 import { PayersField } from "./PayersField";
 import { SplitField } from "./SplitField";

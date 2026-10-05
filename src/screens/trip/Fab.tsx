@@ -1,7 +1,12 @@
 import { Plus } from "@phosphor-icons/react";
 
+interface FabProps {
+  label: string;
+  onClick: () => void;
+}
+
 /** The fixed "+" on Spese: a 62 px coral disc with the 4 px press shadow (SPEC.md §7.5). */
-export const Fab = ({ label, onClick }: { label: string; onClick: () => void }) => (
+export const Fab = ({ label, onClick }: FabProps) => (
   <button
     type="button"
     aria-label={label}

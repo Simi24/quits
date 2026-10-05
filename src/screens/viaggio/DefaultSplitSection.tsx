@@ -10,8 +10,12 @@ type Method = DefaultSplit["method"];
 const sharesOf = (split: DefaultSplit, ids: string[]): Record<string, number> =>
   Object.fromEntries(ids.map((id) => [id, split.method === "shares" ? (split.shares[id] ?? 1) : 1]));
 
+interface DefaultSplitSectionProps {
+  onSaved: () => void;
+}
+
 /** The default split a new expense is prefilled with: everyone equal, or by shares (SPEC.md §3.2). */
-export const DefaultSplitSection = ({ onSaved }: { onSaved: () => void }) => {
+export const DefaultSplitSection = ({ onSaved }: DefaultSplitSectionProps) => {
   const { t } = useDevice();
   const { trip, record } = useTrip();
   const ids = trip.participants.map((p) => p.id);
