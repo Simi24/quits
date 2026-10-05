@@ -27,7 +27,7 @@ export const CategoriesSection = ({ notify }: CategoriesSectionProps) => {
   });
 
   return (
-    <Setting title={t.settings.categories}>
+    <Setting title={t.settings.categories} edits>
       <p className="text-[13.5px] text-ink-2">{t.settings.stdCats}</p>
       <ul className="flex flex-wrap gap-2">
         {STANDARD_CATEGORIES.map((c) => (

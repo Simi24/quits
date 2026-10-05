@@ -22,7 +22,7 @@ export const ParticipantsSection = ({ notify }: ParticipantsSectionProps) => {
   };
 
   return (
-    <Setting title={t.settings.participants}>
+    <Setting title={t.settings.participants} edits>
       <ul className="[&>li+li]:border-t-[1.5px] [&>li+li]:border-dashed [&>li+li]:border-line">
         {trip.participants.map((p) => (
           <ParticipantRow key={p.id} participant={p} onRemoved={(name) => notify(t.manage.removed(name))} onMerge={setMerging} />

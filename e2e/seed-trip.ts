@@ -7,7 +7,7 @@ import { expense, expenseCreated, tripCreated } from "../domain/testing.ts";
 /** Writes a whole trip into the device's IndexedDB as an outbox, then opens it from the landing. No network, no UI to click through. */
 export async function seedTrip(page: Page, name: string, operations: Operation[]) {
   await page.goto("/");
-  await expect(page.getByRole("button", { name: "Crea un viaggio" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "quits" })).toBeVisible();
   const tripId = `seed-${Math.random().toString(36).slice(2, 8)}`;
   await page.evaluate(
     ([id, ops]) =>
@@ -16,7 +16,18 @@ export async function seedTrip(page: Page, name: string, operations: Operation[]
         open.onerror = () => reject(open.error);
         open.onsuccess = () => {
           const tx = open.result.transaction(["trips", "outbox"], "readwrite");
-          tx.objectStore("trips").put({ tripId: id, meId: "p1", nextOutbox: ops.length, lastUsedAt: new Date().toISOString() });
+          // A trip with no link: it lives on this device only and never syncs (SPEC.md G-B3).
+          tx.objectStore("trips").put({
+            tripId: id,
+            token: null,
+            meId: "p1",
+            nextOutbox: ops.length,
+            lastUsedAt: new Date().toISOString(),
+            lastSeq: 0,
+            access: "ok",
+            deletion: null,
+            seenConflicts: [],
+          });
           ops.forEach((operation, n) => tx.objectStore("outbox").put({ tripId: id, n, operation }));
           tx.oncomplete = () => resolve();
           tx.onerror = () => reject(tx.error);

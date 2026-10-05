@@ -34,13 +34,12 @@ describe("newTripIssues", () => {
 
 describe("buildTripCreation", () => {
   it("makes the creator's own name the author, first in the list", () => {
-    const { tripId, operation } = buildTripCreation(form(), "device-1");
+    const { operation } = buildTripCreation(form(), "device-1");
     expect(operation.type).toBe("TripCreated");
     if (operation.type !== "TripCreated") return;
     expect(operation.participants.map((p) => p.name)).toEqual(["Simone", "Sara"]);
     expect(operation.by).toBe(operation.participants[0]?.id);
     expect(operation.device).toBe("device-1");
-    expect(tripId).toMatch(/[0-9a-f-]{36}/);
   });
 
   it("keys the default split by participant id and trims names", () => {

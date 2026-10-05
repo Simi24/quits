@@ -1,8 +1,9 @@
+import { Warning } from "@phosphor-icons/react";
 import { CategoryDot } from "../../components";
 import { useDevice } from "../../device";
 import { expenseShares, resolveCategory } from "../../../domain";
 import type { ExpenseRecord } from "../../../domain";
-import { useTrip } from "../../trip";
+import { isUnseenConflict, useTrip } from "../../trip";
 
 interface ExpenseRowProps {
   expense: ExpenseRecord;
@@ -13,7 +14,7 @@ interface ExpenseRowProps {
 /** One row of the day's receipt: category dot, description, who paid, amount and your share. */
 export const ExpenseRow = ({ expense, printing, onOpen }: ExpenseRowProps) => {
   const { t } = useDevice();
-  const { trip, meId, money, nameOf } = useTrip();
+  const { trip, meId, money, nameOf, seenConflicts } = useTrip();
   const { snapshot } = expense;
   const category = resolveCategory(trip, snapshot.categoryId);
   const mine = expenseShares(trip, expense).shares[meId];
@@ -35,6 +36,9 @@ export const ExpenseRow = ({ expense, printing, onOpen }: ExpenseRowProps) => {
         <span className="min-w-0">
           <span className="block truncate text-base leading-tight font-bold">{snapshot.description}</span>
           <span className="mt-0.5 flex items-center gap-1.5 text-[13.5px] text-ink-2">
+            {isUnseenConflict(expense, seenConflicts) ? (
+              <Warning size={16} weight="fill" className="flex-none text-neg" aria-label={t.sync.conflictIcon} data-testid="conflict-icon" />
+            ) : null}
             {refund ? <span className="flex-none rounded-full bg-[color-mix(in_srgb,var(--pool)_22%,var(--receipt))] px-2 text-[12.5px] font-bold text-ink">{t.expenses.refund}</span> : null}
             <span className="truncate">{sentence}</span>
           </span>

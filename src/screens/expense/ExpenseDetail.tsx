@@ -6,6 +6,7 @@ import { dayLabel, listNames } from "../../format";
 import { expenseShares, resolveCategory } from "../../../domain";
 import type { ExpenseRecord, SplitMethod } from "../../../domain";
 import { categoryName, useTrip } from "../../trip";
+import { ConflictNotice } from "./ConflictNotice";
 import { DetailRow } from "./DetailRow";
 
 interface ExpenseDetailProps {
@@ -19,7 +20,7 @@ interface ExpenseDetailProps {
 /** The receipt of one expense: category, date, amount, payers, split with each share, the leftover note (SPEC.md §7.6 item 6). */
 export const ExpenseDetail = ({ expense, onClose, onEdit, onDeleted }: ExpenseDetailProps) => {
   const { t, lang } = useDevice();
-  const { trip, money, nameOf, record } = useTrip();
+  const { trip, money, nameOf, record, readOnly } = useTrip();
   const [confirming, setConfirming] = useState(false);
   const { snapshot } = expense;
   const category = resolveCategory(trip, snapshot.categoryId);
@@ -47,6 +48,7 @@ export const ExpenseDetail = ({ expense, onClose, onEdit, onDeleted }: ExpenseDe
   return (
     <Overlay title={t.expenses.detail} onClose={onClose}>
       <div className="grid gap-3.5 px-4 pt-1 pb-8">
+        <ConflictNotice expense={expense} />
         <Receipt className="grid gap-3.5 px-5 pt-[22px] pb-[30px]">
           <article className="grid gap-3.5">
             <div className="flex items-center gap-3">
@@ -102,7 +104,7 @@ export const ExpenseDetail = ({ expense, onClose, onEdit, onDeleted }: ExpenseDe
             <p className="text-[13.5px] text-ink-2">{t.expenses.leftoverRule}</p>
           </article>
         </Receipt>
-        {confirming ? (
+        {readOnly ? null : confirming ? (
           <Notice>
             <p>{t.expenses.delQ}</p>
             <div className="flex items-center gap-2.5">

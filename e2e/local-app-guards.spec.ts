@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { addExpense, createTrip, sheet, tab } from "./trip-flow";
+import { addExpense, createTrip, fillTripForm, openCreateForm, openReadyTrip, sheet, tab } from "./trip-flow";
 
 // What the interface must never do with money: record twice on a double tap, or drop a write without saying why.
 
@@ -86,14 +86,9 @@ test("a payment recorded before any expense shows on the roll and can be opened"
 
 test("names longer than the log accepts are cut while typing, never lost on save", async ({ page }) => {
   const long = "Giro della Sardegna in barca a vela, ".repeat(4);
-  await page.goto("/");
-  await page.getByRole("button", { name: "Crea un viaggio" }).click();
-  await page.getByLabel("Nome del viaggio").fill(long);
-  for (const person of ["Simone", "Sara"]) {
-    await page.getByLabel(/Il tuo nome|Aggiungi un nome/).fill(person);
-    await page.getByRole("button", { name: "Aggiungi", exact: true }).click();
-  }
-  await page.getByRole("button", { name: "Crea il viaggio" }).click();
+  await openCreateForm(page);
+  await fillTripForm(page, long, ["Simone", "Sara"]);
+  await openReadyTrip(page, long.slice(0, 100).trim());
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(long.slice(0, 100).trim());
 
   await tab(page, "Viaggio").click();

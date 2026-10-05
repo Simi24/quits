@@ -1,7 +1,7 @@
-import { Button } from "../../components";
+import { Button, LoadingLine } from "../../components";
 import { useDevice } from "../../device";
 import { TripProvider } from "../../trip";
-import { TripShell } from "./TripShell";
+import { TripGate } from "./TripGate";
 
 interface TripScreenProps {
   tripId: string;
@@ -17,9 +17,7 @@ export const TripScreen = ({ tripId, onLeave }: TripScreenProps) => {
       tripId={tripId}
       fallback={(state) =>
         state === "loading" ? (
-          <p role="status" className="px-4 py-10 text-ink-2">
-            {t.shell.loading}
-          </p>
+          <LoadingLine />
         ) : (
           <div className="grid gap-4 px-4 py-10">
             <p>{t.shell.tripMissing}</p>
@@ -30,7 +28,7 @@ export const TripScreen = ({ tripId, onLeave }: TripScreenProps) => {
         )
       }
     >
-      <TripShell onLeave={onLeave} />
+      <TripGate onLeave={onLeave} />
     </TripProvider>
   );
 };

@@ -5,19 +5,20 @@ import { NAME_MAX_LENGTH } from "../../../domain";
 import { CURRENCIES } from "../../create-trip/currencies";
 import { buildTripCreation, newTripIssues } from "../../create-trip/new-trip";
 import type { NewTripForm } from "../../create-trip/new-trip";
-import { createTrip } from "../../db";
 import { useDevice } from "../../device";
+import { createTripOnServer } from "../../sync";
+import { api, store } from "../../sync/client";
 import { DefaultSplitField } from "./DefaultSplitField";
 import { PeopleField } from "./PeopleField";
 
 interface CreateTripProps {
   onBack: () => void;
-  onCreated: (tripId: string) => void;
+  onCreated: (tripId: string, token: string) => void;
 }
 
-/** Creates a trip on this device (S2). Server-side creation with a creator code arrives in S4. */
+/** Creates a trip on the server with the device's creator code. Online only (SPEC.md §6.2). */
 export const CreateTrip = ({ onBack, onCreated }: CreateTripProps) => {
-  const { t, deviceId } = useDevice();
+  const { t, deviceId, creatorCode, setCreatorCode } = useDevice();
   const [form, setForm] = useState<NewTripForm>({
     name: "",
     currency: "EUR",
@@ -28,14 +29,20 @@ export const CreateTrip = ({ onBack, onCreated }: CreateTripProps) => {
     shares: [],
   });
   const [tried, setTried] = useState(false);
+  const [failure, setFailure] = useState<"offline" | "refused" | "failed" | null>(null);
   const issues = newTripIssues(form);
 
   const submit = useSingleFlight(async () => {
     setTried(true);
     if (issues.length) return;
-    const { tripId, operation } = buildTripCreation(form, deviceId);
-    await createTrip(tripId, operation);
-    onCreated(tripId);
+    if (!creatorCode) return setFailure("refused");
+    setFailure(null);
+    const { operation } = buildTripCreation(form, deviceId);
+    const result = await createTripOnServer({ api, store }, creatorCode, operation);
+    if (result.status === "ok") return onCreated(result.tripId, result.token);
+    // A refused code was revoked: forgetting it brings the code field back on the landing (SPEC.md §4).
+    if (result.status === "forbidden") setCreatorCode(null);
+    setFailure(result.status === "offline" ? "offline" : result.status === "forbidden" ? "refused" : "failed");
   });
 
   const messages: Record<(typeof issues)[number], string> = {
@@ -89,11 +96,12 @@ export const CreateTrip = ({ onBack, onCreated }: CreateTripProps) => {
             onMethod={(defaultMethod) => setForm({ ...form, defaultMethod })}
             onShares={(i, v) => setForm({ ...form, shares: form.shares.map((s, j) => (j === i ? v : s)) })}
           />
+          {failure ? <ErrorLine>{{ offline: t.sync.createOffline, refused: t.sync.createCodeRefused, failed: t.sync.createFailed }[failure]}</ErrorLine> : null}
           {tried ? issues.map((issue) => <ErrorLine key={issue}>{messages[issue]}</ErrorLine>) : null}
         </main>
         <div className="border-t-[1.5px] border-line px-4 pt-3 pb-[calc(14px+env(safe-area-inset-bottom,0px))]">
           <Button wide disabled={submit.busy} onClick={() => void submit.run()}>
-            {t.create.createIt}
+            {submit.busy ? t.sync.creating : t.create.createIt}
           </Button>
         </div>
       </div>

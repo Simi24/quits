@@ -22,6 +22,7 @@ interface DeviceProviderProps {
 export const DeviceProvider = ({ device, children }: DeviceProviderProps) => {
   const [lang, setLangState] = useState<Lang>(device.lang ?? detectLang(navigator.language));
   const [theme, setThemeState] = useState<ThemeChoice>(device.theme);
+  const [creatorCode, setCreatorCodeState] = useState<string | null>(device.creatorCode);
 
   useEffect(() => {
     applyTheme(theme);
@@ -36,6 +37,11 @@ export const DeviceProvider = ({ device, children }: DeviceProviderProps) => {
       lang,
       t: dictionaries[lang],
       theme,
+      creatorCode,
+      setCreatorCode: (code) => {
+        setCreatorCodeState(code);
+        void updateDevice({ creatorCode: code });
+      },
       setLang: (next) => {
         setLangState(next);
         void updateDevice({ lang: next });
@@ -45,7 +51,7 @@ export const DeviceProvider = ({ device, children }: DeviceProviderProps) => {
         void updateDevice({ theme: next });
       },
     }),
-    [device.deviceId, lang, theme],
+    [device.deviceId, lang, theme, creatorCode],
   );
 
   return <DeviceContext.Provider value={value}>{children}</DeviceContext.Provider>;

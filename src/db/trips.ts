@@ -1,11 +1,16 @@
-import { foldWithPending, parseOperation } from "../../domain";
-import type { Operation, Trip } from "../../domain";
+import { foldWithPending, parseOperation, upcastOperation } from "../../domain";
+import type { Operation, SequencedOperation, Trip } from "../../domain";
+import type { RejectedItem } from "../sync/types";
 import { openQuitsDb } from "./open";
 import type { OutboxEntry, TripMeta } from "./schema";
 
 export interface StoredTrip {
   meta: TripMeta;
-  operations: Operation[];
+  /** The server's log, in sequence order. */
+  confirmed: SequencedOperation[];
+  /** Made on this device and not yet confirmed, in the order written. */
+  pending: Operation[];
+  rejected: RejectedItem[];
 }
 
 /** Every operation is checked against the shared schema before it is stored: an invalid write never reaches the log. */
@@ -14,23 +19,58 @@ function assertValid(operation: Operation) {
   if (!parsed.ok) throw new Error(`Refusing to store an invalid operation: ${parsed.detail}`);
 }
 
-/** The operations of one trip, in the order they were written. */
+/** The log of one trip: what the server confirmed, and what this device still has to send. */
 export async function loadTrip(tripId: string): Promise<StoredTrip | undefined> {
   const db = await openQuitsDb();
-  const meta = await db.get("trips", tripId);
+  const tx = db.transaction(["trips", "outbox", "confirmed", "rejected"]);
+  const meta = await tx.objectStore("trips").get(tripId);
   if (!meta) return undefined;
-  const entries = await db.getAllFromIndex("outbox", "byTrip", tripId);
-  return { meta, operations: entries.sort((a, b) => a.n - b.n).map((e) => e.operation) };
+  const [outbox, confirmed, rejected] = await Promise.all([
+    tx.objectStore("outbox").index("byTrip").getAll(tripId),
+    tx.objectStore("confirmed").index("byTrip").getAll(tripId),
+    tx.objectStore("rejected").index("byTrip").getAll(tripId),
+  ]);
+  return {
+    meta,
+    confirmed: confirmed.sort((a, b) => a.seq - b.seq).map(({ seq, operation }) => ({ seq, operation })),
+    pending: outbox.sort((a, b) => a.n - b.n).map((e) => e.operation),
+    rejected: rejected.map(({ operation, reason, detail }) => ({ operation, reason, detail })),
+  };
 }
 
-/** Starts a trip from its first operation (SPEC.md S2: created locally for now; server creation is S4). */
-export async function createTrip(tripId: string, creation: Operation): Promise<void> {
-  assertValid(creation);
+/** Rebase: the confirmed log with the device's own pending operations folded on top (SPEC.md §5.1). */
+export const foldStored = (stored: Pick<StoredTrip, "confirmed" | "pending">): Trip => foldWithPending(stored.confirmed, stored.pending);
+
+/**
+ * The trip's log as this device has it, in the current shape: the server's operations by sequence, then
+ * the ones still waiting that the server has not confirmed. What an export carries and a merge summary reads.
+ */
+export const logOperations = ({ confirmed, pending }: Pick<StoredTrip, "confirmed" | "pending">): Operation[] => {
+  const known = new Set(confirmed.map((c) => c.operation.id));
+  return [...confirmed.map((c) => c.operation), ...pending.filter((o) => !known.has(o.id))].map(upcastOperation);
+};
+
+const newMeta = (tripId: string, token: string | null, meId: string | null): TripMeta => ({
+  tripId,
+  token,
+  meId,
+  nextOutbox: 0,
+  lastUsedAt: new Date().toISOString(),
+  lastSeq: 0,
+  access: "ok",
+  deletion: null,
+  seenConflicts: [],
+});
+
+/**
+ * Starts a trip on this device, or swaps in the new token of one it already has (SPEC.md §5.2). `meId` is
+ * set only by the device that creates the trip: everyone else is asked "chi sei?".
+ */
+export async function adoptTrip(tripId: string, token: string, meId: string | null = null): Promise<void> {
   const db = await openQuitsDb();
-  const tx = db.transaction(["trips", "outbox"], "readwrite");
-  const meta: TripMeta = { tripId, meId: creation.by, nextOutbox: 1, lastUsedAt: new Date().toISOString() };
-  await tx.objectStore("trips").put(meta);
-  await tx.objectStore("outbox").put({ tripId, n: 0, operation: creation });
+  const tx = db.transaction("trips", "readwrite");
+  const existing = await tx.store.get(tripId);
+  await tx.store.put(existing ? { ...existing, token, access: "ok", deletion: null } : newMeta(tripId, token, meId));
   await tx.done;
 }
 
@@ -52,22 +92,26 @@ export async function appendOperations(tripId: string, operations: Operation[]):
   await tx.done;
 }
 
-/**
- * Remembers who this device is in the trip. Read and write in one transaction, like every change to the
- * trip record: a separate read could put back a stale `nextOutbox` and let the next operation overwrite one.
- */
-export async function setMe(tripId: string, meId: string): Promise<void> {
+/** Read and write in one transaction, like every change to the trip record: a stale copy must never be put back. */
+async function updateMeta(tripId: string, change: (meta: TripMeta) => TripMeta): Promise<void> {
   const db = await openQuitsDb();
   const tx = db.transaction("trips", "readwrite");
   const meta = await tx.store.get(tripId);
-  if (meta) await tx.store.put({ ...meta, meId });
+  if (meta) await tx.store.put(change(meta));
   await tx.done;
 }
+
+/** Remembers who this device is in the trip. */
+export const setMe = (tripId: string, meId: string) => updateMeta(tripId, (meta) => ({ ...meta, meId }));
+
+/** Remembers that a conflict was seen, so its icon and notice go away on this device. */
+export const dismissConflict = (tripId: string, winnerOpId: string) =>
+  updateMeta(tripId, (meta) => ({ ...meta, seenConflicts: [...new Set([...meta.seenConflicts, winnerOpId])] }));
 
 export interface TripSummary {
   tripId: string;
   trip: Trip;
-  lastUsedAt: string;
+  meta: TripMeta;
 }
 
 /** The trips on this device, most recently used first. */
@@ -76,10 +120,9 @@ export async function listTrips(): Promise<TripSummary[]> {
   const metas = await db.getAll("trips");
   const summaries = await Promise.all(
     metas.map(async (meta) => {
-      const entries = await db.getAllFromIndex("outbox", "byTrip", meta.tripId);
-      const operations = entries.sort((a, b) => a.n - b.n).map((e) => e.operation);
-      return { tripId: meta.tripId, trip: foldWithPending([], operations), lastUsedAt: meta.lastUsedAt };
+      const stored = await loadTrip(meta.tripId);
+      return stored ? { tripId: meta.tripId, trip: foldStored(stored), meta: stored.meta } : undefined;
     }),
   );
-  return summaries.sort((a, b) => (a.lastUsedAt < b.lastUsedAt ? 1 : -1));
+  return summaries.filter((s): s is TripSummary => s !== undefined).sort((a, b) => (a.meta.lastUsedAt < b.meta.lastUsedAt ? 1 : -1));
 }

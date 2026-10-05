@@ -7,6 +7,10 @@ export interface DeviceValue {
   lang: Lang;
   t: Dictionary;
   theme: ThemeChoice;
+  /** The creator code that worked on this device, so it is asked once (SPEC.md §4). */
+  creatorCode: string | null;
+  /** Null forgets it: a code the server refuses (revoked) must make room for another. */
+  setCreatorCode: (code: string | null) => void;
   setLang: (lang: Lang) => void;
   setTheme: (theme: ThemeChoice) => void;
 }
