@@ -122,6 +122,20 @@ describe("push and pull", () => {
   });
 });
 
+describe("refusals of a trip-scoped request", () => {
+  it("carry the tripId, like every trip-scoped answer", async () => {
+    const { tripId, token } = await newTrip();
+    const tooMany = Array.from({ length: 101 }, (_, i) => op({ type: "TripClosed" }, { id: `x-${i}` }));
+    const refusals = [
+      await pushOps(token, tooMany),
+      await api("POST", "/api/push", { auth: bearer(token), body: { nope: 1 } }),
+      await pullAfter(token, -1),
+      await api("POST", "/api/trip/delete", { auth: bearer(token), body: { operation: op({ type: "TripClosed" }) } }),
+    ];
+    for (const refusal of refusals) expect(refusal.body.tripId).toBe(tripId);
+  });
+});
+
 describe("request size", () => {
   it("measures the body in bytes, not characters: over 1 MB is 413 too_large", async () => {
     const { token } = await newTrip();

@@ -13,7 +13,7 @@ import { readServerOperation } from "./server-operation.ts";
 export async function regenerateLink(request: Request, env: Env): Promise<Response> {
   const opened = await openTrip(request, env);
   if (opened instanceof Response) return opened;
-  const read = await readServerOperation(request, "LinkRegenerated");
+  const read = await readServerOperation(request, "LinkRegenerated", { tripId: opened.tripId });
   if ("response" in read) return read.response;
 
   const recorded = await opened.trip.recordLinkRegeneration(read.operation);

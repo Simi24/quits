@@ -18,14 +18,17 @@ export const tripDeleted = (tripId: string, deleted: DeletedInfo) =>
 
 const MAX_BODY_BYTES = 1_000_000;
 
+/** What a trip-scoped refusal carries besides its error: the `tripId` (SPEC.md §6.1). Empty before a trip exists. */
+export type Scope = { tripId?: string };
+
 /** The request's JSON body, or a ready 4xx response. */
-export async function readJson(request: Request): Promise<{ body: unknown } | { response: Response }> {
+export async function readJson(request: Request, scope: Scope = {}): Promise<{ body: unknown } | { response: Response }> {
   const text = await readCapped(request, MAX_BODY_BYTES);
-  if (text === null) return { response: fail(413, "too_large") };
+  if (text === null) return { response: fail(413, "too_large", scope) };
   try {
     return { body: JSON.parse(text) };
   } catch {
-    return { response: fail(400, "bad_request") };
+    return { response: fail(400, "bad_request", scope) };
   }
 }
 
