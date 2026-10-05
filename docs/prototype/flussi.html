@@ -1,0 +1,1525 @@
+<!doctype html>
+<html lang="it" data-variant="ombrellone">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Flussi di Quits</title>
+<!--
+  PROTOTIPO USA E GETTA (issue Simi24/quits#9). Dati finti in memoria: ricaricare azzera tutto.
+  Risponde a: come si presentano e scorrono i flussi principali di Quits sul telefono,
+  in tre varianti della direzione "Cartolina d'estate" (issue #4).
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Bagel+Fat+One&family=Onest:wght@400;500;600;700&family=Bowlby+One&family=Atkinson+Hyperlegible+Next:wght@400;500;700&display=swap">
+<style>
+/* Layout: a phone-width app column (390px) centred on a desk, with the prototype controls beside it; full-screen on a phone.
+   Shape rule: interactive controls are pills; inputs 14px; sheets 28px top corners; receipts have zig-zag edges and no radius. */
+
+/* Variant "Ombrellone" (default, coral leads) - light */
+:root, :root[data-variant="ombrellone"] {
+  color-scheme: light;
+  --f-display: "Bricolage Grotesque", "Arial Rounded MT Bold", "Trebuchet MS", sans-serif;
+  --f-text: "Figtree", "Segoe UI", "Helvetica Neue", sans-serif;
+  --d-wght: 800; --d-track: -0.025em; --d-scale: 1; --d-opsz: "opsz" 96;
+  --desk: #F3DCCB; --paper: #FBEBDD; --paper-2: #F5DCC8; --receipt: #FFFAF4;
+  --ink: #1E2638; --ink-2: #5E5A6A; --line: #E6CDB9;
+  --lead: #F0644C; --lead-deep: #C2412C; --on-lead: #1E2638;
+  --hi: #FFC53D; --on-hi: #1E2638;
+  --coral: #F0644C; --sun: #FFC53D; --pool: #2EA3D6; --leaf: #6DB36B; --sea: #3CC0B0; --stone: #B7A79B;
+  --pos: #0E7095; --neg: #B9402B; --stamp: #D9472F; --ticket: #FFE3A3;
+}
+:root[data-variant="piscina"] {
+  --f-display: "Bagel Fat One", "Arial Rounded MT Bold", "Trebuchet MS", sans-serif;
+  --f-text: "Onest", "Segoe UI", "Helvetica Neue", sans-serif;
+  --d-wght: 400; --d-track: 0; --d-scale: .94; --d-opsz: normal;
+  --desk: #DCE6E0; --paper: #EEF1EA; --paper-2: #DFE7E1; --receipt: #FCFDFA;
+  --ink: #0E2F3E; --ink-2: #4A6672; --line: #CEDBD4;
+  --lead: #1F9FD6; --lead-deep: #137BAA; --on-lead: #082431;
+  --hi: #FFD04A; --on-hi: #0E2F3E;
+  --coral: #FF6B57; --sun: #FFD04A; --pool: #1F9FD6; --leaf: #49A86F; --sea: #2BB7A6; --stone: #9AAAA3;
+  --pos: #0A6B91; --neg: #C03E2B; --stamp: #1479A8; --ticket: #FFEFBF;
+}
+:root[data-variant="saluti"] {
+  --f-display: "Bowlby One", "Arial Black", "Trebuchet MS", sans-serif;
+  --f-text: "Atkinson Hyperlegible Next", "Segoe UI", "Helvetica Neue", sans-serif;
+  --d-wght: 400; --d-track: .005em; --d-scale: .84; --d-opsz: normal;
+  --desk: #EED6A8; --paper: #F7E4BF; --paper-2: #EFD6A6; --receipt: #FFF8E8;
+  --ink: #1B2D5C; --ink-2: #4C5778; --line: #E3C996;
+  --lead: #2443A0; --lead-deep: #172E73; --on-lead: #FFF3D6;
+  --hi: #F6B826; --on-hi: #1B2D5C;
+  --coral: #E95A3F; --sun: #F6B826; --pool: #3194D6; --leaf: #5C9E57; --sea: #2FA89A; --stone: #A9987A;
+  --pos: #1C5FA8; --neg: #B23B24; --stamp: #E95A3F; --ticket: #D9E3F5;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --desk: #1A1312; --paper: #241B1A; --paper-2: #2F2423; --receipt: #3A2D2B;
+    --ink: #FCEBDD; --ink-2: #CDB7A9; --line: #4D3C39;
+    --lead: #FF7A61; --lead-deep: #C4513C; --on-lead: #2A1512;
+    --hi: #FFCC52; --on-hi: #2A1512;
+    --coral: #FF7A61; --sun: #FFCC52; --pool: #5EC2EC; --leaf: #86C784; --sea: #5AD1C1; --stone: #9C8A80;
+    --pos: #7FD3F5; --neg: #FF9A85; --stamp: #FF7A61; --ticket: #4A3826;
+  }
+  :root:not([data-theme="light"])[data-variant="piscina"] {
+    --desk: #071A23; --paper: #0B2430; --paper-2: #0F2E3C; --receipt: #143A4B;
+    --ink: #E4F3F7; --ink-2: #A3C4CF; --line: #22495A;
+    --lead: #4EC6F2; --lead-deep: #2C93BB; --on-lead: #052230;
+    --hi: #FFD84F; --on-hi: #0B2430;
+    --coral: #FF8A76; --sun: #FFD84F; --pool: #4EC6F2; --leaf: #6CCB91; --sea: #4FD6C4; --stone: #7D99A3;
+    --pos: #8EDCF8; --neg: #FFA192; --stamp: #4EC6F2; --ticket: #1F4D61;
+  }
+  :root:not([data-theme="light"])[data-variant="saluti"] {
+    --desk: #0D1322; --paper: #131A2E; --paper-2: #192239; --receipt: #202B47;
+    --ink: #F8EBCF; --ink-2: #C3BBA6; --line: #2E3A5A;
+    --lead: #FFC534; --lead-deep: #C9961C; --on-lead: #131A2E;
+    --hi: #FFC534; --on-hi: #131A2E;
+    --coral: #FF7D63; --sun: #FFC534; --pool: #6DB7EE; --leaf: #8BC77F; --sea: #55CDBE; --stone: #8890A6;
+    --pos: #93C8F5; --neg: #FF9C87; --stamp: #FF7D63; --ticket: #2C3B66;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --desk: #1A1312; --paper: #241B1A; --paper-2: #2F2423; --receipt: #3A2D2B;
+  --ink: #FCEBDD; --ink-2: #CDB7A9; --line: #4D3C39;
+  --lead: #FF7A61; --lead-deep: #C4513C; --on-lead: #2A1512;
+  --hi: #FFCC52; --on-hi: #2A1512;
+  --coral: #FF7A61; --sun: #FFCC52; --pool: #5EC2EC; --leaf: #86C784; --sea: #5AD1C1; --stone: #9C8A80;
+  --pos: #7FD3F5; --neg: #FF9A85; --stamp: #FF7A61; --ticket: #4A3826;
+}
+:root[data-theme="dark"][data-variant="piscina"] {
+  --desk: #071A23; --paper: #0B2430; --paper-2: #0F2E3C; --receipt: #143A4B;
+  --ink: #E4F3F7; --ink-2: #A3C4CF; --line: #22495A;
+  --lead: #4EC6F2; --lead-deep: #2C93BB; --on-lead: #052230;
+  --hi: #FFD84F; --on-hi: #0B2430;
+  --coral: #FF8A76; --sun: #FFD84F; --pool: #4EC6F2; --leaf: #6CCB91; --sea: #4FD6C4; --stone: #7D99A3;
+  --pos: #8EDCF8; --neg: #FFA192; --stamp: #4EC6F2; --ticket: #1F4D61;
+}
+:root[data-theme="dark"][data-variant="saluti"] {
+  --desk: #0D1322; --paper: #131A2E; --paper-2: #192239; --receipt: #202B47;
+  --ink: #F8EBCF; --ink-2: #C3BBA6; --line: #2E3A5A;
+  --lead: #FFC534; --lead-deep: #C9961C; --on-lead: #131A2E;
+  --hi: #FFC534; --on-hi: #131A2E;
+  --coral: #FF7D63; --sun: #FFC534; --pool: #6DB7EE; --leaf: #8BC77F; --sea: #55CDBE; --stone: #8890A6;
+  --pos: #93C8F5; --neg: #FF9C87; --stamp: #FF7D63; --ticket: #2C3B66;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0; background: var(--desk); color: var(--ink);
+  font-family: var(--f-text); font-size: 16px; line-height: 1.45;
+  -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
+}
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; background: none; border: 0; padding: 0; text-align: inherit; }
+button:disabled { cursor: not-allowed; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; border-radius: 6px; }
+[hidden] { display: none !important; }
+.num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
+.display {
+  font-family: var(--f-display); font-weight: var(--d-wght); letter-spacing: var(--d-track);
+  font-variation-settings: var(--d-opsz); line-height: 1.05; text-wrap: balance;
+}
+.icon { width: 1.25em; height: 1.25em; flex: none; fill: currentColor; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- stage: desk + controls + device ---------- */
+.stage {
+  min-height: 100%; display: grid; grid-template-columns: minmax(0, 290px) 390px;
+  justify-content: center; align-items: start; gap: 48px; padding: 24px 16px;
+}
+.device {
+  position: relative; width: 390px; height: min(844px, calc(100dvh - 48px));
+  border-radius: 44px; overflow: hidden; background: var(--paper);
+  outline: 1.5px solid var(--line); isolation: isolate;
+}
+.proto { position: sticky; top: 24px; font-size: 14px; color: var(--ink); }
+.proto summary { list-style: none; cursor: pointer; }
+.proto summary::-webkit-details-marker { display: none; }
+.proto-head { display: flex; align-items: center; gap: 10px; }
+@media (min-width: 761px) { .proto-head .small { display: none; } .proto summary { cursor: default; } }
+.proto-head b { font-weight: 800; font-size: 19px; letter-spacing: -0.01em; }
+.proto-body { display: grid; gap: 22px; margin-top: 14px; }
+.proto p { margin: 0; color: var(--ink-2); }
+.proto h2 { font-size: 13px; font-weight: 700; margin: 0 0 8px; color: var(--ink-2); }
+.vlist { display: grid; gap: 8px; }
+.vopt {
+  display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; align-items: center;
+  padding: 10px 12px; border-radius: 16px; border: 1.5px solid var(--line); background: var(--paper);
+}
+.vopt[aria-pressed="true"] { border-color: var(--ink); }
+.vopt .sw { grid-row: span 2; display: flex; }
+.vopt .sw i { width: 14px; height: 28px; display: block; }
+.vopt .sw i:first-child { border-radius: 8px 0 0 8px; } .vopt .sw i:last-child { border-radius: 0 8px 8px 0; }
+.vopt b { font-size: 15px; }
+.vopt small { color: var(--ink-2); font-size: 12.5px; line-height: 1.3; }
+.seg { display: flex; padding: 3px; gap: 3px; border-radius: 999px; background: var(--paper-2); }
+.seg button { flex: 1; padding: 7px 10px; border-radius: 999px; font-weight: 600; font-size: 14px; color: var(--ink-2); text-align: center; white-space: nowrap; }
+.seg button[aria-pressed="true"] { background: var(--receipt); color: var(--ink); box-shadow: 0 1px 0 var(--line); }
+.jump { display: flex; flex-wrap: wrap; gap: 6px; }
+.jump button { padding: 6px 11px; border-radius: 999px; border: 1.5px solid var(--line); font-size: 13px; font-weight: 600; background: var(--paper); }
+.jump button:hover { border-color: var(--ink-2); }
+.tokens { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 4px 10px; font-size: 12px; }
+.tokens span { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.tokens i { width: 14px; height: 14px; border-radius: 50%; flex: none; outline: 1px solid var(--line); }
+.tokens code { font-family: inherit; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fontline { font-size: 12.5px; color: var(--ink-2); }
+
+@media (max-width: 760px) {
+  .stage { display: flex; flex-direction: column; height: 100%; padding: 0; gap: 0; }
+  .device { width: 100%; flex: 1; height: auto; min-height: 0; border-radius: 0; outline: 0; }
+  .proto { position: relative; top: 0; z-index: 30; background: var(--desk); padding: 8px 16px; border-bottom: 1.5px solid var(--line); }
+  .proto[open] .proto-body { position: absolute; left: 0; right: 0; top: 100%; padding: 16px; max-height: 75dvh; overflow: auto; background: var(--desk); border-bottom: 1.5px solid var(--line); margin: 0; }
+  .proto-head b { font-size: 17px; }
+}
+
+/* ---------- app shell ---------- */
+#app { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--paper); overflow: hidden; }
+.scroll { flex: 1; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; scrollbar-width: thin; }
+.pad { padding: 20px 16px 28px; }
+.stack { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); }
+.row { display: flex; align-items: center; gap: 10px; }
+.grow { flex: 1; min-width: 0; }
+.muted { color: var(--ink-2); }
+.small { font-size: 14px; }
+.tiny { font-size: 13px; }
+h1, h2, h3, p { margin: 0; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 48px; padding: 0 22px; border-radius: 999px; font-weight: 700; font-size: 16px;
+  background: var(--lead); color: var(--on-lead); box-shadow: 0 3px 0 var(--lead-deep);
+  transition: transform .18s cubic-bezier(.3,.7,.4,1.4), box-shadow .18s; white-space: nowrap;
+}
+.btn:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 var(--lead-deep); }
+.btn:disabled { opacity: .45; box-shadow: none; }
+.btn.wide { width: 100%; }
+.btn.ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line); }
+.btn.ghost:active:not(:disabled) { transform: translateY(1px); box-shadow: inset 0 0 0 1.5px var(--ink-2); }
+.btn.danger { background: var(--neg); color: var(--receipt); box-shadow: none; }
+.btn.sm { min-height: 38px; padding: 0 15px; font-size: 14px; }
+.link { color: var(--ink); font-weight: 600; text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 3px; text-decoration-color: var(--ink-2); }
+.iconbtn { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 999px; color: var(--ink); flex: none; }
+.iconbtn:hover { background: var(--paper-2); }
+.iconbtn .icon { width: 22px; height: 22px; }
+
+.field { display: grid; gap: 6px; grid-template-columns: minmax(0, 1fr); min-width: 0; }
+.field > span { font-size: 14px; font-weight: 600; }
+.input, .select {
+  width: 100%; min-height: 48px; padding: 10px 14px; border-radius: 14px;
+  border: 1.5px solid var(--line); background: var(--receipt); color: var(--ink);
+}
+.input::placeholder { color: var(--ink-2); opacity: .8; }
+.input:focus, .select:focus { outline: none; border-color: var(--ink); }
+.help { font-size: 13.5px; color: var(--ink-2); }
+.err { font-size: 14px; color: var(--neg); font-weight: 600; display: flex; gap: 6px; align-items: flex-start; }
+.err .icon { margin-top: 1px; }
+.ok { font-size: 14px; color: var(--pos); font-weight: 600; }
+
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chips.scrollx { flex-wrap: nowrap; overflow-x: auto; margin-inline: -16px; padding-inline: 16px; padding-bottom: 4px; scrollbar-width: none; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px;
+  border-radius: 999px; border: 1.5px solid var(--line); background: var(--receipt);
+  font-weight: 600; font-size: 15px; white-space: nowrap;
+}
+.chip[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--receipt); }
+.chip .emo { font-size: 17px; line-height: 1; }
+
+/* ---------- brand: the "=" mark ---------- */
+.eq { --w: 34px; --h: 7px; display: inline-grid; gap: calc(var(--h) * .9); width: var(--w); flex: none; }
+.eq i { display: block; height: var(--h); border-radius: 999px; transition: transform .5s cubic-bezier(.3,.8,.3,1.3); }
+.eq i:first-child { background: var(--hi); }
+.eq i:last-child { background: var(--lead); }
+.eq.open i:first-child { transform: translateX(30%) rotate(-9deg); }
+.eq.open i:last-child { transform: translateX(-22%) rotate(7deg); }
+.eq.mono i { background: currentColor; }
+.wordmark { display: flex; align-items: center; gap: 12px; }
+.wordmark .display { font-size: calc(30px * var(--d-scale)); }
+
+/* ---------- receipts: the signature object ---------- */
+.zz {
+  --zz: 9px; background: var(--receipt); position: relative;
+  -webkit-mask:
+    conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) top / calc(var(--zz) * 2) 51% repeat-x,
+    conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / calc(var(--zz) * 2) 51% repeat-x;
+          mask:
+    conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) top / calc(var(--zz) * 2) 51% repeat-x,
+    conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / calc(var(--zz) * 2) 51% repeat-x;
+}
+.zz-b {
+  --zz: 10px; background: var(--receipt);
+  -webkit-mask:
+    linear-gradient(#000 0 0) top / 100% calc(100% - var(--zz)) no-repeat,
+    conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / calc(var(--zz) * 2) var(--zz) repeat-x;
+          mask:
+    linear-gradient(#000 0 0) top / 100% calc(100% - var(--zz)) no-repeat,
+    conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / calc(var(--zz) * 2) var(--zz) repeat-x;
+}
+.edge { filter: drop-shadow(0 1.5px 0 var(--line)); }
+.tear { border: 0; border-top: 2px dashed var(--line); margin: 0; }
+
+.roll { display: grid; gap: 8px; }
+.day { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 18px 4px 8px; }
+.day h3 { font-size: calc(19px * var(--d-scale)); }
+.day span { font-size: 14px; color: var(--ink-2); }
+.rc {
+  display: grid; grid-template-columns: 44px minmax(0,1fr) auto; gap: 12px; align-items: center;
+  width: 100%; padding: 20px 16px; text-align: left; color: var(--ink);
+}
+.rc:active { filter: brightness(.98); }
+.cat-dot {
+  width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
+  background: color-mix(in srgb, var(--cat, var(--stone)) 32%, var(--receipt)); font-size: 21px; line-height: 1;
+}
+.rc-desc { display: block; font-weight: 700; font-size: 16px; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rc-meta { display: flex; gap: 6px; align-items: center; font-size: 13.5px; color: var(--ink-2); margin-top: 2px; }
+.rc-meta .icon { width: 15px; height: 15px; color: var(--neg); }
+.ell { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rc-meta .tagline { flex: none; }
+.rc-amt { text-align: right; }
+.rc-amt b { display: block; font-size: 17px; font-weight: 700; }
+.rc-amt small { display: block; font-size: 13px; color: var(--ink-2); }
+.tagline { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12.5px; font-weight: 700; background: color-mix(in srgb, var(--pool) 22%, var(--receipt)); color: var(--ink); }
+
+.ticket {
+  --r: 10px; background: var(--ticket);
+  -webkit-mask:
+    radial-gradient(circle var(--r) at 0 50%, #0000 98%, #000) left / 51% 100% no-repeat,
+    radial-gradient(circle var(--r) at 100% 50%, #0000 98%, #000) right / 51% 100% no-repeat;
+          mask:
+    radial-gradient(circle var(--r) at 0 50%, #0000 98%, #000) left / 51% 100% no-repeat,
+    radial-gradient(circle var(--r) at 100% 50%, #0000 98%, #000) right / 51% 100% no-repeat;
+  border-radius: 14px;
+}
+.tk {
+  display: grid; grid-template-columns: 44px minmax(0,1fr) auto; gap: 12px; align-items: center;
+  width: 100%; padding: 14px 20px; text-align: left;
+}
+.ticket .btn.ghost { box-shadow: inset 0 0 0 1.5px var(--ink-2); }
+.tk .cat-dot { background: transparent; border: 2px dashed var(--ink-2); color: var(--ink); }
+.tk .cat-dot .icon { width: 22px; height: 22px; }
+
+@keyframes print { from { clip-path: inset(0 0 100% 0); transform: translateY(-14px); } to { clip-path: inset(0 0 -20px 0); transform: none; } }
+.print { animation: print .9s steps(9, end) both; }
+
+/* ---------- trip chrome ---------- */
+.tripbar { display: flex; align-items: center; gap: 4px; padding: 10px 8px 8px 4px; background: var(--paper); }
+.tripbar h1 { font-size: calc(23px * var(--d-scale)); }
+.tripbar p { font-size: 13.5px; color: var(--ink-2); }
+.me-chip { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 999px; background: var(--paper-2); font-size: 14px; font-weight: 600; white-space: nowrap; }
+.me-chip .icon { width: 16px; height: 16px; }
+.sync { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-2); padding: 0 16px 6px; }
+.sync .icon { width: 16px; height: 16px; }
+.closedbar { display: flex; align-items: center; gap: 10px; margin: 0 16px 8px; padding: 10px 14px; border-radius: 14px; background: var(--paper-2); font-size: 14px; }
+
+.tabbar {
+  display: grid; grid-template-columns: repeat(4, 1fr); padding: 6px 8px calc(8px + env(safe-area-inset-bottom, 0px));
+  background: var(--paper); border-top: 1.5px solid var(--line);
+}
+.tabbar button { display: grid; justify-items: center; gap: 2px; padding: 4px 0; font-size: 12.5px; font-weight: 600; color: var(--ink-2); }
+.tabbar .pill { display: grid; place-items: center; width: 56px; height: 30px; border-radius: 999px; transition: background .2s; }
+.tabbar .icon { width: 22px; height: 22px; }
+.tabbar button[aria-current="page"] { color: var(--ink); }
+.tabbar button[aria-current="page"] .pill { background: var(--hi); color: var(--on-hi); }
+.fab {
+  position: absolute; right: 18px; bottom: calc(84px + env(safe-area-inset-bottom, 0px)); z-index: 5;
+  width: 62px; height: 62px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--lead); color: var(--on-lead); box-shadow: 0 4px 0 var(--lead-deep);
+  transition: transform .2s cubic-bezier(.3,.7,.4,1.5);
+}
+.fab .icon { width: 28px; height: 28px; }
+.fab:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--lead-deep); }
+
+.summary { display: grid; grid-template-columns: 1fr 1fr; gap: 0; padding: 22px 18px 24px; }
+.summary div + div { border-left: 2px dashed var(--line); padding-left: 16px; }
+.summary small { display: block; font-size: 13.5px; color: var(--ink-2); }
+.summary b { display: block; font-family: var(--f-display); font-weight: var(--d-wght); font-variation-settings: var(--d-opsz); letter-spacing: var(--d-track); font-size: calc(26px * var(--d-scale)); line-height: 1.15; }
+.search { position: relative; }
+.search .icon { position: absolute; left: 14px; top: 50%; translate: 0 -50%; color: var(--ink-2); width: 18px; height: 18px; }
+.search .input { padding-left: 40px; min-height: 44px; border-radius: 999px; }
+.empty { text-align: center; padding: 34px 20px; display: grid; gap: 10px; justify-items: center; }
+
+/* ---------- balances ---------- */
+.hero-bal { padding: 26px 20px 30px; display: grid; gap: 8px; }
+.hero-bal .display { font-size: calc(34px * var(--d-scale)); }
+.bal-row { display: grid; grid-template-columns: auto minmax(0,1fr) auto; gap: 12px; align-items: center; padding: 14px 4px; }
+.bal-row + .bal-row { border-top: 1.5px solid var(--line); }
+.bal-row b { font-size: 16px; }
+.bal-row .words { font-size: 14px; color: var(--ink-2); }
+.amt-pos { color: var(--pos); font-weight: 700; }
+.amt-neg { color: var(--neg); font-weight: 700; }
+.amt-zero { color: var(--ink-2); font-weight: 700; }
+.sec-title { font-size: calc(20px * var(--d-scale)); margin: 8px 0 2px; }
+.bar { height: 10px; border-radius: 999px; background: var(--cat, var(--stone)); min-width: 4px; }
+
+/* ---------- overlays ---------- */
+.overlay { position: absolute; inset: 0; z-index: 20; display: flex; flex-direction: column; background: var(--paper); }
+.overlay.push-in { animation: push .32s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes push { from { transform: translateX(28%); opacity: 0; } to { transform: none; opacity: 1; } }
+.scrim { position: absolute; inset: 0; z-index: 30; background: color-mix(in srgb, var(--ink) 38%, transparent); display: flex; flex-direction: column; justify-content: flex-end; }
+.scrim.fade-in { animation: fade .25s ease-out both; }
+@keyframes fade { from { opacity: 0; } }
+.sheet {
+  background: var(--paper); border-radius: 28px 28px 0 0; max-height: calc(100% - 28px);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.sheet.rise { animation: rise .55s cubic-bezier(.25,1.35,.45,1) both; }
+@keyframes rise { from { transform: translateY(100%); } to { transform: none; } }
+.sheet-head { display: flex; align-items: center; gap: 8px; padding: 10px 8px 6px 18px; }
+.sheet-head h2 { flex: 1; font-size: calc(22px * var(--d-scale)); }
+.grabber { width: 40px; height: 5px; border-radius: 999px; background: var(--line); margin: 8px auto 0; }
+.sheet-foot { padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px)); border-top: 1.5px solid var(--line); display: grid; gap: 8px; background: var(--paper); }
+.amount-in { display: flex; align-items: baseline; gap: 8px; border-bottom: 2.5px solid var(--ink); padding-bottom: 4px; }
+.amount-in input { flex: 1; min-width: 0; border: 0; background: none; outline: none; font-family: var(--f-display); font-weight: var(--d-wght); font-variation-settings: var(--d-opsz); font-size: calc(40px * var(--d-scale)); letter-spacing: var(--d-track); padding: 0; }
+.amount-in input::placeholder { color: var(--ink-2); opacity: .45; }
+.amount-in span { font-size: 22px; font-weight: 700; color: var(--ink-2); }
+.split-rows { display: grid; gap: 2px; }
+.srow { display: grid; grid-template-columns: minmax(0,1fr) 112px 92px; gap: 10px; align-items: center; min-height: 52px; }
+.srow .name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.srow .res { text-align: right; font-size: 15px; }
+.srow .res small { display: block; font-size: 12px; color: var(--pos); font-weight: 700; }
+.srow .input { min-height: 42px; padding: 6px 10px; text-align: right; }
+.stepper { display: flex; align-items: center; justify-content: space-between; border: 1.5px solid var(--line); border-radius: 999px; background: var(--receipt); height: 42px; }
+.stepper button { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; }
+.stepper .icon { width: 16px; height: 16px; }
+.check { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 9px; border: 2px solid var(--ink-2); }
+.check[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--receipt); }
+.check .icon { width: 18px; height: 18px; }
+.check[aria-pressed="false"] .icon { visibility: hidden; }
+.notice { display: grid; grid-template-columns: auto 1fr; gap: 10px; padding: 14px; border-radius: 14px; background: color-mix(in srgb, var(--sun) 34%, var(--paper)); font-size: 14.5px; }
+.notice .icon { color: var(--ink); margin-top: 2px; }
+
+.detail-receipt { padding: 22px 20px 30px; display: grid; gap: 14px; }
+.drow { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; font-size: 15.5px; }
+.drow .lead-dots { flex: 1; border-bottom: 2px dotted var(--line); transform: translateY(-4px); min-width: 12px; }
+.cent { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 999px; font-size: 12px; font-weight: 700; background: color-mix(in srgb, var(--pos) 18%, var(--receipt)); color: var(--pos); }
+.ver { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; padding: 12px 0; }
+.ver + .ver { border-top: 1.5px solid var(--line); }
+
+.toast {
+  position: absolute; left: 16px; right: 16px; bottom: calc(164px + env(safe-area-inset-bottom, 0px)); z-index: 40;
+  display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 16px;
+  background: var(--ink); color: var(--paper); font-weight: 600; font-size: 15px;
+  animation: toast .35s cubic-bezier(.25,1.3,.45,1) both;
+}
+.toast button { margin-left: auto; color: var(--hi); font-weight: 700; }
+@keyframes toast { from { transform: translateY(16px); opacity: 0; } }
+.rc:focus-visible, .tk:focus-visible, .trip-tk:focus-visible { outline-offset: -5px; }
+
+/* ---------- "tutti pari" ---------- */
+.pari { position: absolute; inset: 0; z-index: 50; display: grid; place-items: center; background: color-mix(in srgb, var(--paper) 86%, transparent); }
+.pari canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.pari-ticket { position: relative; width: 300px; max-width: calc(100% - 32px); padding: 34px 24px 30px; display: grid; gap: 14px; justify-items: center; text-align: center; }
+.stamp {
+  font-family: var(--f-display); font-weight: var(--d-wght); font-variation-settings: var(--d-opsz);
+  font-size: calc(58px * var(--d-scale)); letter-spacing: .04em; line-height: 1; color: var(--stamp);
+  padding: 10px 22px 8px; border: 5px solid var(--stamp); border-radius: 18px; outline: 2px solid var(--stamp); outline-offset: 4px;
+  transform: rotate(-8deg);
+}
+.stamp.thunk { animation: thunk .5s cubic-bezier(.2,1.6,.4,1) both .1s; }
+@keyframes thunk { from { transform: rotate(-8deg) scale(2.2); opacity: 0; } 60% { opacity: 1; } to { transform: rotate(-8deg) scale(1); opacity: 1; } }
+.stamp.small { font-size: calc(26px * var(--d-scale)); border-width: 3px; padding: 6px 12px 4px; border-radius: 10px; outline-width: 1.5px; outline-offset: 3px; }
+
+/* ---------- landing ---------- */
+.land-hero { padding: 30px 20px 26px; display: grid; gap: 18px; }
+.land-hero .bigmark { display: flex; align-items: center; gap: 16px; }
+.land-hero .bigmark .eq { --w: 74px; --h: 15px; }
+.land-hero .bigmark .display { font-size: calc(76px * var(--d-scale)); line-height: .9; }
+.land-hero p { font-size: 19px; line-height: 1.35; max-width: 30ch; }
+.trip-tk { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 4px 12px; align-items: center; width: 100%; padding: 18px 22px; text-align: left; }
+.trip-tk h3 { font-size: calc(21px * var(--d-scale)); }
+.trip-tk .state { font-size: 13px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: var(--paper-2); }
+.trip-tk .state.open { background: color-mix(in srgb, var(--leaf) 30%, var(--receipt)); }
+.who-list { display: grid; gap: 10px; }
+.who-btn { display: flex; align-items: center; gap: 14px; width: 100%; padding: 14px 18px; border-radius: 999px; background: var(--receipt); border: 1.5px solid var(--line); font-weight: 700; font-size: 18px; }
+.who-btn:hover { border-color: var(--ink-2); }
+.avatar { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 15px; background: color-mix(in srgb, var(--av) 40%, var(--receipt)); color: var(--ink); flex: none; }
+.linkbox { display: flex; align-items: center; gap: 8px; padding: 6px 6px 6px 14px; border-radius: 999px; background: var(--receipt); border: 1.5px dashed var(--ink-2); font-size: 14px; }
+.linkbox code { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: inherit; font-weight: 600; }
+.setting { display: grid; gap: 10px; padding: 18px 0; grid-template-columns: minmax(0, 1fr); }
+.setting + .setting { border-top: 1.5px solid var(--line); }
+.setting h3 { font-size: 17px; font-weight: 700; }
+.plist { display: grid; }
+.prow { display: flex; align-items: center; gap: 10px; min-height: 52px; }
+.prow + .prow { border-top: 1.5px dashed var(--line); }
+.hist-row { display: grid; grid-template-columns: auto minmax(0,1fr); gap: 12px; padding: 12px 0; align-items: start; }
+.hist-row + .hist-row { border-top: 1.5px solid var(--line); }
+.hist-row .avatar { width: 32px; height: 32px; font-size: 13px; }
+.hist-row time { font-size: 13px; color: var(--ink-2); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-delay: 0ms !important; transition-duration: .001ms !important; }
+}
+</style>
+</head>
+<body>
+<div class="stage">
+  <details class="proto" id="proto"></details>
+  <div class="device"><div id="app" aria-live="polite"></div></div>
+</div>
+<script>
+"use strict";
+const ICONS = {"receipt":"<path d=\"M216,40H40A16,16,0,0,0,24,56V208a8,8,0,0,0,11.58,7.15L64,200.94l28.42,14.21a8,8,0,0,0,7.16,0L128,200.94l28.42,14.21a8,8,0,0,0,7.16,0L192,200.94l28.42,14.21A8,8,0,0,0,232,208V56A16,16,0,0,0,216,40ZM176,144H80a8,8,0,0,1,0-16h96a8,8,0,0,1,0,16Zm0-32H80a8,8,0,0,1,0-16h96a8,8,0,0,1,0,16Z\"/>","scales":"<path d=\"M239.43,133l-32-80A8,8,0,0,0,200,48a8.27,8.27,0,0,0-1.73.21L136,62V40a8,8,0,0,0-16,0V65.58L54.27,80.21A8,8,0,0,0,48.57,85l-32,80a7.92,7.92,0,0,0-.57,3c0,23.31,24.54,32,40,32s40-8.69,40-32a7.92,7.92,0,0,0-.57-3L66.92,93.77,120,82V208H104a8,8,0,0,0,0,16h48a8,8,0,0,0,0-16H136V78.42L187,67.1,160.57,133a7.92,7.92,0,0,0-.57,3c0,23.31,24.54,32,40,32s40-8.69,40-32A7.92,7.92,0,0,0,239.43,133Zm-160,35H32.62L56,109.54Zm97.24-32L200,77.54,223.38,136Z\"/>","chart-bar":"<path d=\"M232,208a8,8,0,0,1-8,8H32a8,8,0,0,1,0-16h8V136a8,8,0,0,1,8-8H72a8,8,0,0,1,8,8v64H96V88a8,8,0,0,1,8-8h32a8,8,0,0,1,8,8V200h16V40a8,8,0,0,1,8-8h40a8,8,0,0,1,8,8V200h8A8,8,0,0,1,232,208Z\"/>","suitcase-rolling":"<path d=\"M192,48H168V24A24,24,0,0,0,144,0H112A24,24,0,0,0,88,24V48H64A16,16,0,0,0,48,64V208a16,16,0,0,0,16,16H80v16a8,8,0,0,0,16,0V224h64v16a8,8,0,0,0,16,0V224h16a16,16,0,0,0,16-16V64A16,16,0,0,0,192,48ZM96,192a8,8,0,0,1-16,0V80a8,8,0,0,1,16,0Zm40,0a8,8,0,0,1-16,0V80a8,8,0,0,1,16,0ZM152,48H104V24a8,8,0,0,1,8-8h32a8,8,0,0,1,8,8Zm24,144a8,8,0,0,1-16,0V80a8,8,0,0,1,16,0Z\"/>","plus":"<path d=\"M228,128a12,12,0,0,1-12,12H140v76a12,12,0,0,1-24,0V140H40a12,12,0,0,1,0-24h76V40a12,12,0,0,1,24,0v76h76A12,12,0,0,1,228,128Z\"/>","x":"<path d=\"M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z\"/>","caret-left":"<path d=\"M168.49,199.51a12,12,0,0,1-17,17l-80-80a12,12,0,0,1,0-17l80-80a12,12,0,0,1,17,17L97,128Z\"/>","check":"<path d=\"M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z\"/>","link":"<path d=\"M117.18,188.74a12,12,0,0,1,0,17l-5.12,5.12A58.26,58.26,0,0,1,70.6,228h0A58.62,58.62,0,0,1,29.14,127.92L63.89,93.17a58.64,58.64,0,0,1,98.56,28.11,12,12,0,1,1-23.37,5.44,34.65,34.65,0,0,0-58.22-16.58L46.11,144.89A34.62,34.62,0,0,0,70.57,204h0a34.41,34.41,0,0,0,24.49-10.14l5.11-5.12A12,12,0,0,1,117.18,188.74ZM226.83,45.17a58.65,58.65,0,0,0-82.93,0l-5.11,5.11a12,12,0,0,0,17,17l5.12-5.12a34.63,34.63,0,1,1,49,49L175.1,145.86A34.39,34.39,0,0,1,150.61,156h0a34.63,34.63,0,0,1-33.69-26.72,12,12,0,0,0-23.38,5.44A58.64,58.64,0,0,0,150.56,180h.05a58.28,58.28,0,0,0,41.47-17.17l34.75-34.75a58.62,58.62,0,0,0,0-82.91Z\"/>","arrows-clockwise":"<path d=\"M228,48V96a12,12,0,0,1-12,12H168a12,12,0,0,1,0-24h19l-7.8-7.8a75.55,75.55,0,0,0-53.32-22.26h-.43A75.49,75.49,0,0,0,72.39,75.57,12,12,0,1,1,55.61,58.41a99.38,99.38,0,0,1,69.87-28.47H126A99.42,99.42,0,0,1,196.2,59.23L204,67V48a12,12,0,0,1,24,0ZM183.61,180.43a75.49,75.49,0,0,1-53.09,21.63h-.43A75.55,75.55,0,0,1,76.77,179.8L69,172H88a12,12,0,0,0,0-24H40a12,12,0,0,0-12,12v48a12,12,0,0,0,24,0V189l7.8,7.8A99.42,99.42,0,0,0,130,226.06h.56a99.38,99.38,0,0,0,69.87-28.47,12,12,0,0,0-16.78-17.16Z\"/>","lock":"<path d=\"M208,80H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80Zm-80,84a12,12,0,1,1,12-12A12,12,0,0,1,128,164Zm32-84H96V56a32,32,0,0,1,64,0Z\"/>","lock-open":"<path d=\"M208,80H96V56a32,32,0,0,1,32-32c15.37,0,29.2,11,32.16,25.59a8,8,0,0,0,15.68-3.18C171.32,24.15,151.2,8,128,8A48.05,48.05,0,0,0,80,56V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80Zm-80,84a12,12,0,1,1,12-12A12,12,0,0,1,128,164Z\"/>","trash":"<path d=\"M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM112,168a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm0-120H96V40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8Z\"/>","clock-counter-clockwise":"<path d=\"M140,80v41.21l34.17,20.5a12,12,0,1,1-12.34,20.58l-40-24A12,12,0,0,1,116,128V80a12,12,0,0,1,24,0ZM128,28A99.38,99.38,0,0,0,57.24,57.34c-4.69,4.74-9,9.37-13.24,14V64a12,12,0,0,0-24,0v40a12,12,0,0,0,12,12H72a12,12,0,0,0,0-24H57.77C63,86,68.37,80.22,74.26,74.26a76,76,0,1,1,1.58,109,12,12,0,0,0-16.48,17.46A100,100,0,1,0,128,28Z\"/>","users":"<path d=\"M164.47,195.63a8,8,0,0,1-6.7,12.37H10.23a8,8,0,0,1-6.7-12.37,95.83,95.83,0,0,1,47.22-37.71,60,60,0,1,1,66.5,0A95.83,95.83,0,0,1,164.47,195.63Zm87.91-.15a95.87,95.87,0,0,0-47.13-37.56A60,60,0,0,0,144.7,54.59a4,4,0,0,0-1.33,6A75.83,75.83,0,0,1,147,150.53a4,4,0,0,0,1.07,5.53,112.32,112.32,0,0,1,29.85,30.83,23.92,23.92,0,0,1,3.65,16.47,4,4,0,0,0,3.95,4.64h60.3a8,8,0,0,0,7.73-5.93A8.22,8.22,0,0,0,252.38,195.48Z\"/>","pencil-simple":"<path d=\"M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM192,108.68,147.31,64l24-24L216,84.68Z\"/>","warning":"<path d=\"M236.8,188.09,149.35,36.22h0a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09ZM120,104a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm8,88a12,12,0,1,1,12-12A12,12,0,0,1,128,192Z\"/>","copy":"<path d=\"M216,28H88A12,12,0,0,0,76,40V76H40A12,12,0,0,0,28,88V216a12,12,0,0,0,12,12H168a12,12,0,0,0,12-12V180h36a12,12,0,0,0,12-12V40A12,12,0,0,0,216,28ZM156,204H52V100H156Zm48-48H180V88a12,12,0,0,0-12-12H100V52H204Z\"/>","arrow-u-up-left":"<path d=\"M236,144a68.07,68.07,0,0,1-68,68H80a12,12,0,0,1,0-24h88a44,44,0,0,0,0-88H61l27.52,27.51a12,12,0,0,1-17,17l-48-48a12,12,0,0,1,0-17l48-48a12,12,0,1,1,17,17L61,76H168A68.08,68.08,0,0,1,236,144Z\"/>","download-simple":"<path d=\"M228,144v64a12,12,0,0,1-12,12H40a12,12,0,0,1-12-12V144a12,12,0,0,1,24,0v52H204V144a12,12,0,0,1,24,0Zm-108.49,8.49a12,12,0,0,0,17,0l40-40a12,12,0,0,0-17-17L140,115V32a12,12,0,0,0-24,0v83L96.49,95.51a12,12,0,0,0-17,17Z\"/>","sun":"<path d=\"M120,40V16a8,8,0,0,1,16,0V40a8,8,0,0,1-16,0Zm8,24a64,64,0,1,0,64,64A64.07,64.07,0,0,0,128,64ZM58.34,69.66A8,8,0,0,0,69.66,58.34l-16-16A8,8,0,0,0,42.34,53.66Zm0,116.68-16,16a8,8,0,0,0,11.32,11.32l16-16a8,8,0,0,0-11.32-11.32ZM192,72a8,8,0,0,0,5.66-2.34l16-16a8,8,0,0,0-11.32-11.32l-16,16A8,8,0,0,0,192,72Zm5.66,114.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32-11.32ZM48,128a8,8,0,0,0-8-8H16a8,8,0,0,0,0,16H40A8,8,0,0,0,48,128Zm80,80a8,8,0,0,0-8,8v24a8,8,0,0,0,16,0V216A8,8,0,0,0,128,208Zm112-88H216a8,8,0,0,0,0,16h24a8,8,0,0,0,0-16Z\"/>","moon":"<path d=\"M235.54,150.21a104.84,104.84,0,0,1-37,52.91A104,104,0,0,1,32,120,103.09,103.09,0,0,1,52.88,57.48a104.84,104.84,0,0,1,52.91-37,8,8,0,0,1,10,10,88.08,88.08,0,0,0,109.8,109.8,8,8,0,0,1,10,10Z\"/>","circle-half":"<path d=\"M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM40,128a88.1,88.1,0,0,1,88-88V216A88.1,88.1,0,0,1,40,128Z\"/>","magnifying-glass":"<path d=\"M232.49,215.51,185,168a92.12,92.12,0,1,0-17,17l47.53,47.54a12,12,0,0,0,17-17ZM44,112a68,68,0,1,1,68,68A68.07,68.07,0,0,1,44,112Z\"/>","cloud-slash":"<path d=\"M248,128.72A87.74,87.74,0,0,1,222.41,190a4,4,0,0,1-5.77-.16L103.78,65.67a4,4,0,0,1,.39-5.76A87.82,87.82,0,0,1,160.87,40C209.15,40.47,248.38,80.43,248,128.72ZM53.92,34.62A8,8,0,1,0,42.08,45.38L81.33,88.56l-.06.11A64,64,0,0,0,8,153c.53,35.12,29.84,63,65,63h87a87.65,87.65,0,0,0,31.78-5.95l10.3,11.33a8,8,0,0,0,11.33.52,8.32,8.32,0,0,0,.29-11.52Z\"/>","cloud-check":"<path d=\"M247.93,124.52C246.11,77.54,207.07,40,160.06,40A88.1,88.1,0,0,0,81.29,88.67h0A87.48,87.48,0,0,0,72,127.73,8.18,8.18,0,0,1,64.57,136,8,8,0,0,1,56,128a103.66,103.66,0,0,1,5.34-32.92,4,4,0,0,0-4.75-5.18A64.09,64.09,0,0,0,8,152c0,35.19,29.75,64,65,64H160A88.09,88.09,0,0,0,247.93,124.52Zm-50.27-6.86-48,48a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L144,148.69l42.34-42.35a8,8,0,0,1,11.32,11.32Z\"/>","hand-coins":"<path d=\"M128.09,57.38a36,36,0,0,1,55.17-27.82,4,4,0,0,1-.56,7A52.06,52.06,0,0,0,152,84c0,1.17,0,2.34.12,3.49a4,4,0,0,1-6,3.76A36,36,0,0,1,128.09,57.38ZM240,160.61a24.47,24.47,0,0,1-13.6,22l-.44.2-38.83,16.54a6.94,6.94,0,0,1-1.19.4l-64,16A7.93,7.93,0,0,1,120,216H16A16,16,0,0,1,0,200V160a16,16,0,0,1,16-16H44.69l22.62-22.63A31.82,31.82,0,0,1,89.94,112H140a28,28,0,0,1,27.25,34.45l41.84-9.62A24.61,24.61,0,0,1,240,160.61Zm-16,0a8.61,8.61,0,0,0-10.87-8.3l-.31.08-67,15.41a8.32,8.32,0,0,1-1.79.2H112a8,8,0,0,1,0-16h28a12,12,0,0,0,0-24H89.94a15.86,15.86,0,0,0-11.31,4.69L56,155.31V200h63l62.43-15.61,38-16.18A8.56,8.56,0,0,0,224,160.61ZM168,84a36,36,0,1,0,36-36A36,36,0,0,0,168,84Z\"/>","ticket":"<path d=\"M232,104a8,8,0,0,0,8-8V64a16,16,0,0,0-16-16H32A16,16,0,0,0,16,64V96a8,8,0,0,0,8,8,24,24,0,0,1,0,48,8,8,0,0,0-8,8v32a16,16,0,0,0,16,16H224a16,16,0,0,0,16-16V160a8,8,0,0,0-8-8,24,24,0,0,1,0-48ZM32,167.2a40,40,0,0,0,0-78.4V64H88V192H32Z\"/>","caret-right":"<path d=\"M184.49,136.49l-80,80a12,12,0,0,1-17-17L159,128,87.51,56.49a12,12,0,1,1,17-17l80,80A12,12,0,0,1,184.49,136.49Z\"/>","user-plus":"<path d=\"M256,136a8,8,0,0,1-8,8H232v16a8,8,0,0,1-16,0V144H200a8,8,0,0,1,0-16h16V112a8,8,0,0,1,16,0v16h16A8,8,0,0,1,256,136ZM144,157.68a68,68,0,1,0-71.9,0c-20.65,6.76-39.23,19.39-54.17,37.17A8,8,0,0,0,24,208H192a8,8,0,0,0,6.13-13.15C183.18,177.07,164.6,164.44,144,157.68Z\"/>","tag":"<path d=\"M243.31,136,144,36.69A15.86,15.86,0,0,0,132.69,32H40a8,8,0,0,0-8,8v92.69A15.86,15.86,0,0,0,36.69,144L136,243.31a16,16,0,0,0,22.63,0l84.68-84.68a16,16,0,0,0,0-22.63ZM84,96A12,12,0,1,1,96,84,12,12,0,0,1,84,96Z\"/>","minus":"<path d=\"M228,128a12,12,0,0,1-12,12H40a12,12,0,0,1,0-24H216A12,12,0,0,1,228,128Z\"/>","arrow-right":"<path d=\"M224.49,136.49l-72,72a12,12,0,0,1-17-17L187,140H40a12,12,0,0,1,0-24H187L135.51,64.48a12,12,0,0,1,17-17l72,72A12,12,0,0,1,224.49,136.49Z\"/>","map-trifold":"<path d=\"M228.92,49.69a8,8,0,0,0-6.86-1.45L160.93,63.52,99.58,32.84a8,8,0,0,0-5.52-.6l-64,16A8,8,0,0,0,24,56V200a8,8,0,0,0,9.94,7.76l61.13-15.28,61.35,30.68A8.15,8.15,0,0,0,160,224a8,8,0,0,0,1.94-.24l64-16A8,8,0,0,0,232,200V56A8,8,0,0,0,228.92,49.69ZM96,176a8,8,0,0,0-1.94.24L40,189.75V62.25L95.07,48.48l.93.46Zm120,17.75-55.07,13.77-.93-.46V80a8,8,0,0,0,1.94-.23L216,66.25Z\"/>","coins":"<path d=\"M184,89.57V84c0-25.08-37.83-44-88-44S8,58.92,8,84v40c0,20.89,26.25,37.49,64,42.46V172c0,25.08,37.83,44,88,44s88-18.92,88-44V132C248,111.3,222.58,94.68,184,89.57ZM56,146.87C36.41,141.4,24,132.39,24,124V109.93c8.16,5.78,19.09,10.44,32,13.57Zm80-23.37c12.91-3.13,23.84-7.79,32-13.57V124c0,8.39-12.41,17.4-32,22.87Zm-16,71.37C100.41,189.4,88,180.39,88,172v-4.17c2.63.1,5.29.17,8,.17,3.88,0,7.67-.13,11.39-.35A121.92,121.92,0,0,0,120,171.41Zm0-44.62A163,163,0,0,1,96,152a163,163,0,0,1-24-1.75V126.46A183.74,183.74,0,0,0,96,128a183.74,183.74,0,0,0,24-1.54Zm64,48a165.45,165.45,0,0,1-48,0V174.4a179.48,179.48,0,0,0,24,1.6,183.74,183.74,0,0,0,24-1.54ZM232,172c0,8.39-12.41,17.4-32,22.87V171.5c12.91-3.13,23.84-7.79,32-13.57Z\"/>","sliders-horizontal":"<path d=\"M32,80a8,8,0,0,1,8-8H77.17a28,28,0,0,1,53.66,0H216a8,8,0,0,1,0,16H130.83a28,28,0,0,1-53.66,0H40A8,8,0,0,1,32,80Zm184,88H194.83a28,28,0,0,0-53.66,0H40a8,8,0,0,0,0,16H141.17a28,28,0,0,0,53.66,0H216a8,8,0,0,0,0-16Z\"/>"};
+const ic = (n, cls = "") => `<svg class="icon ${cls}" viewBox="0 0 256 256" aria-hidden="true">${ICONS[n] || ""}</svg>`;
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+/* ================= i18n ================= */
+const T = {
+  it: {
+    protoTitle: "Prototipo dei flussi", protoNote: "Dati finti, in memoria: ricaricare la pagina azzera tutto. Qualunque codice da creatore di almeno 6 caratteri funziona.",
+    variant: "Variante", theme: "Tema", lang: "Lingua", system: "Sistema", light: "Chiaro", dark: "Scuro", goto: "Vai a", palette: "Palette di questa variante", fonts: "Font",
+    simOffline: "Simula offline", simOnline: "Torna online", reset: "Azzera i dati",
+    j_landing: "Landing", j_create: "Crea viaggio", j_link: "Apri il link (chi sei?)", j_spese: "Spese", j_add: "Nuova spesa", j_conflict: "Spesa con conflitto", j_cent: "Centesimo che avanza", j_saldi: "Saldi", j_totali: "Totali", j_history: "Cronologia", j_viaggio: "Viaggio", j_old: "Vecchio link", j_charts: "Grafici",
+    tagline: "Chi ha pagato cosa in vacanza, e come tornare pari.",
+    yourTrips: "I tuoi viaggi su questo dispositivo", needLink: "Per entrare in un viaggio apri il link che ti hanno mandato.",
+    open: "aperto", closed: "chiuso", people: n => n === 1 ? "1 partecipante" : `${n} partecipanti`,
+    creatorQ: "Hai un codice da creatore?", creatorHelp: "Serve per creare un viaggio. Lo inserisci una volta, il dispositivo se lo ricorda.",
+    codePh: "il tuo codice", useCode: "Usa il codice", codeErr: "Questo codice non funziona. Controlla di averlo copiato intero.",
+    codeOk: "Codice attivo su questo dispositivo.", createTrip: "Crea un viaggio", privacy: "Privacy", contact: "Contatti",
+    deletedTrips: "Eliminati", deletedOn: (d, u) => `Eliminato il ${d}. Si può ripristinare fino al ${u}.`, restore: "Ripristina",
+    newTrip: "Nuovo viaggio", tripName: "Nome del viaggio", tripNamePh: "Sardegna 2026", currency: "Valuta", currencyHelp: "Si può cambiare solo finché non ci sono spese.",
+    dates: "Date", optional: "facoltative", from: "Dal", to: "Al", participants: "Partecipanti", yourName: "Il tuo nome", addName: "Aggiungi un nome", add: "Aggiungi",
+    defSplit: "Divisione predefinita", defSplitHelp: "Precompila ogni nuova spesa. Si può sempre cambiare spesa per spesa.",
+    equalAll: "Tutti uguali", byShares: "Per quote", createIt: "Crea il viaggio", needName: "Dai un nome al viaggio.", needPeople: "Servono almeno due partecipanti.", dupName: "Questo nome c'è già.",
+    ready: "Il viaggio è pronto", readyHelp: "Chi ha il link entra nel viaggio. Mandalo solo a chi viaggia con te.", copyLink: "Copia il link", copied: "Link copiato", openTrip: "Apri il viaggio",
+    whoAreYou: "Chi sei?", whoHelp: "Scegli il tuo nome. Questo dispositivo se lo ricorda, e lo puoi cambiare da Viaggio.", notInList: "Non sono nella lista", addMe: "Aggiungimi",
+    linkChanged: "Il link è cambiato", linkChangedHelp: "Chiedi a qualcuno del viaggio il link nuovo. Le modifiche fatte offline su questo dispositivo non si perdono: partono appena apri il link nuovo.", backHome: "Torna all'inizio",
+    tabSpese: "Spese", tabSaldi: "Saldi", tabGrafici: "Grafici", tabViaggio: "Viaggio",
+    youAre: n => `Sei ${n}`, savedLocal: "Tutto salvato e sincronizzato", offlineQ: n => n ? `Offline: ${n === 1 ? "1 modifica" : n + " modifiche"} in attesa` : "Offline: le modifiche restano su questo dispositivo",
+    closedBanner: "Viaggio chiuso, sola lettura.", reopen: "Riapri",
+    spentSoFar: "Spesi finora", yourPart: "La tua parte", searchPh: "Cerca tra le spese", history: "Cronologia",
+    paidBy: n => `pagato da ${n}`, paidByMany: (n, k) => `pagato da ${n} e altri ${k}`, receivedBy: n => `ricevuto da ${n}`, yourShare: c => `tua parte ${c}`, notYours: "non ti riguarda",
+    refund: "Rimborso", settlementLine: (a, b) => `${a} ha dato a ${b}`, settlement: "Pagamento",
+    emptyRoll: "Ancora nessuna spesa.", emptyRollHelp: "Tocca + per aggiungere la prima: il primo scontrino del viaggio.", noResults: q => `Nessuna spesa con "${q}".`,
+    newExpense: "Nuova spesa", editExpense: "Modifica spesa", kExpense: "Spesa", kRefund: "Rimborso", refundHelp: "Soldi che entrano nel gruppo, per esempio una caparra restituita. Si divide come una spesa, col segno invertito.",
+    what: "Cosa avete pagato?", whatRefund: "Cosa vi hanno restituito?", whatPh: "Cena a Cala Gonone", amount: "Importo", date: "Data", category: "Categoria",
+    paidByL: "Chi ha pagato", receivedByL: "Chi ha ricevuto i soldi", manyPaid: "Hanno pagato in più persone", onePaid: "Ha pagato una persona sola",
+    split: "Divisione", mEqual: "Uguale", mExact: "Importi", mPct: "Percentuali", mShares: "Quote",
+    mEqualL: "In parti uguali", mExactL: "Importi esatti", mPctL: "Percentuali", mSharesL: "Per quote",
+    everyone: "Tutti", fromDefault: "Precompilata con la divisione predefinita del viaggio.",
+    save: "Salva la spesa", saveEdit: "Salva le modifiche", saved: "Spesa salvata", savedEdit: "Modifiche salvate",
+    vDesc: "Scrivi cosa avete pagato.", vAmount: "Inserisci un importo maggiore di zero.", vPayMissing: c => `Ai paganti mancano ${c}.`, vPayOver: c => `I paganti superano il totale di ${c}.`,
+    vNobody: "Scegli almeno una persona.", vExactMissing: c => `Mancano ${c} da assegnare.`, vExactOver: c => `Hai assegnato ${c} di troppo.`,
+    vPct: p => `Le percentuali fanno ${p}%: devono fare 100%.`, vShares: "Dai almeno una quota a qualcuno.",
+    leftoverNote: (n, names) => n === 0 ? "La divisione è esatta: non avanza nessun centesimo." : `${n === 1 ? "Avanza 1 centesimo" : "Avanzano " + n + " centesimi"}: ${n === 1 ? "va" : "vanno"} a ${names}.`,
+    leftoverRule: "Regola fissa, uguale su ogni dispositivo: resto maggiore, a parità chi è entrato prima nel viaggio.",
+    remaining: c => `Restano ${c}`, pctSum: p => `Totale ${p}%`, sharesSum: n => `${n} quote`, okSum: "I conti tornano.",
+    detail: "Spesa", payers: "Pagato da", receivers: "Ricevuto da", splitL: "Diviso", edits: "Modifiche", restoreVersion: "Ripristina questa versione", current: "Versione attuale",
+    created: "ha aggiunto la spesa", changed: f => `ha cambiato ${f}`, restored: "ha ripristinato una versione precedente",
+    f_desc: "descrizione", f_amount: "importo", f_date: "data", f_cat: "categoria", f_payers: "paganti", f_split: "divisione",
+    edit: "Modifica", del: "Elimina", delQ: "Eliminare la spesa? Resta nella cronologia e si può ripristinare.", delYes: "Sì, elimina", cancel: "Annulla", deleted: "Spesa eliminata", undo: "Annulla",
+    conflictMine: n => `${n} l'ha modificata mentre la modificavi tu.`, conflictOther: (a, b) => `${a} e ${b} l'hanno modificata nello stesso momento.`,
+    conflictWin: n => `Vale la versione arrivata per ultima, quella di ${n}. L'altra resta qui sotto e nella cronologia.`,
+    yourVersion: "La tua versione", otherVersion: n => `La versione di ${n}`, restoreMine: "Ripristina la mia versione", restoreOther: "Ripristina l'altra versione", keepIt: "Va bene così", conflictResolved: "Versione ripristinata",
+    balances: "Saldi", totals: "Totali", youGet: c => `Ti devono ${c}`, youOwe: c => `Devi ${c}`, youEven: "Sei pari",
+    getsBack: c => `deve ricevere ${c}`, owes: c => `deve dare ${c}`, isEven: "è pari",
+    suggested: "Pagamenti suggeriti", suggestedHelp: "Quits non mostra chi deve a chi: solo i saldi e i pochi pagamenti che li portano a zero.",
+    gives: (a, b) => `${a} dà a ${b}`, record: "Registra", recordAll: "Registra tutti i pagamenti suggeriti", recordOther: "Registra un altro pagamento",
+    allEven: "Siete tutti pari", allEvenHelp: "Nessun pagamento da fare. Se spendete ancora, i saldi ripartono da qui.",
+    newSettlement: "Registra un pagamento", fromL: "Chi ha dato i soldi", toL: "A chi", settleHelp: "Anche una parte: il resto rimane nei pagamenti suggeriti.", recorded: "Pagamento registrato", recordedAll: "Pagamenti registrati",
+    dupWarn: "C'è già un pagamento uguale in questa data. Forse è un doppione: registralo solo se è un secondo pagamento vero.", samePerson: "Scegli due persone diverse.",
+    settlementDetail: "Pagamento", delSettlement: "Elimina il pagamento", setDeleted: "Pagamento eliminato",
+    tripTotal: "Totale del viaggio", perDay: (c, d) => `${c} al giorno, in ${d} giorni`, paidVsDue: "Pagato e spettante", paid: "pagato", due: "spettante", byCategory: "Per categoria",
+    perHead: c => `${c} a testa al giorno`,
+    chartsTitle: "I grafici hanno un prototipo tutto loro", chartsHelp: "Arrivano dal prototipo dei grafici (issue #10), calcolati dalle operazioni anche offline:",
+    charts: ["Spesa per categoria", "Spesa per giorno", "Pagato e spettante per persona", "Andamento cumulato con proiezione a fine viaggio", "Persona per categoria", "Costo a testa al giorno", "Le spese più grandi", "Chi ha anticipato quanto nel tempo"],
+    tripLink: "Link del viaggio", tripLinkHelp: "Chi ha il link entra nel viaggio.", regen: "Rigenera il link", regenQ: "Il vecchio link smette subito di funzionare. Chi lo apre vede un avviso e deve chiedere quello nuovo.", regenYes: "Rigenera", regened: "Link rigenerato", seeOld: "Vedi cosa vede chi apre il vecchio link",
+    rename: "Rinomina", renameSave: "Salva", removeRule: "Si può togliere solo chi non compare in nessuna spesa o pagamento. Rinominare si può sempre.", remove: "Togli",
+    shares: n => n === 1 ? "1 quota" : `${n} quote`, defEqual: "Tutti uguali", defSharesSummary: s => `Per quote: ${s}`,
+    categories: "Categorie", stdCats: "Standard", customCats: "Del viaggio", catNamePh: "Nome", catEmojiPh: "Emoji", addCat: "Aggiungi categoria", catDeleted: "Categoria eliminata: le sue spese ora sono in Altro.", catAdded: "Categoria aggiunta",
+    currencyLocked: "Ci sono già spese: la valuta resta questa.",
+    exportL: "Esporta", exportCsv: "CSV delle spese", exportJson: "Backup JSON delle operazioni", exportToast: "Nel prototipo l'export non scarica nulla.",
+    closeTrip: "Chiudi il viaggio", closeHelp: "Diventa di sola lettura. Chiunque abbia il link può riaprirlo.", closeWarn: n => `${n === 1 ? "1 persona non è pari" : n + " persone non sono pari"}. Puoi chiuderlo lo stesso.`, closeYes: "Chiudi il viaggio", closedToast: "Viaggio chiuso", reopenedToast: "Viaggio riaperto",
+    deleteTrip: "Elimina il viaggio", deleteHelp: "Sparisce per tutti. Si può ripristinare per 30 giorni, poi viene cancellato per sempre.", deleteYes: "Sì, elimina per tutti",
+    identity: "Su questo dispositivo", notMe: "Non sono io",
+    histTitle: "Cronologia", histHelp: "Ogni modifica resta qui, non si cancella. Spese e pagamenti eliminati si ripristinano da qui.",
+    h_create: "ha creato il viaggio", h_add: d => `ha aggiunto ${d}`, h_edit: d => `ha modificato ${d}`, h_del: d => `ha eliminato ${d}`, h_restore: d => `ha ripristinato ${d}`,
+    h_set: (c, b) => `ha registrato un pagamento di ${c} a ${b}`, h_setdel: (c, b) => `ha eliminato un pagamento di ${c} a ${b}`, h_setrestore: (c, b) => `ha ripristinato un pagamento di ${c} a ${b}`,
+    h_person: n => `ha aggiunto ${n} al viaggio`, h_rename: (a, b) => `ha rinominato ${a} in ${b}`, h_regen: "ha rigenerato il link", h_close: "ha chiuso il viaggio", h_reopen: "ha riaperto il viaggio",
+    h_cat: n => `ha aggiunto la categoria ${n}`, h_catdel: n => `ha eliminato la categoria ${n}`, h_conflict: d => `ha modificato ${d} insieme a un'altra persona`, h_dsplit: "ha cambiato la divisione predefinita",
+    restoredExp: "Spesa ripristinata", setRestored: "Pagamento ripristinato", close: "Chiudi", back: "Indietro", seeHistory: "Vedi la cronologia",
+    evenStamp: "PARI", evenTitle: "Tutti pari!", evenHelp: "Nessuno deve più niente a nessuno.", nice: "Bello",
+  },
+  en: {
+    protoTitle: "Main flows prototype", protoNote: "Fake data, in memory: reloading resets everything. Any creator code of 6+ characters works.",
+    variant: "Variant", theme: "Theme", lang: "Language", system: "System", light: "Light", dark: "Dark", goto: "Go to", palette: "This variant's palette", fonts: "Fonts",
+    simOffline: "Simulate offline", simOnline: "Back online", reset: "Reset data",
+    j_landing: "Landing", j_create: "Create trip", j_link: "Open link (who are you?)", j_spese: "Expenses", j_add: "New expense", j_conflict: "Expense with conflict", j_cent: "Leftover cent", j_saldi: "Balances", j_totali: "Totals", j_history: "History", j_viaggio: "Trip", j_old: "Old link", j_charts: "Charts",
+    tagline: "Who paid for what on holiday, and how to get even.",
+    yourTrips: "Your trips on this device", needLink: "To join a trip, open the link your friends sent you.",
+    open: "open", closed: "closed", people: n => n === 1 ? "1 participant" : `${n} participants`,
+    creatorQ: "Got a creator code?", creatorHelp: "You need one to create a trip. Enter it once and this device remembers it.",
+    codePh: "your code", useCode: "Use code", codeErr: "This code doesn't work. Check you copied all of it.",
+    codeOk: "Code active on this device.", createTrip: "Create a trip", privacy: "Privacy", contact: "Contact",
+    deletedTrips: "Deleted", deletedOn: (d, u) => `Deleted on ${d}. You can restore it until ${u}.`, restore: "Restore",
+    newTrip: "New trip", tripName: "Trip name", tripNamePh: "Sardinia 2026", currency: "Currency", currencyHelp: "You can change it only while there are no expenses.",
+    dates: "Dates", optional: "optional", from: "From", to: "To", participants: "Participants", yourName: "Your name", addName: "Add a name", add: "Add",
+    defSplit: "Default split", defSplitHelp: "Prefills every new expense. You can always change it per expense.",
+    equalAll: "Everyone equal", byShares: "By shares", createIt: "Create the trip", needName: "Give the trip a name.", needPeople: "You need at least two participants.", dupName: "That name is already there.",
+    ready: "Your trip is ready", readyHelp: "Anyone with the link is in the trip. Send it only to the people travelling with you.", copyLink: "Copy link", copied: "Link copied", openTrip: "Open the trip",
+    whoAreYou: "Who are you?", whoHelp: "Pick your name. This device remembers it, and you can change it from Trip.", notInList: "I'm not on the list", addMe: "Add me",
+    linkChanged: "This link has changed", linkChangedHelp: "Ask someone in the trip for the new link. Changes made offline on this device aren't lost: they go through as soon as you open the new link.", backHome: "Back to start",
+    tabSpese: "Expenses", tabSaldi: "Balances", tabGrafici: "Charts", tabViaggio: "Trip",
+    youAre: n => `You're ${n}`, savedLocal: "Everything saved and synced", offlineQ: n => n ? `Offline: ${n === 1 ? "1 change" : n + " changes"} waiting` : "Offline: changes stay on this device",
+    closedBanner: "Trip closed, read only.", reopen: "Reopen",
+    spentSoFar: "Spent so far", yourPart: "Your share", searchPh: "Search expenses", history: "History",
+    paidBy: n => `paid by ${n}`, paidByMany: (n, k) => `paid by ${n} and ${k} more`, receivedBy: n => `received by ${n}`, yourShare: c => `your share ${c}`, notYours: "not yours",
+    refund: "Refund", settlementLine: (a, b) => `${a} paid ${b}`, settlement: "Settlement",
+    emptyRoll: "No expenses yet.", emptyRollHelp: "Tap + to add the first one: the trip's first receipt.", noResults: q => `No expenses matching "${q}".`,
+    newExpense: "New expense", editExpense: "Edit expense", kExpense: "Expense", kRefund: "Refund", refundHelp: "Money coming back to the group, like a returned deposit. It's split like an expense, with the sign reversed.",
+    what: "What did you pay for?", whatRefund: "What came back?", whatPh: "Dinner at Cala Gonone", amount: "Amount", date: "Date", category: "Category",
+    paidByL: "Who paid", receivedByL: "Who received the money", manyPaid: "Several people paid", onePaid: "One person paid",
+    split: "Split", mEqual: "Equal", mExact: "Amounts", mPct: "Percent", mShares: "Shares",
+    mEqualL: "Equally", mExactL: "Exact amounts", mPctL: "Percentages", mSharesL: "By shares",
+    everyone: "Everyone", fromDefault: "Prefilled with the trip's default split.",
+    save: "Save expense", saveEdit: "Save changes", saved: "Expense saved", savedEdit: "Changes saved",
+    vDesc: "Say what you paid for.", vAmount: "Enter an amount above zero.", vPayMissing: c => `Payers are ${c} short.`, vPayOver: c => `Payers are ${c} over the total.`,
+    vNobody: "Pick at least one person.", vExactMissing: c => `${c} still to assign.`, vExactOver: c => `You assigned ${c} too much.`,
+    vPct: p => `Percentages add up to ${p}%: they must make 100%.`, vShares: "Give at least one share to someone.",
+    leftoverNote: (n, names) => n === 0 ? "The split is exact: no cent left over." : `${n === 1 ? "1 cent is" : n + " cents are"} left over: ${n === 1 ? "it goes" : "they go"} to ${names}.`,
+    leftoverRule: "A fixed rule, the same on every device: largest remainder, ties go to whoever joined the trip first.",
+    remaining: c => `${c} left`, pctSum: p => `Total ${p}%`, sharesSum: n => `${n} shares`, okSum: "It adds up.",
+    detail: "Expense", payers: "Paid by", receivers: "Received by", splitL: "Split", edits: "Changes", restoreVersion: "Restore this version", current: "Current version",
+    created: "added the expense", changed: f => `changed ${f}`, restored: "restored an earlier version",
+    f_desc: "description", f_amount: "amount", f_date: "date", f_cat: "category", f_payers: "payers", f_split: "split",
+    edit: "Edit", del: "Delete", delQ: "Delete this expense? It stays in the history and can be restored.", delYes: "Yes, delete", cancel: "Cancel", deleted: "Expense deleted", undo: "Undo",
+    conflictMine: n => `${n} edited it while you were editing it.`, conflictOther: (a, b) => `${a} and ${b} edited it at the same time.`,
+    conflictWin: n => `The version that arrived last wins: ${n}'s. The other one stays below and in the history.`,
+    yourVersion: "Your version", otherVersion: n => `${n}'s version`, restoreMine: "Restore my version", restoreOther: "Restore the other version", keepIt: "Keep this one", conflictResolved: "Version restored",
+    balances: "Balances", totals: "Totals", youGet: c => `You're owed ${c}`, youOwe: c => `You owe ${c}`, youEven: "You're even",
+    getsBack: c => `gets back ${c}`, owes: c => `owes ${c}`, isEven: "is even",
+    suggested: "Suggested settlements", suggestedHelp: "Quits never shows who owes whom: only balances and the few payments that bring them to zero.",
+    gives: (a, b) => `${a} pays ${b}`, record: "Record", recordAll: "Record all suggested settlements", recordOther: "Record another settlement",
+    allEven: "Everyone's even", allEvenHelp: "Nothing left to pay. If you spend more, balances start again from here.",
+    newSettlement: "Record a settlement", fromL: "Who paid", toL: "To whom", settleHelp: "Part of it is fine: the rest stays in the suggested settlements.", recorded: "Settlement recorded", recordedAll: "Settlements recorded",
+    dupWarn: "There's already an identical settlement on this date. It may be a duplicate: record it only if it's a real second payment.", samePerson: "Pick two different people.",
+    settlementDetail: "Settlement", delSettlement: "Delete settlement", setDeleted: "Settlement deleted",
+    tripTotal: "Trip total", perDay: (c, d) => `${c} a day, over ${d} days`, paidVsDue: "Paid and due", paid: "paid", due: "due", byCategory: "By category",
+    perHead: c => `${c} per person per day`,
+    chartsTitle: "Charts get a prototype of their own", chartsHelp: "They come from the charts prototype (issue #10), computed from the operations, offline too:",
+    charts: ["Spending by category", "Spending by day", "Paid vs due per person", "Cumulative pace with end-of-trip projection", "Person by category", "Cost per person per day", "The biggest expenses", "Who fronted how much over time"],
+    tripLink: "Trip link", tripLinkHelp: "Anyone with the link is in the trip.", regen: "Regenerate link", regenQ: "The old link stops working right away. Whoever opens it sees a notice and has to ask for the new one.", regenYes: "Regenerate", regened: "Link regenerated", seeOld: "See what the old link shows",
+    rename: "Rename", renameSave: "Save", removeRule: "Only someone who appears in no expense or settlement can be removed. Renaming always works.", remove: "Remove",
+    shares: n => n === 1 ? "1 share" : `${n} shares`, defEqual: "Everyone equal", defSharesSummary: s => `By shares: ${s}`,
+    categories: "Categories", stdCats: "Standard", customCats: "This trip's", catNamePh: "Name", catEmojiPh: "Emoji", addCat: "Add category", catDeleted: "Category deleted: its expenses are now in Other.", catAdded: "Category added",
+    currencyLocked: "There are expenses already: the currency stays.",
+    exportL: "Export", exportCsv: "Expenses as CSV", exportJson: "JSON backup of the operations", exportToast: "In the prototype, export doesn't download anything.",
+    closeTrip: "Close the trip", closeHelp: "It becomes read only. Anyone with the link can reopen it.", closeWarn: n => `${n === 1 ? "1 person isn't" : n + " people aren't"} even. You can close it anyway.`, closeYes: "Close the trip", closedToast: "Trip closed", reopenedToast: "Trip reopened",
+    deleteTrip: "Delete the trip", deleteHelp: "It disappears for everyone. You can restore it for 30 days, then it's gone for good.", deleteYes: "Yes, delete for everyone",
+    identity: "On this device", notMe: "That's not me",
+    histTitle: "History", histHelp: "Every change stays here and is never erased. Deleted expenses and settlements are restored from here.",
+    h_create: "created the trip", h_add: d => `added ${d}`, h_edit: d => `edited ${d}`, h_del: d => `deleted ${d}`, h_restore: d => `restored ${d}`,
+    h_set: (c, b) => `recorded a settlement of ${c} to ${b}`, h_setdel: (c, b) => `deleted a settlement of ${c} to ${b}`, h_setrestore: (c, b) => `restored a settlement of ${c} to ${b}`,
+    h_person: n => `added ${n} to the trip`, h_rename: (a, b) => `renamed ${a} to ${b}`, h_regen: "regenerated the link", h_close: "closed the trip", h_reopen: "reopened the trip",
+    h_cat: n => `added the category ${n}`, h_catdel: n => `deleted the category ${n}`, h_conflict: d => `edited ${d} at the same time as someone else`, h_dsplit: "changed the default split",
+    restoredExp: "Expense restored", setRestored: "Settlement restored", close: "Close", back: "Back", seeHistory: "See the history",
+    evenStamp: "EVEN", evenTitle: "Everyone's even!", evenHelp: "Nobody owes anybody anything.", nice: "Nice",
+  },
+};
+const t = (k, ...a) => { const v = T[S.lang][k]; return typeof v === "function" ? v(...a) : v; };
+const LOC = () => (S.lang === "it" ? "it-IT" : "en-GB");
+
+/* ================= categories ================= */
+const STD = [
+  { id: "alloggio", emoji: "🏠", color: "pool", it: "Alloggio", en: "Accommodation" },
+  { id: "trasporti", emoji: "🚗", color: "sun", it: "Trasporti", en: "Transport" },
+  { id: "ristoranti", emoji: "🍝", color: "coral", it: "Ristoranti", en: "Restaurants" },
+  { id: "spesa", emoji: "🛒", color: "leaf", it: "Spesa", en: "Groceries" },
+  { id: "attivita", emoji: "🤿", color: "sea", it: "Attività", en: "Activities" },
+  { id: "altro", emoji: "📦", color: "stone", it: "Altro", en: "Other" },
+];
+const HASH_COLORS = ["pool", "sun", "coral", "leaf", "sea"];
+const hash = s => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
+const catOf = (trip, id) => {
+  const s = STD.find(c => c.id === id);
+  if (s) return { id, emoji: s.emoji, name: s[S.lang], color: s.color };
+  const c = trip.cats.find(c => c.id === id);
+  if (c) return { id, emoji: c.emoji, name: c.name, color: HASH_COLORS[hash(c.id) % HASH_COLORS.length] };
+  return catOf(trip, "altro");
+};
+const allCats = trip => [...STD.map(c => c.id), ...trip.cats.map(c => c.id)];
+
+/* ================= money and dates ================= */
+const minorDigits = cur => new Intl.NumberFormat("en", { style: "currency", currency: cur }).resolvedOptions().maximumFractionDigits;
+const fmt = (c, cur = trip().cur) => { const d = minorDigits(cur); return new Intl.NumberFormat(LOC(), { style: "currency", currency: cur }).format(c / 10 ** d); };
+const fmtS = (c, cur = trip().cur) => { const d = minorDigits(cur); return new Intl.NumberFormat(LOC(), { style: "currency", currency: cur, signDisplay: "exceptZero" }).format(c / 10 ** d); };
+const parseAmt = (s, cur = trip().cur) => {
+  if (s == null) return NaN; s = String(s).replace(/[\s€$£]/g, "");
+  if (!s) return NaN;
+  if (/,\d{1,2}$/.test(s)) s = s.replace(/\./g, "").replace(",", "."); else s = s.replace(/,/g, "");
+  if (!/^\d*\.?\d*$/.test(s)) return NaN;
+  return Math.round(parseFloat(s) * 10 ** minorDigits(cur));
+};
+const toInput = c => { const d = minorDigits(trip().cur); const v = Math.abs(c) / 10 ** d; return S.lang === "it" ? v.toFixed(d).replace(".", ",") : v.toFixed(d); };
+const nodash = s => s.replace(/\s?[–—]\s?/g, "-");
+const dDay = iso => new Intl.DateTimeFormat(LOC(), { weekday: "short", day: "numeric", month: "long" }).format(new Date(iso + "T12:00"));
+const dLong = iso => new Intl.DateTimeFormat(LOC(), { day: "numeric", month: "long", year: "numeric" }).format(new Date(iso + "T12:00"));
+const dTime = at => new Intl.DateTimeFormat(LOC(), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }).format(new Date(at));
+const dRange = (a, b) => { if (!a) return ""; if (!b) return dLong(a); return nodash(new Intl.DateTimeFormat(LOC(), { day: "numeric", month: "long", year: "numeric" }).formatRange(new Date(a + "T12:00"), new Date(b + "T12:00"))); };
+const isoDate = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const TODAY = isoDate(new Date());
+const nowAt = () => new Date().toISOString();
+const addDays = (iso, n) => { const d = new Date(iso + "T12:00"); d.setDate(d.getDate() + n); return isoDate(d); };
+const listNames = names => new Intl.ListFormat(LOC(), { type: "conjunction" }).format(names);
+
+/* ================= domain: splits, balances, suggestions ================= */
+// Largest remainder: integer minor units, ties broken by order of entry in the trip.
+function alloc(total, ids, w) {
+  const sg = total < 0 ? -1 : 1, A = Math.abs(total), W = w.reduce((a, b) => a + b, 0);
+  if (!W) return { shares: {}, extra: [] };
+  const rows = ids.map((id, i) => ({ id, i, w: w[i], fl: Math.floor((A * w[i]) / W), r: (A * w[i]) % W }));
+  const rem = A - rows.reduce((a, x) => a + x.fl, 0);
+  const order = rows.filter(x => x.w > 0).sort((a, b) => b.r - a.r || a.i - b.i);
+  const extra = [];
+  for (let k = 0; k < rem; k++) { order[k].fl++; extra.push(order[k].id); }
+  const shares = {};
+  rows.forEach(x => { if (x.w > 0) shares[x.id] = sg * x.fl; });
+  return { shares, extra };
+}
+function sharesOf(tr, e) {
+  const ids = tr.people.map(p => p.id), s = e.split;
+  if (s.m === "exact") { const out = {}; ids.forEach(id => { if (s.a[id]) out[id] = Math.sign(e.amount || 1) * s.a[id]; }); return { shares: out, extra: [] }; }
+  const w = ids.map(id => s.m === "equal" ? (s.among.includes(id) ? 1 : 0) : s.m === "shares" ? (s.w[id] || 0) : Math.round((s.p[id] || 0) * 100));
+  return alloc(e.amount, ids, w);
+}
+const liveExps = tr => tr.exps.filter(e => !e.deleted);
+const liveSets = tr => tr.sets.filter(s => !s.deleted);
+function balances(tr) {
+  const b = Object.fromEntries(tr.people.map(p => [p.id, 0]));
+  for (const e of liveExps(tr)) {
+    e.payers.forEach(([id, c]) => (b[id] += c));
+    const { shares } = sharesOf(tr, e);
+    for (const id in shares) b[id] -= shares[id];
+  }
+  for (const s of liveSets(tr)) { b[s.from] += s.c; b[s.to] -= s.c; }
+  return b;
+}
+// Greedy, deterministic: largest debtor pays largest creditor; ties by order of entry. At most N-1 payments.
+function suggest(tr) {
+  const b = balances(tr), order = tr.people.map(p => p.id), out = [];
+  const pos = id => order.indexOf(id);
+  let guard = 0;
+  while (guard++ < 50) {
+    const cred = order.filter(id => b[id] > 0).sort((x, y) => b[y] - b[x] || pos(x) - pos(y));
+    const debt = order.filter(id => b[id] < 0).sort((x, y) => b[x] - b[y] || pos(x) - pos(y));
+    if (!cred.length || !debt.length) break;
+    const c = cred[0], d = debt[0], x = Math.min(b[c], -b[d]);
+    out.push({ from: d, to: c, c: x }); b[c] -= x; b[d] += x;
+  }
+  return out;
+}
+const usage = (tr, pid) => liveExps(tr).filter(e => e.payers.some(p => p[0] === pid) || sharesOf(tr, e).shares[pid] !== undefined).length + liveSets(tr).filter(s => s.from === pid || s.to === pid).length;
+
+/* ================= fake data ================= */
+const P = (id, name) => ({ id, name });
+const snap = e => JSON.parse(JSON.stringify({ desc: e.desc, amount: e.amount, date: e.date, cat: e.cat, payers: e.payers, split: e.split }));
+const DEF = { m: "shares", w: { p1: 1, p2: 1, p3: 2, p4: 1, p5: 1 } };
+function X(id, date, time, desc, cat, amount, payers, split = DEF) {
+  const e = { id, date, desc, cat, amount, payers, split: JSON.parse(JSON.stringify(split)), deleted: false, conflict: null, versions: [] };
+  e.versions.push({ at: `${date}T${time}:00`, by: payers[0][0], kind: "add", snap: snap(e) });
+  return e;
+}
+function seed() {
+  const people = [P("p1", "Simone"), P("p2", "Sara"), P("p3", "Giulia e Marco"), P("p4", "Luca"), P("p5", "Chiara")];
+  const exps = [
+    X("e1", "2026-06-13", "07:40", "Traghetto Livorno-Olbia", "trasporti", 48600, [["p1", 48600]]),
+    X("e2", "2026-06-13", "16:05", "Casa a Cala Gonone, 7 notti", "alloggio", 154000, [["p3", 100000], ["p2", 54000]]),
+    X("e3", "2026-06-13", "16:10", "Caparra della casa", "alloggio", 30000, [["p4", 30000]]),
+    X("e4", "2026-06-13", "19:22", "Spesa al Conad", "spesa", 8743, [["p5", 8743]]),
+    X("e5", "2026-06-14", "09:30", "Noleggio auto, 7 giorni", "trasporti", 39200, [["p1", 39200]]),
+    X("e6", "2026-06-14", "22:48", "Cena a Su Gologone", "ristoranti", 31250, [["p2", 31250]]),
+    X("e7", "2026-06-15", "10:15", "Gommone per Cala Luna", "attivita", 26000, [["p4", 26000]], { m: "shares", w: { p1: 1, p2: 1, p3: 2, p4: 1 } }),
+    X("e23", "2026-06-15", "11:02", "Ombrellone e lettini", "attivita", 4000, [["p4", 4000]]),
+    X("e8", "2026-06-15", "16:40", "Gelati", "ristoranti", 1350, [["p5", 1350]], { m: "equal", among: ["p2", "p4", "p5"] }),
+    X("e9", "2026-06-15", "13:30", "Pranzo al chiosco", "ristoranti", 9640, [["p3", 9640]], { m: "exact", a: { p1: 1820, p2: 1500, p3: 3370, p4: 1650, p5: 1300 } }),
+    X("e10", "2026-06-16", "08:15", "Escursione a Gorropu", "attivita", 15000, [["p5", 15000]]),
+    X("e11", "2026-06-16", "18:10", "Spesa al mercato", "spesa", 6418, [["p2", 6418]]),
+    X("e12", "2026-06-16", "19:00", "Benzina", "trasporti", 7000, [["p4", 7000]]),
+    X("e13", "2026-06-17", "19:45", "Aperitivo al tramonto", "c-aperitivi", 5800, [["p1", 5800]], { m: "equal", among: ["p1", "p2", "p4", "p5"] }),
+    X("e14", "2026-06-17", "22:30", "Cena di pesce", "ristoranti", 24000, [["p2", 24000]], { m: "pct", p: { p1: 15, p2: 15, p3: 35, p4: 20, p5: 15 } }),
+    X("e15", "2026-06-18", "10:05", "Parcheggio a Cala Fuili", "trasporti", 2400, [["p5", 2400]]),
+    X("e16", "2026-06-18", "17:20", "Spesa per la grigliata", "spesa", 4107, [["p4", 4107]]),
+    X("e17", "2026-06-18", "11:30", "Kayak alle grotte", "attivita", 9000, [["p2", 9000]], { m: "equal", among: ["p1", "p2", "p4"] }),
+    X("e18", "2026-06-19", "12:10", "Pesce dal mercato", "spesa", 7360, [["p3", 7360]]),
+    X("e19", "2026-06-19", "18:30", "Mirto per la padrona di casa", "altro", 1890, [["p1", 1890]], { m: "equal", among: ["p1", "p2", "p3", "p4", "p5"] }),
+    X("e20", "2026-06-20", "09:00", "Caparra restituita", "alloggio", -30000, [["p4", -30000]]),
+    X("e21", "2026-06-20", "10:30", "Traghetto Olbia-Livorno", "trasporti", 48600, [["p3", 48600]]),
+    X("e22", "2026-06-20", "13:15", "Pranzo all'imbarco", "ristoranti", 5430, [["p2", 5430]]),
+  ];
+  const by = id => exps.find(e => e.id === id);
+  // e14: Sara fixed the amount after the bill came.
+  const e14 = by("e14"); e14.amount = 24730; e14.payers = [["p2", 24730]]; e14.versions.push({ at: "2026-06-17T23:05:00", by: "p2", kind: "edit", snap: snap(e14) });
+  // e4: a real conflict. Simone (offline) and Luca edited it at the same time; Luca's op reached the server last and wins.
+  const e4 = by("e4");
+  const mine = { ...snap(e4), desc: "Spesa al Conad e crema solare", amount: 9643, payers: [["p5", 9643]] };
+  e4.versions.push({ at: "2026-06-14T09:10:00", by: "p1", kind: "edit", snap: JSON.parse(JSON.stringify(mine)) });
+  e4.payers = [["p5", 6000], ["p4", 2743]];
+  e4.versions.push({ at: "2026-06-14T09:14:00", by: "p4", kind: "edit", snap: snap(e4) });
+  e4.conflict = { by: "p4", other: "p1", mine };
+  by("e23").deleted = true;
+  const sets = [
+    { id: "s1", from: "p4", to: "p1", c: 10000, date: "2026-06-18", deleted: false },
+    { id: "s2", from: "p5", to: "p3", c: 8000, date: "2026-06-19", deleted: false },
+  ];
+  const ops = [{ at: "2026-06-01T21:10:00", by: "p1", k: "create" }];
+  people.slice(1).forEach((p, i) => ops.push({ at: `2026-06-01T21:1${i + 1}:00`, by: "p1", k: "person", ref: p.id }));
+  ops.push({ at: "2026-06-02T08:00:00", by: "p2", k: "cat", name: "Aperitivi" });
+  exps.forEach(e => e.versions.forEach(v => ops.push({ at: v.at, by: v.by, k: v.kind === "add" ? "add" : "edit", ref: e.id })));
+  ops.push({ at: "2026-06-15T18:20:00", by: "p4", k: "del", ref: "e23" });
+  ops.push({ at: "2026-06-18T20:00:00", by: "p4", k: "set", ref: "s1" });
+  ops.push({ at: "2026-06-19T21:00:00", by: "p5", k: "set", ref: "s2" });
+  const sar = {
+    id: "sar", name: "Sardegna 2026", cur: "EUR", from: "2026-06-13", to: "2026-06-20", status: "open", deleted: null,
+    token: "Xk2rP9vQe4LmT7aB1cWz0n", me: "p1", people, dsplit: DEF, cats: [{ id: "c-aperitivi", name: "Aperitivi", emoji: "🍹" }],
+    exps, sets, ops,
+  };
+  const dolPeople = [P("d1", "Simone"), P("d2", "Sara"), P("d3", "Luca")];
+  const dol = {
+    id: "dol", name: "Dolomiti 2025", cur: "EUR", from: "2025-08-09", to: "2025-08-12", status: "closed", deleted: null,
+    token: "Qe7mN2pLs8RtV4yU6wXa3k", me: "d1", people: dolPeople, dsplit: { m: "equal" }, cats: [],
+    exps: [
+      X("f1", "2025-08-09", "18:00", "Rifugio, 3 notti", "alloggio", 36000, [["d1", 36000]], { m: "equal", among: ["d1", "d2", "d3"] }),
+      X("f2", "2025-08-10", "09:00", "Funivia", "trasporti", 9000, [["d2", 9000]], { m: "equal", among: ["d1", "d2", "d3"] }),
+      X("f3", "2025-08-11", "20:30", "Cena in malga", "ristoranti", 6600, [["d3", 6600]], { m: "equal", among: ["d1", "d2", "d3"] }),
+    ],
+    sets: [
+      { id: "g1", from: "d2", to: "d1", c: 8200, date: "2025-08-12", deleted: false },
+      { id: "g2", from: "d3", to: "d1", c: 10600, date: "2025-08-12", deleted: false },
+    ],
+    ops: [{ at: "2025-08-01T10:00:00", by: "d1", k: "create" }, { at: "2025-08-13T10:00:00", by: "d2", k: "close" }],
+  };
+  return [sar, dol];
+}
+
+/* ================= state ================= */
+const S = {
+  lang: "it", variant: "ombrellone", theme: "system",
+  screen: "landing", tripId: "sar", tab: "spese", saldiView: "saldi",
+  overlay: null, sheet: null, settle: null, toast: null, confirm: null, pari: false,
+  creator: false, codeErr: false, code: "", offline: false, queue: 0, q: "",
+  create: null, editing: null, form: {}, anim: {}, lastClosedEq: [],
+  trips: seed(),
+};
+const trip = () => S.trips.find(x => x.id === S.tripId) || S.trips[0];
+const person = (id, tr = trip()) => tr.people.find(p => p.id === id) || { id, name: "?" };
+const nm = (id, tr = trip()) => person(id, tr).name;
+const meName = () => nm(trip().me);
+const AVC = ["coral", "pool", "sun", "leaf", "sea"];
+const avatar = (id, tr = trip()) => { const i = tr.people.findIndex(p => p.id === id); const n = nm(id, tr); return `<span class="avatar" style="--av:var(--${AVC[(i < 0 ? 0 : i) % AVC.length]})" aria-hidden="true">${esc(n.trim()[0] || "?")}</span>`; };
+const readonly = () => trip().status === "closed";
+function op(o) { trip().ops.push({ at: nowAt(), by: trip().me, ...o }); if (S.offline) S.queue++; }
+
+/* ================= toast ================= */
+let toastTimer;
+function toast(text, undo) { S.toast = { text, undo }; clearTimeout(toastTimer); toastTimer = setTimeout(() => { S.toast = null; render(); }, 3600); }
+
+/* ================= views: landing, create, who ================= */
+const eqMark = (cls = "") => `<span class="eq ${cls}" aria-hidden="true"><i></i><i></i></span>`;
+function vLanding() {
+  const mine = S.trips.filter(x => !x.deleted).sort((a, b) => (a.status === "closed") - (b.status === "closed"));
+  const del = S.trips.filter(x => x.deleted);
+  const tk = x => `<div class="ticket"><button class="trip-tk" data-act="open-trip" data-id="${x.id}">
+      <h3 class="display">${esc(x.name)}</h3><span class="state ${x.status}">${t(x.status)}</span>
+      <span class="small muted">${esc(dRange(x.from, x.to))}</span><span class="small muted">${t("people", x.people.length)}</span></button></div>`;
+  return `<div class="scroll" data-scroll="landing">
+    <div class="row" style="justify-content:flex-end;padding:12px 16px 0"><div class="seg" style="width:120px">${["it", "en"].map(l => `<button data-act="lang" data-v="${l}" aria-pressed="${S.lang === l}">${l.toUpperCase()}</button>`).join("")}</div></div>
+    <section class="land-hero">
+      <div class="bigmark">${eqMark()}<span class="display">quits</span></div>
+      <p>${t("tagline")}</p>
+    </section>
+    <section class="pad stack" style="padding-top:4px">
+      <h2 class="display sec-title">${t("yourTrips")}</h2>
+      <div class="stack" style="gap:10px">${mine.map(tk).join("")}</div>
+      <p class="help">${t("needLink")}</p>
+      ${del.length ? `<h2 class="display sec-title" style="margin-top:10px">${t("deletedTrips")}</h2>${del.map(x => `<div class="row" style="padding:12px 0;border-top:1.5px solid var(--line)"><div class="grow"><b>${esc(x.name)}</b><p class="help">${t("deletedOn", dLong(x.deleted.on), dLong(x.deleted.until))}</p></div><button class="btn sm ghost" data-act="restore-trip" data-id="${x.id}">${ic("arrow-u-up-left")}${t("restore")}</button></div>`).join("")}` : ""}
+    </section>
+    <section class="pad stack" style="border-top:2px dashed var(--line)">
+      <h2 class="display sec-title">${t("creatorQ")}</h2>
+      ${S.creator ? `<p class="ok">${ic("check")} ${t("codeOk")}</p><button class="btn wide" data-act="create-start">${ic("plus")}${t("createTrip")}</button>` : `
+      <p class="help">${t("creatorHelp")}</p>
+      <form class="row" data-form="code" onsubmit="return false"><label class="sr" for="code">${t("creatorQ")}</label><input id="code" class="input grow" data-in="code" value="${esc(S.code)}" placeholder="${t("codePh")}" autocomplete="off"><button class="btn sm" data-act="code" style="min-height:48px">${t("useCode")}</button></form>
+      ${S.codeErr ? `<p class="err">${ic("warning")}${t("codeErr")}</p>` : ""}`}
+    </section>
+    <footer class="pad row small muted" style="gap:18px;padding-top:6px"><a class="link" href="#privacy" onclick="return false">${t("privacy")}</a><span>quits@simonepetta.com</span></footer>
+  </div>`;
+}
+function vCreate() {
+  const c = S.create;
+  const dupe = c.newName && c.people.some(p => p.toLowerCase() === c.newName.trim().toLowerCase());
+  const valid = c.name.trim() && c.people.length >= 2;
+  return `<div class="tripbar"><button class="iconbtn" data-act="go-landing" aria-label="${t("back")}">${ic("caret-left")}</button><h1 class="display grow">${t("newTrip")}</h1></div>
+  <div class="scroll" data-scroll="create"><div class="pad stack" style="gap:20px">
+    <label class="field"><span>${t("tripName")}</span><input id="c-name" class="input" data-in="c-name" value="${esc(c.name)}" placeholder="${t("tripNamePh")}"></label>
+    <label class="field"><span>${t("currency")}</span><select id="c-cur" class="select" data-in="c-cur">${["EUR", "USD", "GBP", "CHF", "JPY"].map(k => `<option ${c.cur === k ? "selected" : ""}>${k}</option>`).join("")}</select><small class="help">${t("currencyHelp")}</small></label>
+    <div class="field"><span>${t("dates")} <span class="muted" style="font-weight:400">(${t("optional")})</span></span>
+      <div class="row"><label class="grow field"><small class="help">${t("from")}</small><input id="c-from" type="date" class="input" data-in="c-from" value="${c.from}"></label><label class="grow field"><small class="help">${t("to")}</small><input id="c-to" type="date" class="input" data-in="c-to" value="${c.to}"></label></div></div>
+    <div class="field"><span>${t("participants")}</span>
+      <div class="chips">${c.people.map((p, i) => `<span class="chip">${esc(p)}${i === 0 ? ` <small class="muted">(${S.lang === "it" ? "tu" : "you"})</small>` : `<button data-act="c-rm" data-i="${i}" aria-label="${t("remove")} ${esc(p)}" style="display:grid">${ic("x")}</button>`}</span>`).join("")}</div>
+      <form class="row" onsubmit="return false"><label class="sr" for="c-new">${c.people.length ? t("addName") : t("yourName")}</label><input id="c-new" class="input grow" data-in="c-new" value="${esc(c.newName)}" placeholder="${c.people.length ? t("addName") : t("yourName")}"><button class="btn sm ghost" style="min-height:48px" data-act="c-add" ${!c.newName.trim() || dupe ? "disabled" : ""}>${ic("user-plus")}${t("add")}</button></form>
+      ${dupe ? `<p class="err">${ic("warning")}${t("dupName")}</p>` : ""}</div>
+    <div class="field"><span>${t("defSplit")}</span>
+      <div class="seg">${[["equal", t("equalAll")], ["shares", t("byShares")]].map(([m, l]) => `<button data-act="c-dm" data-v="${m}" aria-pressed="${c.dm === m}">${l}</button>`).join("")}</div>
+      <small class="help">${t("defSplitHelp")}</small>
+      ${c.dm === "shares" ? `<div class="split-rows">${c.people.map((p, i) => `<div class="srow" style="grid-template-columns:minmax(0,1fr) 120px"><span class="name">${esc(p)}</span>${stepper("c-w", i, c.w[i] ?? 1)}</div>`).join("")}</div>` : ""}</div>
+    ${c.tried && !valid ? `<p class="err">${ic("warning")}${!c.name.trim() ? t("needName") : t("needPeople")}</p>` : ""}
+  </div></div>
+  <div class="sheet-foot"><button class="btn wide" data-act="c-submit">${t("createIt")}</button></div>`;
+}
+const stepper = (key, id, v) => `<div class="stepper"><button data-act="step" data-k="${key}" data-id="${id}" data-d="-1" aria-label="-1">${ic("minus")}</button><b class="num">${v}</b><button data-act="step" data-k="${key}" data-id="${id}" data-d="1" aria-label="+1">${ic("plus")}</button></div>`;
+function vReady() {
+  const tr = trip();
+  return `<div class="scroll"><div class="pad stack" style="gap:22px;padding-top:40px">
+    ${eqMark()}<h1 class="display" style="font-size:calc(38px * var(--d-scale))">${t("ready")}</h1>
+    <p>${t("readyHelp")}</p>
+    <div class="linkbox"><code>quits.simonepetta.com/v/#${tr.token}</code><button class="btn sm" data-act="copy-link">${ic("copy")}${t("copyLink")}</button></div>
+    <button class="btn wide ghost" data-act="ready-open">${t("openTrip")}</button>
+  </div></div>`;
+}
+function vWho() {
+  const tr = trip();
+  return `<div class="scroll"><div class="pad stack" style="gap:20px;padding-top:34px">
+    <div class="wordmark">${eqMark()}<span class="display">quits</span></div>
+    <div><p class="muted">${esc(tr.name)}</p><h1 class="display" style="font-size:calc(44px * var(--d-scale))">${t("whoAreYou")}</h1></div>
+    <p class="muted">${t("whoHelp")}</p>
+    <div class="who-list">${tr.people.map(p => `<button class="who-btn" data-act="pick-me" data-id="${p.id}">${avatar(p.id)}${esc(p.name)}</button>`).join("")}</div>
+    ${S.form.addMe ? `<form class="row" onsubmit="return false"><label class="sr" for="me-new">${t("yourName")}</label><input id="me-new" class="input grow" data-in="form" data-k="meName" placeholder="${t("yourName")}" value="${esc(S.form.meName || "")}"><button class="btn sm" style="min-height:48px" data-act="add-me">${t("addMe")}</button></form>` : `<button class="btn ghost" data-act="form-flag" data-k="addMe">${ic("user-plus")}${t("notInList")}</button>`}
+  </div></div>`;
+}
+function vLinkChanged() {
+  return `<div class="scroll"><div class="pad stack" style="gap:18px;padding-top:60px">
+    <div class="zz edge" style="padding:34px 22px;display:grid;gap:14px">${ic("link", "")}<h1 class="display" style="font-size:calc(34px * var(--d-scale))">${t("linkChanged")}</h1><p>${t("linkChangedHelp")}</p></div>
+    <button class="btn wide ghost" data-act="go-landing">${t("backHome")}</button></div></div>`;
+}
+
+/* ================= views: trip shell ================= */
+function vTrip() {
+  const tr = trip();
+  const body = { spese: vSpese, saldi: vSaldi, grafici: vGrafici, viaggio: vViaggio }[S.tab]();
+  const tabs = [["spese", "receipt", t("tabSpese")], ["saldi", "scales", t("tabSaldi")], ["grafici", "chart-bar", t("tabGrafici")], ["viaggio", "suitcase-rolling", t("tabViaggio")]];
+  return `<header class="tripbar">
+      <button class="iconbtn" data-act="go-landing" aria-label="${t("backHome")}">${ic("caret-left")}</button>
+      <div class="grow"><h1 class="display">${esc(tr.name)}</h1><p>${esc(dRange(tr.from, tr.to))}</p></div>
+      <button class="me-chip" data-act="tab" data-v="viaggio" data-to="identity">${ic("users")}${esc(t("youAre", meName()))}</button>
+    </header>
+    <div class="sync">${S.offline ? ic("cloud-slash") + t("offlineQ", S.queue) : ic("cloud-check") + t("savedLocal")}</div>
+    ${readonly() ? `<div class="closedbar">${ic("lock")}<span class="grow">${t("closedBanner")}</span><button class="btn sm" data-act="reopen">${ic("lock-open")}${t("reopen")}</button></div>` : ""}
+    <main class="scroll" data-scroll="tab-${S.tab}">${body}</main>
+    ${S.tab === "spese" && !readonly() ? `<button class="fab" data-act="fab" aria-label="${t("newExpense")}">${ic("plus")}</button>` : ""}
+    <nav class="tabbar" aria-label="Quits">${tabs.map(([k, i, l]) => `<button data-act="tab" data-v="${k}" ${S.tab === k ? 'aria-current="page"' : ""}><span class="pill">${ic(i)}</span>${l}</button>`).join("")}</nav>
+    ${S.overlay ? vOverlay() : ""}
+    ${S.sheet ? vSheet() : ""}
+    ${S.settle ? vSettle() : ""}
+    ${S.pari ? vPari() : ""}`;
+}
+
+/* ---------- Spese: the roll of receipts ---------- */
+function vSpese() {
+  const tr = trip(), me = tr.me;
+  const exps = liveExps(tr);
+  const total = exps.reduce((a, e) => a + e.amount, 0);
+  const mine = exps.reduce((a, e) => a + (sharesOf(tr, e).shares[me] || 0), 0);
+  const q = S.q.trim().toLowerCase();
+  const items = [
+    ...exps.filter(e => !q || e.desc.toLowerCase().includes(q) || catOf(tr, e.cat).name.toLowerCase().includes(q)).map(e => ({ kind: "e", date: e.date, at: e.versions[0].at, x: e })),
+    ...(q ? [] : liveSets(tr).map(s => ({ kind: "s", date: s.date, at: s.date + "T23:59", x: s }))),
+  ].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : a.at < b.at ? 1 : -1));
+  const days = [];
+  items.forEach(it => { let d = days.find(d => d.date === it.date); if (!d) days.push((d = { date: it.date, items: [] })); d.items.push(it); });
+  const roll = days.map(d => {
+    const dayTotal = d.items.filter(i => i.kind === "e").reduce((a, i) => a + i.x.amount, 0);
+    return `<div class="day"><h3 class="display">${esc(dDay(d.date))}</h3><span class="num">${d.items.some(i => i.kind === "e") ? fmt(dayTotal) : ""}</span></div>
+      ${d.items.map(i => (i.kind === "e" ? rcItem(i.x) : tkItem(i.x))).join("")}`;
+  }).join("");
+  return `<div class="pad" style="padding-top:6px">
+    <div class="zz edge summary"><div><small>${t("spentSoFar")}</small><b class="num">${fmt(total)}</b></div><div><small>${t("yourPart")}</small><b class="num">${fmt(mine)}</b></div></div>
+    <div class="row" style="margin-top:14px"><div class="search grow">${ic("magnifying-glass")}<label class="sr" for="q">${t("searchPh")}</label><input id="q" class="input" data-in="q" value="${esc(S.q)}" placeholder="${t("searchPh")}" autocomplete="off"></div><button class="iconbtn" data-act="history" aria-label="${t("history")}" title="${t("history")}">${ic("clock-counter-clockwise")}</button></div>
+    ${exps.length === 0 ? `<div class="empty"><div class="zz edge" style="width:120px;height:90px;display:grid;place-items:center">${ic("receipt")}</div><b>${t("emptyRoll")}</b><p class="muted small">${t("emptyRollHelp")}</p></div>` : q && !items.length ? `<div class="empty"><p class="muted">${esc(t("noResults", S.q))}</p></div>` : `<div class="roll">${roll}</div>`}
+    <div style="height:70px"></div>
+  </div>`;
+}
+function rcItem(e) {
+  const tr = trip(), c = catOf(tr, e.cat), mine = sharesOf(tr, e).shares[tr.me];
+  const refund = e.amount < 0;
+  const p0 = nm(e.payers[0][0]);
+  const who = e.payers.length > 1 ? t("paidByMany", p0, e.payers.length - 1) : refund ? t("receivedBy", p0) : t("paidBy", p0);
+  return `<div class="edge"><button class="zz rc ${S.anim.print === e.id ? "print" : ""}" data-act="open-exp" data-id="${e.id}" style="--cat:var(--${c.color})">
+    <span class="cat-dot" aria-hidden="true">${c.emoji}</span>
+    <span style="min-width:0"><span class="rc-desc">${esc(e.desc)}</span><span class="rc-meta">${e.conflict ? ic("warning") : ""}${refund ? `<span class="tagline">${t("refund")}</span>` : ""}<span class="ell">${esc(who.charAt(0).toUpperCase() + who.slice(1))}</span></span></span>
+    <span class="rc-amt num"><b>${fmt(e.amount)}</b><small>${mine !== undefined ? esc(t("yourShare", fmt(mine))) : t("notYours")}</small></span>
+  </button></div>`;
+}
+function tkItem(s) {
+  return `<div class="ticket"><button class="tk" data-act="open-set" data-id="${s.id}">
+    <span class="cat-dot" aria-hidden="true">${ic("hand-coins")}</span>
+    <span style="min-width:0"><span class="rc-desc">${esc(t("settlementLine", nm(s.from), nm(s.to)))}</span><span class="rc-meta">${t("settlement")}</span></span>
+    <span class="rc-amt num"><b>${fmt(s.c)}</b></span></button></div>`;
+}
+
+/* ---------- Saldi + Totali ---------- */
+function vSaldi() {
+  const seg = `<div class="seg" style="margin:6px 0 4px">${[["saldi", t("balances")], ["totali", t("totals")]].map(([k, l]) => `<button data-act="saldi-view" data-v="${k}" aria-pressed="${S.saldiView === k}">${l}</button>`).join("")}</div>`;
+  return `<div class="pad stack" style="padding-top:6px">${seg}${S.saldiView === "saldi" ? vBalances() : vTotals()}</div>`;
+}
+function vBalances() {
+  const tr = trip(), b = balances(tr), me = tr.me, sug = suggest(tr);
+  const allZero = Object.values(b).every(v => v === 0);
+  const just = S.anim.closeEq || [];
+  const mineB = b[me];
+  const hero = mineB > 0 ? t("youGet", fmt(mineB)) : mineB < 0 ? t("youOwe", fmt(-mineB)) : t("youEven");
+  const cls = v => (v > 0 ? "amt-pos" : v < 0 ? "amt-neg" : "amt-zero");
+  const words = (id, v) => (v > 0 ? t("getsBack", fmt(v)) : v < 0 ? t("owes", fmt(-v)) : t("isEven"));
+  const eqFor = (id, v) => eqMark(`mono ${v !== 0 || just.includes(id) ? "open" : ""}`).replace('class="eq', `data-eq="${id}" style="color:var(--${v > 0 ? "pos" : v < 0 ? "neg" : "ink-2"});--w:22px;--h:4.5px" class="eq`);
+  const rows = tr.people.map(p => `<div class="bal-row">${avatar(p.id)}<div style="min-width:0"><b>${esc(p.name)}${p.id === me ? ` <span class="muted" style="font-weight:500">(${S.lang === "it" ? "tu" : "you"})</span>` : ""}</b><div class="words">${esc(words(p.id, b[p.id]))}</div></div><div class="row" style="gap:10px"><span class="num ${cls(b[p.id])}">${fmtS(b[p.id])}</span>${eqFor(p.id, b[p.id])}</div></div>`).join("");
+  return `
+    <div class="zz edge hero-bal">
+      ${allZero ? `<div class="stamp small" style="justify-self:start">${t("evenStamp")}</div>` : ""}
+      <h2 class="display">${esc(hero)}</h2>
+      <p class="num"><span class="muted">${esc(meName())}</span> <span class="${cls(mineB)}">${fmtS(mineB)}</span></p>
+    </div>
+    <div>${rows}</div>
+    <h2 class="display sec-title" style="margin-top:14px">${t("suggested")}</h2>
+    <p class="help">${t("suggestedHelp")}</p>
+    ${sug.length ? `<div class="stack" style="gap:8px">${sug.map(s => `<div class="ticket"><div class="tk"><span class="cat-dot" aria-hidden="true">${ic("hand-coins")}</span><span class="grow" style="min-width:0"><span class="rc-desc" style="white-space:normal">${esc(t("gives", nm(s.from), nm(s.to)))}</span><b class="num display" style="font-size:calc(22px * var(--d-scale))">${fmt(s.c)}</b></span>${readonly() ? "" : `<button class="btn sm ghost" data-act="settle-open" data-from="${s.from}" data-to="${s.to}" data-c="${s.c}">${t("record")}</button>`}</div></div>`).join("")}</div>
+      ${readonly() ? "" : `<button class="btn wide" data-act="settle-all">${t("recordAll")}</button>`}`
+      : `<div class="notice">${ic("check")}<div><b>${t("allEven")}</b><p>${t("allEvenHelp")}</p></div></div>`}
+    ${readonly() ? "" : `<button class="btn ghost wide" data-act="settle-new">${ic("hand-coins")}${t("recordOther")}</button>`}
+    <div style="height:10px"></div>`;
+}
+function vTotals() {
+  const tr = trip(), exps = liveExps(tr);
+  const total = exps.reduce((a, e) => a + e.amount, 0);
+  const days = tr.from && tr.to ? Math.round((new Date(tr.to) - new Date(tr.from)) / 864e5) + 1 : 1;
+  const heads = tr.dsplit.m === "shares" ? Object.values(tr.dsplit.w).reduce((a, b) => a + b, 0) : tr.people.length;
+  const paid = {}, due = {};
+  tr.people.forEach(p => { paid[p.id] = 0; due[p.id] = 0; });
+  exps.forEach(e => { e.payers.forEach(([id, c]) => (paid[id] += c)); const s = sharesOf(tr, e).shares; for (const id in s) due[id] += s[id]; });
+  const byCat = {};
+  exps.forEach(e => (byCat[e.cat] = (byCat[e.cat] || 0) + e.amount));
+  const cats = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
+  const max = Math.max(...cats.map(c => c[1]), 1);
+  return `
+    <div class="zz edge hero-bal"><small class="muted">${t("tripTotal")}</small><h2 class="display num">${fmt(total)}</h2>
+      <p class="muted small">${esc(t("perDay", fmt(Math.round(total / days)), days))}</p>
+      <p class="muted small">${esc(t("perHead", fmt(Math.round(total / days / heads))))}</p></div>
+    <h2 class="display sec-title">${t("paidVsDue")}</h2>
+    <div>${tr.people.map(p => `<div class="bal-row">${avatar(p.id)}<b style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.name)}</b><div class="num" style="text-align:right;font-size:14.5px"><div><span class="muted">${t("paid")}</span> <b>${fmt(paid[p.id])}</b></div><div><span class="muted">${t("due")}</span> <b>${fmt(due[p.id])}</b></div></div></div>`).join("")}</div>
+    <h2 class="display sec-title" style="margin-top:10px">${t("byCategory")}</h2>
+    <div class="stack" style="gap:12px">${cats.map(([id, v]) => { const c = catOf(tr, id); return `<div style="--cat:var(--${c.color})"><div class="row small"><span>${c.emoji}</span><b class="grow">${esc(c.name)}</b><span class="num">${fmt(v)}</span></div><div class="bar" style="width:${Math.max(2, (Math.max(v, 0) / max) * 100)}%;margin-top:6px"></div></div>`; }).join("")}</div>
+    <div style="height:10px"></div>`;
+}
+
+/* ---------- Grafici placeholder ---------- */
+function vGrafici() {
+  return `<div class="pad stack"><div class="zz edge" style="padding:30px 22px;display:grid;gap:12px">${ic("chart-bar")}<h2 class="display" style="font-size:calc(26px * var(--d-scale))">${t("chartsTitle")}</h2><p class="muted">${t("chartsHelp")}</p>
+    <ol style="margin:0;padding-left:22px;display:grid;gap:6px">${T[S.lang].charts.map(c => `<li>${c}</li>`).join("")}</ol></div></div>`;
+}
+
+/* ---------- Viaggio settings ---------- */
+function vViaggio() {
+  const tr = trip(), ro = readonly(), b = balances(tr);
+  const notEven = Object.values(b).filter(v => v !== 0).length;
+  const ed = S.editing;
+  const people = tr.people.map(p => {
+    if (ed && ed.type === "person" && ed.id === p.id) return `<form class="prow" onsubmit="return false"><label class="sr" for="ren-${p.id}">${t("rename")}</label><input id="ren-${p.id}" class="input grow" data-in="form" data-k="rename" value="${esc(S.form.rename ?? p.name)}"><button class="btn sm" data-act="rename-save" data-id="${p.id}">${t("renameSave")}</button></form>`;
+    const u = usage(tr, p.id);
+    return `<div class="prow">${avatar(p.id)}<div class="grow"><b>${esc(p.name)}</b>${tr.dsplit.m === "shares" ? ` <span class="muted small">${t("shares", tr.dsplit.w[p.id] ?? 1)}</span>` : ""}</div>
+      ${ro ? "" : `<button class="iconbtn" data-act="rename" data-id="${p.id}" aria-label="${t("rename")} ${esc(p.name)}">${ic("pencil-simple")}</button>${u ? "" : `<button class="iconbtn" data-act="rm-person" data-id="${p.id}" aria-label="${t("remove")} ${esc(p.name)}">${ic("trash")}</button>`}`}</div>`;
+  }).join("");
+  const dsum = tr.dsplit.m === "shares" ? t("defSharesSummary", tr.people.map(p => `${p.name} ${tr.dsplit.w[p.id] ?? 1}`).join(", ")) : t("defEqual");
+  return `<div class="pad" style="padding-top:2px">
+    <section class="setting" id="identity"><h3>${t("identity")}</h3><div class="row">${avatar(tr.me)}<b class="grow">${esc(t("youAre", meName()))}</b><button class="btn sm ghost" data-act="not-me">${t("notMe")}</button></div></section>
+    <section class="setting"><h3>${t("tripLink")}</h3><p class="help">${t("tripLinkHelp")}</p>
+      <div class="linkbox"><code>quits.simonepetta.com/v/#${tr.token}</code><button class="iconbtn" data-act="copy-link" aria-label="${t("copyLink")}">${ic("copy")}</button></div>
+      ${S.confirm === "regen" ? `<div class="notice">${ic("warning")}<div class="stack" style="gap:10px"><p>${t("regenQ")}</p><div class="row"><button class="btn sm" data-act="regen-yes">${t("regenYes")}</button><button class="btn sm ghost" data-act="confirm-cancel">${t("cancel")}</button></div></div></div>` : `<div class="row" style="flex-wrap:wrap"><button class="btn sm ghost" data-act="confirm" data-v="regen">${ic("arrows-clockwise")}${t("regen")}</button>${tr.oldToken ? `<button class="link small" data-act="see-old">${t("seeOld")}</button>` : ""}</div>`}</section>
+    <section class="setting"><h3>${t("participants")}</h3><div class="plist">${people}</div><p class="help">${t("removeRule")}</p>
+      ${ro ? "" : `<form class="row" onsubmit="return false"><label class="sr" for="np">${t("addName")}</label><input id="np" class="input grow" data-in="form" data-k="newPerson" value="${esc(S.form.newPerson || "")}" placeholder="${t("addName")}"><button class="btn sm ghost" style="min-height:48px" data-act="add-person">${ic("user-plus")}${t("add")}</button></form>`}</section>
+    <section class="setting"><h3>${t("defSplit")}</h3><p class="small">${esc(dsum)}</p><p class="help">${t("defSplitHelp")}</p>
+      ${ro ? "" : `<div class="seg">${[["equal", t("equalAll")], ["shares", t("byShares")]].map(([m, l]) => `<button data-act="ds-m" data-v="${m}" aria-pressed="${tr.dsplit.m === m}">${l}</button>`).join("")}</div>
+      ${tr.dsplit.m === "shares" ? `<div class="split-rows">${tr.people.map(p => `<div class="srow" style="grid-template-columns:minmax(0,1fr) 120px"><span class="name">${esc(p.name)}</span>${stepper("ds-w", p.id, tr.dsplit.w[p.id] ?? 1)}</div>`).join("")}</div>` : ""}`}</section>
+    <section class="setting"><h3>${t("categories")}</h3>
+      <p class="help">${t("stdCats")}</p><div class="chips">${STD.map(c => `<span class="chip"><span class="emo">${c.emoji}</span>${c[S.lang]}</span>`).join("")}</div>
+      <p class="help">${t("customCats")}</p>
+      <div class="plist">${tr.cats.map(c => ed && ed.type === "cat" && ed.id === c.id
+        ? `<form class="prow" onsubmit="return false"><label class="sr" for="cr-${c.id}">${t("rename")}</label><input id="cr-${c.id}" class="input grow" data-in="form" data-k="catRename" value="${esc(S.form.catRename ?? c.name)}"><button class="btn sm" data-act="cat-rename-save" data-id="${c.id}">${t("renameSave")}</button></form>`
+        : `<div class="prow"><span class="cat-dot" style="--cat:var(--${catOf(tr, c.id).color})">${c.emoji}</span><b class="grow">${esc(c.name)}</b>${ro ? "" : `<button class="iconbtn" data-act="cat-rename" data-id="${c.id}" aria-label="${t("rename")}">${ic("pencil-simple")}</button><button class="iconbtn" data-act="cat-del" data-id="${c.id}" aria-label="${t("del")}">${ic("trash")}</button>`}</div>`).join("")}</div>
+      ${ro ? "" : `<form class="row" onsubmit="return false"><label class="sr" for="ce">${t("catEmojiPh")}</label><input id="ce" class="input" style="width:70px;text-align:center" data-in="form" data-k="catEmoji" value="${esc(S.form.catEmoji || "")}" placeholder="🙂" maxlength="4"><label class="sr" for="cn">${t("catNamePh")}</label><input id="cn" class="input grow" data-in="form" data-k="catName" value="${esc(S.form.catName || "")}" placeholder="${t("catNamePh")}"><button class="btn sm ghost" style="min-height:48px" data-act="cat-add" aria-label="${t("addCat")}">${ic("plus")}</button></form>`}</section>
+    <section class="setting"><h3>${t("currency")}</h3><div class="row"><b>${tr.cur}</b><span class="help">${liveExps(tr).length ? t("currencyLocked") : t("currencyHelp")}</span></div></section>
+    <section class="setting"><h3>${t("exportL")}</h3><div class="row" style="flex-wrap:wrap"><button class="btn sm ghost" data-act="export">${ic("download-simple")}${t("exportCsv")}</button><button class="btn sm ghost" data-act="export">${ic("download-simple")}${t("exportJson")}</button></div></section>
+    <section class="setting"><h3>${t("history")}</h3><button class="btn sm ghost" data-act="history" style="justify-self:start">${ic("clock-counter-clockwise")}${t("seeHistory")}</button></section>
+    <section class="setting"><h3>${ro ? t("reopen") : t("closeTrip")}</h3><p class="help">${t("closeHelp")}</p>
+      ${ro ? `<button class="btn sm" data-act="reopen" style="justify-self:start">${ic("lock-open")}${t("reopen")}</button>`
+        : S.confirm === "close" ? `<div class="notice">${ic("warning")}<div class="stack" style="gap:10px"><p>${notEven ? t("closeWarn", notEven) : t("closeHelp")}</p><div class="row"><button class="btn sm" data-act="close-yes">${t("closeYes")}</button><button class="btn sm ghost" data-act="confirm-cancel">${t("cancel")}</button></div></div></div>`
+        : `<button class="btn sm ghost" data-act="confirm" data-v="close" style="justify-self:start">${ic("lock")}${t("closeTrip")}</button>`}</section>
+    <section class="setting"><h3>${t("deleteTrip")}</h3><p class="help">${t("deleteHelp")}</p>
+      ${S.confirm === "delete" ? `<div class="row"><button class="btn sm danger" data-act="delete-yes">${ic("trash")}${t("deleteYes")}</button><button class="btn sm ghost" data-act="confirm-cancel">${t("cancel")}</button></div>` : `<button class="btn sm ghost" data-act="confirm" data-v="delete" style="justify-self:start;color:var(--neg)">${ic("trash")}${t("deleteTrip")}</button>`}</section>
+  </div>`;
+}
+
+/* ---------- overlays: expense detail, settlement detail, history ---------- */
+function vOverlay() {
+  const o = S.overlay, anim = S.anim.push ? "push-in" : "";
+  const head = title => `<div class="tripbar"><button class="iconbtn" data-act="close-overlay" aria-label="${t("back")}">${ic("caret-left")}</button><h1 class="display grow">${title}</h1></div>`;
+  if (o.type === "history") return `<div class="overlay ${anim}">${head(t("histTitle"))}<div class="scroll" data-scroll="history"><div class="pad" style="padding-top:4px"><p class="help" style="margin-bottom:6px">${t("histHelp")}</p>${vHistory()}</div></div></div>`;
+  if (o.type === "exp") return `<div class="overlay ${anim}">${head(t("detail"))}<div class="scroll" data-scroll="detail"><div class="pad stack" style="padding-top:4px">${vDetail(o.id)}</div></div></div>`;
+  return "";
+}
+function splitLabel(e) {
+  const s = e.split, m = { equal: t("mEqualL"), exact: t("mExactL"), pct: t("mPctL"), shares: t("mSharesL") }[s.m];
+  return s.m === "equal" ? `${m} (${s.among.length})` : m;
+}
+function vDetail(id) {
+  const tr = trip(), e = tr.exps.find(x => x.id === id);
+  if (!e) return "";
+  const c = catOf(tr, e.cat), { shares, extra } = sharesOf(tr, e), refund = e.amount < 0, ro = readonly();
+  const inputOf = pid => e.split.m === "pct" ? `${e.split.p[pid] ?? 0}%` : e.split.m === "shares" ? t("shares", e.split.w[pid] ?? 0) : "";
+  const extraNames = [...new Set(extra)].map(x => nm(x));
+  const conflict = e.conflict ? (() => {
+    const k = e.conflict, mineIsMe = k.other === tr.me;
+    return `<div class="notice">${ic("warning")}<div class="stack" style="gap:10px">
+      <p><b>${esc(mineIsMe ? t("conflictMine", nm(k.by)) : t("conflictOther", nm(k.other), nm(k.by)))}</b> ${esc(t("conflictWin", nm(k.by)))}</p>
+      <div class="small" style="display:grid;gap:4px"><div><b>${mineIsMe ? t("yourVersion") : esc(t("otherVersion", nm(k.other)))}:</b> ${esc(k.mine.desc)}, <span class="num">${fmt(k.mine.amount)}</span>, ${esc(t("paidBy", k.mine.payers.map(p => nm(p[0])).join(" + ")))}</div>
+      <div><b>${esc(t("otherVersion", nm(k.by)))}:</b> ${esc(e.desc)}, <span class="num">${fmt(e.amount)}</span>, ${esc(e.payers.map(p => `${nm(p[0])} ${fmt(p[1])}`).join(" + "))}</div></div>
+      ${ro ? "" : `<div class="row" style="flex-wrap:wrap"><button class="btn sm" data-act="conflict-restore" data-id="${e.id}">${ic("arrow-u-up-left")}${mineIsMe ? t("restoreMine") : t("restoreOther")}</button><button class="btn sm ghost" data-act="conflict-ok" data-id="${e.id}">${t("keepIt")}</button></div>`}</div></div>`;
+  })() : "";
+  const versions = [...e.versions].map((v, i) => ({ v, i })).reverse();
+  return `${conflict}
+  <div class="edge"><article class="zz detail-receipt" style="--cat:var(--${c.color})">
+    <div class="row"><span class="cat-dot" aria-hidden="true">${c.emoji}</span><div class="grow"><h2 style="font-size:19px;line-height:1.25">${esc(e.desc)}</h2><p class="small muted">${esc(c.name)}, ${esc(dDay(e.date))}</p></div></div>
+    <div class="row" style="align-items:baseline">${refund ? `<span class="tagline">${t("refund")}</span>` : ""}<span class="display num grow" style="font-size:calc(40px * var(--d-scale));text-align:right">${fmt(e.amount)}</span></div>
+    <hr class="tear">
+    <b class="small">${refund ? t("receivers") : t("payers")}</b>
+    ${e.payers.map(([pid, cc]) => `<div class="drow"><span>${esc(nm(pid))}</span><span class="lead-dots"></span><span class="num">${fmt(cc)}</span></div>`).join("")}
+    <hr class="tear">
+    <b class="small">${t("splitL")}: ${esc(splitLabel(e))}</b>
+    ${tr.people.filter(p => shares[p.id] !== undefined).map(p => `<div class="drow"><span>${esc(p.name)} <span class="muted small">${esc(inputOf(p.id))}</span></span><span class="lead-dots"></span><span class="num">${fmt(shares[p.id])}${extra.includes(p.id) ? `<span class="cent">+${fmt(Math.sign(e.amount))}</span>` : ""}</span></div>`).join("")}
+    <hr class="tear">
+    <p class="small">${esc(t("leftoverNote", extra.length, listNames(extraNames)))}</p>
+    <p class="help">${t("leftoverRule")}</p>
+  </article></div>
+  ${ro ? "" : S.confirm === "del-" + e.id ? `<div class="notice">${ic("warning")}<div class="stack" style="gap:10px"><p>${t("delQ")}</p><div class="row"><button class="btn sm danger" data-act="del-yes" data-id="${e.id}">${t("delYes")}</button><button class="btn sm ghost" data-act="confirm-cancel">${t("cancel")}</button></div></div></div>`
+    : `<div class="row"><button class="btn grow" data-act="edit-exp" data-id="${e.id}">${ic("pencil-simple")}${t("edit")}</button><button class="btn ghost" data-act="confirm" data-v="del-${e.id}">${ic("trash")}${t("del")}</button></div>`}
+  <h2 class="display sec-title">${t("edits")}</h2>
+  <div>${versions.map(({ v, i }) => {
+    const prev = e.versions[i - 1];
+    const what = v.kind === "add" ? t("created") : v.kind === "restore" ? t("restored") : t("changed", listNames(diff(prev && prev.snap, v.snap).map(f => t("f_" + f))));
+    const isCurrent = i === e.versions.length - 1;
+    return `<div class="ver"><div><b>${esc(nm(v.by))}</b> <span class="small">${esc(what)}</span><div class="help num">${esc(dTime(v.at))}: ${fmt(v.snap.amount)}</div></div>${isCurrent ? `<span class="tiny muted">${t("current")}</span>` : ro ? "" : `<button class="btn sm ghost" data-act="restore-version" data-id="${e.id}" data-i="${i}">${t("restore")}</button>`}</div>`;
+  }).join("")}</div>`;
+}
+function diff(a, b) {
+  if (!a) return ["desc"];
+  return ["desc", "amount", "date", "cat", "payers", "split"].filter(f => JSON.stringify(a[f]) !== JSON.stringify(b[f]));
+}
+function vHistory() {
+  const tr = trip();
+  const ops = [...tr.ops].sort((a, b) => (a.at < b.at ? 1 : -1));
+  const expName = id => { const e = tr.exps.find(x => x.id === id); return e ? `"${e.desc}"` : ""; };
+  const setOf = id => tr.sets.find(x => x.id === id);
+  return ops.map(o => {
+    let txt = "", act = "";
+    const e = tr.exps.find(x => x.id === o.ref), s = setOf(o.ref);
+    switch (o.k) {
+      case "create": txt = t("h_create"); break;
+      case "person": txt = t("h_person", nm(o.ref)); break;
+      case "rename": txt = t("h_rename", o.from, o.to); break;
+      case "add": txt = t("h_add", expName(o.ref)); break;
+      case "edit": txt = e && e.conflict && o.by === e.conflict.by ? t("h_conflict", expName(o.ref)) : t("h_edit", expName(o.ref)); break;
+      case "del": txt = t("h_del", expName(o.ref)); if (e && e.deleted && !readonly()) act = `<button class="btn sm ghost" data-act="restore-exp" data-id="${e.id}">${ic("arrow-u-up-left")}${t("restore")}</button>`; break;
+      case "restore": txt = t("h_restore", expName(o.ref)); break;
+      case "set": txt = s ? t("h_set", fmt(s.c), nm(s.to)) : ""; break;
+      case "setdel": txt = s ? t("h_setdel", fmt(s.c), nm(s.to)) : ""; if (s && s.deleted && !readonly()) act = `<button class="btn sm ghost" data-act="restore-set" data-id="${s.id}">${ic("arrow-u-up-left")}${t("restore")}</button>`; break;
+      case "setrestore": txt = s ? t("h_setrestore", fmt(s.c), nm(s.to)) : ""; break;
+      case "regen": txt = t("h_regen"); break;
+      case "close": txt = t("h_close"); break;
+      case "reopen": txt = t("h_reopen"); break;
+      case "cat": txt = t("h_cat", o.name); break;
+      case "catdel": txt = t("h_catdel", o.name); break;
+      case "dsplit": txt = t("h_dsplit"); break;
+    }
+    return `<div class="hist-row">${avatar(o.by)}<div class="stack" style="gap:6px"><p><b>${esc(nm(o.by))}</b> ${esc(txt)}</p><time class="num">${esc(dTime(o.at))}</time>${act ? `<div>${act}</div>` : ""}</div></div>`;
+  }).join("");
+}
+
+/* ---------- add/edit expense sheet ---------- */
+function draftFrom(e) {
+  const tr = trip(), ids = tr.people.map(p => p.id);
+  if (!e) {
+    const d = tr.dsplit;
+    return { id: null, kind: "expense", desc: "", amountStr: "", date: TODAY, cat: "altro", multi: false, payer: tr.me, payStr: {},
+      m: d.m === "shares" ? "shares" : "equal", among: [...ids], w: d.m === "shares" ? { ...d.w } : Object.fromEntries(ids.map(i => [i, 1])), exactStr: {}, pctStr: {}, fromDefault: true };
+  }
+  const s = e.split, refund = e.amount < 0;
+  return {
+    id: e.id, kind: refund ? "refund" : "expense", desc: e.desc, amountStr: toInput(e.amount), date: e.date, cat: e.cat,
+    multi: e.payers.length > 1, payer: e.payers[0][0], payStr: Object.fromEntries(e.payers.map(([id, c]) => [id, toInput(c)])),
+    m: s.m, among: s.m === "equal" ? [...s.among] : [...ids], w: s.m === "shares" ? { ...s.w } : Object.fromEntries(ids.map(i => [i, 1])),
+    exactStr: s.m === "exact" ? Object.fromEntries(Object.entries(s.a).map(([k, v]) => [k, toInput(v)])) : {},
+    pctStr: s.m === "pct" ? Object.fromEntries(Object.entries(s.p).map(([k, v]) => [k, String(v).replace(".", S.lang === "it" ? "," : ".")])) : {}, fromDefault: false,
+  };
+}
+// Turns the draft into an expense snapshot plus validation messages.
+function evalDraft(d) {
+  const tr = trip(), ids = tr.people.map(p => p.id), errs = [];
+  const sign = d.kind === "refund" ? -1 : 1;
+  const A = parseAmt(d.amountStr);
+  if (!d.desc.trim()) errs.push(["desc", t("vDesc")]);
+  const amtOk = Number.isFinite(A) && A > 0;
+  if (!amtOk) errs.push(["amount", t("vAmount")]);
+  let payers;
+  if (!d.multi) payers = [[d.payer, sign * (amtOk ? A : 0)]];
+  else {
+    payers = ids.map(id => [id, parseAmt(d.payStr[id])]).filter(([, c]) => Number.isFinite(c) && c > 0).map(([id, c]) => [id, sign * c]);
+    const sum = payers.reduce((a, p) => a + Math.abs(p[1]), 0);
+    if (amtOk && sum < A) errs.push(["pay", t("vPayMissing", fmt(A - sum))]);
+    if (amtOk && sum > A) errs.push(["pay", t("vPayOver", fmt(sum - A))]);
+    d._paySum = sum;
+  }
+  let split, info = "";
+  if (d.m === "equal") { split = { m: "equal", among: ids.filter(i => d.among.includes(i)) }; if (!split.among.length) errs.push(["split", t("vNobody")]); }
+  if (d.m === "shares") { split = { m: "shares", w: Object.fromEntries(ids.map(i => [i, d.w[i] || 0]).filter(([, v]) => v > 0)) }; const n = Object.values(split.w).reduce((a, b) => a + b, 0); info = t("sharesSum", n); if (!n) errs.push(["split", t("vShares")]); }
+  if (d.m === "exact") {
+    const a = Object.fromEntries(ids.map(i => [i, parseAmt(d.exactStr[i])]).filter(([, v]) => Number.isFinite(v) && v > 0));
+    split = { m: "exact", a }; const sum = Object.values(a).reduce((x, y) => x + y, 0);
+    if (amtOk && sum < A) errs.push(["split", t("vExactMissing", fmt(A - sum))]); else if (amtOk && sum > A) errs.push(["split", t("vExactOver", fmt(sum - A))]); else if (amtOk) info = t("okSum");
+  }
+  if (d.m === "pct") {
+    const p = Object.fromEntries(ids.map(i => [i, parseFloat(String(d.pctStr[i] ?? "").replace(",", "."))]).filter(([, v]) => Number.isFinite(v) && v > 0));
+    split = { m: "pct", p }; const sum = Math.round(Object.values(p).reduce((x, y) => x + y, 0) * 100) / 100;
+    if (Math.round(sum * 100) !== 10000) errs.push(["split", t("vPct", String(sum).replace(".", S.lang === "it" ? "," : "."))]); else info = t("pctSum", 100);
+  }
+  const snapX = { desc: d.desc.trim(), amount: sign * (amtOk ? A : 0), date: d.date || TODAY, cat: d.cat, payers, split };
+  const res = amtOk && !errs.some(x => x[0] === "split") ? sharesOf(tr, snapX) : null;
+  return { snap: snapX, errs, res, info };
+}
+function vSheet() {
+  const d = S.sheet.d, tr = trip(), refund = d.kind === "refund";
+  const kinds = `<div class="seg">${[["expense", t("kExpense")], ["refund", t("kRefund")]].map(([k, l]) => `<button data-act="d-kind" data-v="${k}" aria-pressed="${d.kind === k}">${l}</button>`).join("")}</div>`;
+  const cats = allCats(tr).map(id => { const c = catOf(tr, id); return `<button class="chip" data-act="d-cat" data-v="${id}" aria-pressed="${d.cat === id}"><span class="emo">${c.emoji}</span>${esc(c.name)}</button>`; }).join("");
+  const payers = d.multi
+    ? `<div class="split-rows">${tr.people.map(p => `<div class="srow" style="grid-template-columns:minmax(0,1fr) 130px"><label class="name" for="pay-${p.id}">${esc(p.name)}</label><input id="pay-${p.id}" class="input num" inputmode="decimal" data-in="d-pay" data-id="${p.id}" value="${esc(d.payStr[p.id] || "")}" placeholder="0"></div>`).join("")}</div><p class="help num" data-out="pay-sum"></p>`
+    : `<div class="chips">${tr.people.map(p => `<button class="chip" data-act="d-payer" data-v="${p.id}" aria-pressed="${d.payer === p.id}">${esc(p.name)}</button>`).join("")}</div>`;
+  const methods = `<div class="seg">${[["equal", t("mEqual")], ["exact", t("mExact")], ["pct", t("mPct")], ["shares", t("mShares")]].map(([m, l]) => `<button data-act="d-m" data-v="${m}" aria-pressed="${d.m === m}">${l}</button>`).join("")}</div>`;
+  const ctrl = p => {
+    if (d.m === "equal") return `<button class="check" data-act="d-among" data-v="${p.id}" aria-pressed="${d.among.includes(p.id)}" aria-label="${esc(p.name)}">${ic("check")}</button>`;
+    if (d.m === "shares") return stepper("d-w", p.id, d.w[p.id] || 0);
+    if (d.m === "exact") return `<input id="ex-${p.id}" class="input num" inputmode="decimal" data-in="d-exact" data-id="${p.id}" value="${esc(d.exactStr[p.id] || "")}" placeholder="0" aria-label="${esc(p.name)}">`;
+    return `<input id="pc-${p.id}" class="input num" inputmode="decimal" data-in="d-pct" data-id="${p.id}" value="${esc(d.pctStr[p.id] || "")}" placeholder="0 %" aria-label="${esc(p.name)} %">`;
+  };
+  const rows = tr.people.map(p => `<div class="srow"><span class="name">${esc(p.name)}</span><div style="display:flex;justify-content:${d.m === "equal" ? "flex-end" : "stretch"}">${ctrl(p)}</div><span class="res num" data-res="${p.id}"></span></div>`).join("");
+  return `<div class="scrim ${S.anim.sheet ? "fade-in" : ""}" data-act="sheet-scrim"><div class="sheet ${S.anim.sheet ? "rise" : ""}" role="dialog" aria-modal="true" aria-label="${d.id ? t("editExpense") : t("newExpense")}">
+    <div class="grabber"></div>
+    <div class="sheet-head"><h2 class="display">${d.id ? t("editExpense") : t("newExpense")}</h2><button class="iconbtn" data-act="sheet-close" aria-label="${t("close")}">${ic("x")}</button></div>
+    <div class="scroll" data-scroll="sheet"><div class="pad stack" style="gap:20px;padding-top:6px">
+      ${kinds}${refund ? `<p class="help" style="margin-top:-10px">${t("refundHelp")}</p>` : ""}
+      <label class="field"><span>${refund ? t("whatRefund") : t("what")}</span><input id="d-desc" class="input" data-in="d-desc" value="${esc(d.desc)}" placeholder="${t("whatPh")}"></label>
+      <div class="field"><label for="d-amt" style="font-size:14px;font-weight:600">${t("amount")}</label><div class="amount-in">${refund ? `<span>-</span>` : ""}<input id="d-amt" class="num" inputmode="decimal" data-in="d-amt" value="${esc(d.amountStr)}" placeholder="${S.lang === "it" ? "0,00" : "0.00"}"><span>${tr.cur}</span></div></div>
+      <label class="field"><span>${t("date")}</span><input id="d-date" type="date" class="input" data-in="d-date" value="${d.date}"></label>
+      <div class="field"><span>${t("category")}</span><div class="chips scrollx">${cats}</div></div>
+      <div class="field"><span>${refund ? t("receivedByL") : t("paidByL")}</span>${payers}<button class="link small" style="justify-self:start" data-act="d-multi">${d.multi ? t("onePaid") : t("manyPaid")}</button></div>
+      <div class="field"><span>${t("split")}</span>${methods}${d.fromDefault && d.m === "shares" ? `<small class="help">${t("fromDefault")}</small>` : ""}
+        ${d.m === "equal" ? `<div class="row" style="justify-content:flex-end"><button class="link small" data-act="d-all">${t("everyone")}</button></div>` : ""}
+        <div class="split-rows">${rows}</div><p class="help" data-out="split-info"></p><p class="small" data-out="leftover"></p></div>
+    </div></div>
+    <div class="sheet-foot"><div data-out="errs"></div><button class="btn wide" data-act="d-save">${d.id ? t("saveEdit") : t("save")}</button></div>
+  </div></div>`;
+}
+// Updates only the computed parts of the sheet, so typing never loses focus.
+function sheetDerived() {
+  if (!S.sheet) return;
+  const d = S.sheet.d, { errs, res, info } = evalDraft(d), app = document.getElementById("app");
+  const q = k => app.querySelector(`[data-out="${k}"]`);
+  trip().people.forEach(p => {
+    const el = app.querySelector(`[data-res="${p.id}"]`); if (!el) return;
+    const v = res && res.shares[p.id];
+    el.innerHTML = res && v !== undefined ? `${fmt(v)}${res.extra.includes(p.id) ? `<small>+${fmt(d.kind === "refund" ? -1 : 1)}</small>` : ""}` : `<span class="muted">-</span>`;
+  });
+  if (q("split-info")) q("split-info").textContent = info;
+  if (q("leftover")) q("leftover").textContent = res ? t("leftoverNote", res.extra.length, listNames([...new Set(res.extra)].map(x => nm(x)))) : "";
+  if (q("pay-sum")) { const A = parseAmt(d.amountStr); const sum = d._paySum || 0; q("pay-sum").textContent = Number.isFinite(A) && A > 0 && sum !== A ? (sum < A ? t("remaining", fmt(A - sum)) : t("vPayOver", fmt(sum - A))) : Number.isFinite(A) && A > 0 ? t("okSum") : ""; }
+  const shown = S.sheet.tried ? errs : errs.filter(e => e[0] === "split" || e[0] === "pay");
+  q("errs").innerHTML = shown.map(e => `<p class="err">${ic("warning")}${esc(e[1])}</p>`).join("");
+}
+
+/* ---------- settlement form / detail ---------- */
+function vSettle() {
+  const st = S.settle, tr = trip();
+  if (st.view) {
+    const s = tr.sets.find(x => x.id === st.view);
+    return `<div class="scrim ${S.anim.sheet ? "fade-in" : ""}" data-act="settle-scrim"><div class="sheet ${S.anim.sheet ? "rise" : ""}" role="dialog" aria-modal="true" aria-label="${t("settlementDetail")}"><div class="grabber"></div>
+      <div class="sheet-head"><h2 class="display">${t("settlementDetail")}</h2><button class="iconbtn" data-act="settle-close" aria-label="${t("close")}">${ic("x")}</button></div>
+      <div class="pad stack"><div class="ticket"><div class="tk"><span class="cat-dot">${ic("hand-coins")}</span><span class="grow"><b>${esc(t("settlementLine", nm(s.from), nm(s.to)))}</b><span class="rc-meta">${esc(dDay(s.date))}</span></span><b class="num">${fmt(s.c)}</b></div></div>
+      ${readonly() ? "" : `<button class="btn ghost wide" data-act="del-set" data-id="${s.id}" style="color:var(--neg)">${ic("trash")}${t("delSettlement")}</button>`}</div>
+      <div style="height:16px"></div></div></div>`;
+  }
+  const opts = sel => tr.people.map(p => `<option value="${p.id}" ${sel === p.id ? "selected" : ""}>${esc(p.name)}</option>`).join("");
+  const c = parseAmt(st.amountStr);
+  const dup = liveSets(tr).some(s => s.from === st.from && s.to === st.to && s.c === c && s.date === st.date);
+  return `<div class="scrim ${S.anim.sheet ? "fade-in" : ""}" data-act="settle-scrim"><div class="sheet ${S.anim.sheet ? "rise" : ""}" role="dialog" aria-modal="true" aria-label="${t("newSettlement")}"><div class="grabber"></div>
+    <div class="sheet-head"><h2 class="display">${t("newSettlement")}</h2><button class="iconbtn" data-act="settle-close" aria-label="${t("close")}">${ic("x")}</button></div>
+    <div class="scroll"><div class="pad stack" style="gap:18px;padding-top:6px">
+      <div class="row"><label class="field grow"><span>${t("fromL")}</span><select id="st-from" class="select" data-in="st-from">${opts(st.from)}</select></label><label class="field grow"><span>${t("toL")}</span><select id="st-to" class="select" data-in="st-to">${opts(st.to)}</select></label></div>
+      <div class="field"><label for="st-amt" style="font-size:14px;font-weight:600">${t("amount")}</label><div class="amount-in"><input id="st-amt" class="num" inputmode="decimal" data-in="st-amt" value="${esc(st.amountStr)}"><span>${tr.cur}</span></div><small class="help">${t("settleHelp")}</small></div>
+      <label class="field"><span>${t("date")}</span><input id="st-date" type="date" class="input" data-in="st-date" value="${st.date}"></label>
+      <div data-out="st-warn">${st.from === st.to ? `<p class="err">${ic("warning")}${t("samePerson")}</p>` : dup ? `<div class="notice">${ic("warning")}<p>${t("dupWarn")}</p></div>` : ""}</div>
+    </div></div>
+    <div class="sheet-foot"><button class="btn wide" data-act="settle-save" ${st.from === st.to || !(c > 0) ? "disabled" : ""}>${t("record")}</button></div></div></div>`;
+}
+
+/* ---------- "tutti pari" ---------- */
+function vPari() {
+  return `<div class="pari" role="dialog" aria-modal="true" aria-label="${t("evenTitle")}"><canvas id="confetti"></canvas>
+    <div class="edge"><div class="zz pari-ticket"><div class="stamp ${S.anim.pari ? "thunk" : ""}">${t("evenStamp")}</div><h2 class="display" style="font-size:calc(28px * var(--d-scale));margin-top:10px">${t("evenTitle")}</h2><p class="muted">${t("evenHelp")}</p><button class="btn" data-act="pari-close">${t("nice")}</button></div></div></div>`;
+}
+function confetti() {
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const cv = document.getElementById("confetti"); if (!cv) return;
+  const r = cv.getBoundingClientRect(), dpr = devicePixelRatio || 1;
+  cv.width = r.width * dpr; cv.height = r.height * dpr;
+  const g = cv.getContext("2d"); g.scale(dpr, dpr);
+  const cs = getComputedStyle(document.documentElement);
+  const cols = ["--coral", "--sun", "--pool", "--leaf", "--sea"].map(k => cs.getPropertyValue(k).trim());
+  const bits = Array.from({ length: 90 }, (_, i) => ({ x: r.width / 2, y: r.height * 0.42, vx: (Math.random() - 0.5) * 9, vy: -Math.random() * 9 - 3, w: 6 + Math.random() * 6, h: 4 + Math.random() * 8, a: Math.random() * 6, va: (Math.random() - 0.5) * 0.4, c: cols[i % cols.length] }));
+  const t0 = performance.now();
+  (function frame(now) {
+    const k = (now - t0) / 1600; g.clearRect(0, 0, r.width, r.height);
+    if (k >= 1) return;
+    bits.forEach(b => { b.vy += 0.28; b.vx *= 0.99; b.x += b.vx; b.y += b.vy; b.a += b.va; g.save(); g.globalAlpha = 1 - k * k; g.translate(b.x, b.y); g.rotate(b.a); g.fillStyle = b.c; g.fillRect(-b.w / 2, -b.h / 2, b.w, b.h); g.restore(); });
+    requestAnimationFrame(frame);
+  })(t0);
+}
+
+/* ================= prototype control panel ================= */
+const VARIANTS = [
+  { id: "ombrellone", name: "Ombrellone", it: "Corallo davanti, sole e piscina di contorno. Bricolage Grotesque + Figtree.", en: "Coral up front, sun and pool around it. Bricolage Grotesque + Figtree.", sw: ["#F0644C", "#FFC53D", "#2EA3D6"] },
+  { id: "piscina", name: "Piscina", it: "Azzurro piscina davanti, forme tonde e gommose. Bagel Fat One + Onest.", en: "Pool blue up front, round and squishy. Bagel Fat One + Onest.", sw: ["#1F9FD6", "#FFD04A", "#FF6B57"] },
+  { id: "saluti", name: "Saluti da", it: "Cartolina stampata a due inchiostri su carta manila. Bowlby One + Atkinson Hyperlegible Next.", en: "A postcard printed in two inks on manila paper. Bowlby One + Atkinson Hyperlegible Next.", sw: ["#2443A0", "#F6B826", "#E95A3F"] },
+];
+const TOKEN_KEYS = ["--paper", "--receipt", "--ink", "--ink-2", "--lead", "--hi", "--coral", "--sun", "--pool", "--leaf", "--pos", "--neg"];
+function renderProto() {
+  const el = document.getElementById("proto");
+  const v = VARIANTS.find(x => x.id === S.variant);
+  const cs = getComputedStyle(document.documentElement);
+  const themeName = { system: t("system"), light: t("light"), dark: t("dark") }[S.theme];
+  const jumps = [["landing", "j_landing"], ["create", "j_create"], ["link", "j_link"], ["spese", "j_spese"], ["add", "j_add"], ["conflict", "j_conflict"], ["cent", "j_cent"], ["saldi", "j_saldi"], ["totali", "j_totali"], ["charts", "j_charts"], ["history", "j_history"], ["viaggio", "j_viaggio"], ["old", "j_old"]];
+  el.innerHTML = `<summary class="proto-head">${eqMark("open")}<b class="grow">${t("protoTitle")}</b><span class="small muted">${v.name}, ${themeName}</span></summary>
+  <div class="proto-body">
+    <p>${t("protoNote")}</p>
+    <div><h2>${t("variant")}</h2><div class="vlist">${VARIANTS.map(x => `<button class="vopt" data-act="variant" data-v="${x.id}" aria-pressed="${S.variant === x.id}"><span class="sw">${x.sw.map(c => `<i style="background:${c}"></i>`).join("")}</span><b>${x.name}</b><small>${x[S.lang]}</small></button>`).join("")}</div></div>
+    <div><h2>${t("theme")}</h2><div class="seg">${["system", "light", "dark"].map(k => `<button data-act="theme" data-v="${k}" aria-pressed="${S.theme === k}">${t(k)}</button>`).join("")}</div></div>
+    <div><h2>${t("lang")}</h2><div class="seg">${["it", "en"].map(l => `<button data-act="lang" data-v="${l}" aria-pressed="${S.lang === l}">${l === "it" ? "Italiano" : "English"}</button>`).join("")}</div></div>
+    <div><h2>${t("goto")}</h2><div class="jump">${jumps.map(([k, l]) => `<button data-act="jump" data-v="${k}">${t(l)}</button>`).join("")}<button data-act="offline">${S.offline ? t("simOnline") : t("simOffline")}</button><button data-act="reset">${t("reset")}</button></div></div>
+    <div><h2>${t("palette")}</h2><div class="tokens">${TOKEN_KEYS.map(k => { const val = cs.getPropertyValue(k).trim(); return `<span><i style="background:${val}"></i><code>${k.slice(2)} ${val}</code></span>`; }).join("")}</div>
+      <p class="fontline" style="margin-top:8px">${t("fonts")}: ${esc(cs.getPropertyValue("--f-display").split(",")[0].replace(/"/g, ""))} + ${esc(cs.getPropertyValue("--f-text").split(",")[0].replace(/"/g, ""))}</p></div>
+  </div>`;
+}
+
+/* ================= render ================= */
+function render() {
+  const app = document.getElementById("app");
+  const keep = {};
+  app.querySelectorAll("[data-scroll]").forEach(el => (keep[el.dataset.scroll] = el.scrollTop));
+  const focusId = document.activeElement && app.contains(document.activeElement) ? document.activeElement.id : null;
+  document.documentElement.lang = S.lang;
+  const view = { landing: vLanding, create: vCreate, ready: vReady, who: vWho, linkchanged: vLinkChanged, trip: vTrip }[S.screen];
+  app.innerHTML = view() + (S.toast ? `<div class="toast" role="status"><span>${esc(S.toast.text)}</span>${S.toast.undo ? `<button data-act="toast-undo">${t("undo")}</button>` : ""}</div>` : "");
+  app.querySelectorAll("[data-scroll]").forEach(el => { const k = el.dataset.scroll; if (k in keep && !(S.anim.top && k.startsWith("tab-"))) el.scrollTop = keep[k]; });
+  if (focusId) { const f = document.getElementById(focusId); if (f) { f.focus({ preventScroll: true }); if (f.setSelectionRange && f.type !== "date" && f.type !== "number") try { const n = f.value.length; f.setSelectionRange(n, n); } catch (_) {} } }
+  if (S.sheet) sheetDerived();
+  if (S.anim.pari) requestAnimationFrame(confetti);
+  if (S.anim.closeEq) { const ids = S.anim.closeEq; requestAnimationFrame(() => requestAnimationFrame(() => ids.forEach(id => { const el = app.querySelector(`[data-eq="${id}"]`); if (el) el.classList.remove("open"); }))); }
+  if (S.anim.print) setTimeout(() => { const el = app.querySelector(".print"); if (el) el.classList.remove("print"); }, 1000);
+  S.anim = {};
+  renderProto();
+}
+function applyLook() {
+  const r = document.documentElement;
+  r.dataset.variant = S.variant;
+  if (S.theme === "system") delete r.dataset.theme; else r.dataset.theme = S.theme;
+  try { localStorage.setItem("quits-proto", JSON.stringify({ variant: S.variant, theme: S.theme, lang: S.lang })); } catch (_) {}
+}
+
+/* ================= actions ================= */
+function openSheet(e) { S.sheet = { d: draftFrom(e), tried: false }; S.anim.sheet = true; }
+function closeEqAfter(before) { const after = balances(trip()); S.anim.closeEq = Object.keys(after).filter(id => after[id] === 0 && before[id] !== 0); }
+function recordSettlement(from, to, c, date) {
+  const tr = trip(), id = "s" + Date.now() + Math.random().toString(36).slice(2, 5);
+  tr.sets.push({ id, from, to, c, date, deleted: false }); op({ k: "set", ref: id }); return id;
+}
+function checkPari(before) {
+  const b = balances(trip()); const wasAll = Object.values(before).every(v => v === 0);
+  if (!wasAll && Object.values(b).every(v => v === 0)) { S.pari = true; S.anim.pari = true; }
+}
+function jump(v) {
+  S.toast = null; S.overlay = null; S.sheet = null; S.settle = null; S.confirm = null; S.pari = false;
+  const toTrip = (tab, extra) => { S.tripId = "sar"; S.screen = "trip"; S.tab = tab; if (!trip().me) trip().me = "p1"; extra && extra(); };
+  ({
+    landing: () => (S.screen = "landing"),
+    create: () => { S.creator = true; A["create-start"](); },
+    link: () => { S.tripId = "sar"; trip().me = null; S.screen = "who"; },
+    spese: () => toTrip("spese"),
+    add: () => toTrip("spese", () => openSheet(null)),
+    conflict: () => toTrip("spese", () => { S.overlay = { type: "exp", id: "e4" }; S.anim.push = true; }),
+    cent: () => toTrip("spese", () => { S.overlay = { type: "exp", id: "e14" }; S.anim.push = true; }),
+    saldi: () => toTrip("saldi", () => (S.saldiView = "saldi")),
+    totali: () => toTrip("saldi", () => (S.saldiView = "totali")),
+    charts: () => toTrip("grafici"),
+    history: () => toTrip("spese", () => { S.overlay = { type: "history" }; S.anim.push = true; }),
+    viaggio: () => toTrip("viaggio"),
+    old: () => (S.screen = "linkchanged"),
+  })[v]();
+}
+const SKIP = Symbol("skip render");
+const A = {
+  variant: el => { S.variant = el.dataset.v; applyLook(); },
+  theme: el => { S.theme = el.dataset.v; applyLook(); },
+  lang: el => { S.lang = el.dataset.v; applyLook(); if (S.sheet) S.sheet.d = { ...S.sheet.d }; },
+  jump: el => jump(el.dataset.v),
+  offline: () => { S.offline = !S.offline; if (!S.offline) S.queue = 0; },
+  reset: () => { const keep = { lang: S.lang, variant: S.variant, theme: S.theme }; Object.assign(S, { screen: "landing", tripId: "sar", tab: "spese", saldiView: "saldi", overlay: null, sheet: null, settle: null, toast: null, confirm: null, pari: false, creator: false, codeErr: false, code: "", offline: false, queue: 0, q: "", create: null, editing: null, form: {}, trips: seed() }, keep); },
+  "go-landing": () => { S.screen = "landing"; S.overlay = null; },
+  "open-trip": el => { S.tripId = el.dataset.id; S.screen = trip().me ? "trip" : "who"; S.tab = "spese"; S.q = ""; S.confirm = null; S.anim.top = true; },
+  code: () => { if (S.code.trim().length >= 6) { S.creator = true; S.codeErr = false; } else S.codeErr = true; },
+  "create-start": () => { S.create = { name: "", cur: "EUR", from: "", to: "", people: [], newName: "", dm: "equal", w: [], tried: false }; S.screen = "create"; },
+  "c-add": () => { const c = S.create, n = c.newName.trim(); if (!n || c.people.some(p => p.toLowerCase() === n.toLowerCase())) return; c.people.push(n); c.w.push(1); c.newName = ""; setTimeout(() => document.getElementById("c-new")?.focus()); },
+  "c-rm": el => { const i = +el.dataset.i; S.create.people.splice(i, 1); S.create.w.splice(i, 1); },
+  "c-dm": el => (S.create.dm = el.dataset.v),
+  "c-submit": () => {
+    const c = S.create; c.tried = true;
+    if (c.newName.trim()) A["c-add"]();
+    if (!c.name.trim() || c.people.length < 2) return;
+    const id = "t" + Date.now(), people = c.people.map((n, i) => P(id + "p" + i, n));
+    const tok = Array.from({ length: 22 }, () => "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0123456789"[Math.floor(Math.random() * 58)]).join("");
+    S.trips.unshift({ id, name: c.name.trim(), cur: c.cur, from: c.from, to: c.to, status: "open", deleted: null, token: tok, me: people[0].id, people,
+      dsplit: c.dm === "shares" ? { m: "shares", w: Object.fromEntries(people.map((p, i) => [p.id, c.w[i] ?? 1])) } : { m: "equal" }, cats: [], exps: [], sets: [],
+      ops: [{ at: nowAt(), by: people[0].id, k: "create" }, ...people.slice(1).map(p => ({ at: nowAt(), by: people[0].id, k: "person", ref: p.id }))] });
+    S.tripId = id; S.screen = "ready";
+  },
+  "ready-open": () => { S.screen = "trip"; S.tab = "spese"; },
+  "copy-link": () => { const txt = `https://quits.simonepetta.com/v/#${trip().token}`; try { navigator.clipboard.writeText(txt).catch(() => {}); } catch (_) {} toast(t("copied")); },
+  "pick-me": el => { trip().me = el.dataset.id; S.screen = "trip"; S.tab = "spese"; S.form = {}; },
+  "form-flag": el => { S.form[el.dataset.k] = true; setTimeout(() => document.getElementById("me-new")?.focus()); },
+  "add-me": () => { const n = (S.form.meName || "").trim(); if (!n) return; const tr = trip(); const id = "p" + Date.now(); tr.people.push(P(id, n)); if (tr.dsplit.m === "shares") tr.dsplit.w[id] = 1; tr.me = id; op({ k: "person", ref: id }); S.form = {}; S.screen = "trip"; S.tab = "spese"; },
+  "not-me": () => { trip().me = null; S.screen = "who"; S.form = {}; },
+  tab: el => { S.tab = el.dataset.v; S.overlay = null; S.confirm = null; S.anim.top = true; if (el.dataset.to) setTimeout(() => document.getElementById(el.dataset.to)?.scrollIntoView({ block: "start" })); },
+  "saldi-view": el => (S.saldiView = el.dataset.v),
+  history: () => { S.overlay = { type: "history" }; S.anim.push = true; },
+  "close-overlay": () => { S.overlay = null; S.confirm = null; },
+  "open-exp": el => { S.overlay = { type: "exp", id: el.dataset.id }; S.anim.push = true; S.confirm = null; },
+  "open-set": el => { S.settle = { view: el.dataset.id }; S.anim.sheet = true; },
+  fab: () => openSheet(null),
+  "edit-exp": el => openSheet(trip().exps.find(e => e.id === el.dataset.id)),
+  "sheet-close": () => (S.sheet = null),
+  "sheet-scrim": () => { S.sheet = null; },
+  "d-kind": el => (S.sheet.d.kind = el.dataset.v),
+  "d-cat": el => (S.sheet.d.cat = el.dataset.v),
+  "d-payer": el => (S.sheet.d.payer = el.dataset.v),
+  "d-multi": () => { const d = S.sheet.d; d.multi = !d.multi; if (d.multi && !Object.keys(d.payStr).length) d.payStr = { [d.payer]: d.amountStr }; },
+  "d-m": el => { const d = S.sheet.d; d.m = el.dataset.v; d.fromDefault = false; },
+  "d-among": el => { const d = S.sheet.d, id = el.dataset.v; d.among = d.among.includes(id) ? d.among.filter(x => x !== id) : [...d.among, id]; },
+  "d-all": () => { const d = S.sheet.d, ids = trip().people.map(p => p.id); d.among = d.among.length === ids.length ? [] : [...ids]; },
+  step: el => {
+    const k = el.dataset.k, id = el.dataset.id, dd = +el.dataset.d;
+    if (k === "d-w") { const d = S.sheet.d; d.w[id] = Math.max(0, (d.w[id] || 0) + dd); d.fromDefault = false; }
+    if (k === "c-w") { const c = S.create; c.w[id] = Math.max(1, (c.w[id] ?? 1) + dd); }
+    if (k === "ds-w") { const tr = trip(); tr.dsplit.w[id] = Math.max(0, (tr.dsplit.w[id] ?? 1) + dd); op({ k: "dsplit" }); }
+  },
+  "d-save": () => {
+    const s = S.sheet, d = s.d, { snap: sn, errs } = evalDraft(d);
+    if (errs.length) { s.tried = true; sheetDerived(); return SKIP; }
+    const tr = trip();
+    if (d.id) {
+      const e = tr.exps.find(x => x.id === d.id); Object.assign(e, JSON.parse(JSON.stringify(sn)));
+      e.versions.push({ at: nowAt(), by: tr.me, kind: "edit", snap: snap(e) }); op({ k: "edit", ref: e.id }); toast(t("savedEdit"));
+    } else {
+      const id = "n" + Date.now();
+      const e = { id, ...JSON.parse(JSON.stringify(sn)), deleted: false, conflict: null, versions: [] };
+      e.versions.push({ at: nowAt(), by: tr.me, kind: "add", snap: snap(e) }); tr.exps.push(e); op({ k: "add", ref: id });
+      S.anim.print = id; S.anim.top = true; S.q = ""; toast(t("saved"));
+    }
+    S.sheet = null;
+  },
+  confirm: el => (S.confirm = el.dataset.v),
+  "confirm-cancel": () => (S.confirm = null),
+  "del-yes": el => { const e = trip().exps.find(x => x.id === el.dataset.id); e.deleted = true; op({ k: "del", ref: e.id }); S.overlay = null; S.confirm = null; toast(t("deleted"), { act: "restore-exp", id: e.id }); },
+  "restore-exp": el => { const e = trip().exps.find(x => x.id === el.dataset.id); e.deleted = false; op({ k: "restore", ref: e.id }); toast(t("restoredExp")); },
+  "toast-undo": () => { const u = S.toast && S.toast.undo; S.toast = null; if (u) A[u.act]({ dataset: { id: u.id } }); },
+  "restore-version": el => { const tr = trip(), e = tr.exps.find(x => x.id === el.dataset.id), v = e.versions[+el.dataset.i]; Object.assign(e, JSON.parse(JSON.stringify(v.snap))); e.versions.push({ at: nowAt(), by: tr.me, kind: "restore", snap: snap(e) }); e.conflict = null; op({ k: "edit", ref: e.id }); toast(t("conflictResolved")); },
+  "conflict-restore": el => { const tr = trip(), e = tr.exps.find(x => x.id === el.dataset.id); Object.assign(e, JSON.parse(JSON.stringify(e.conflict.mine))); e.versions.push({ at: nowAt(), by: tr.me, kind: "restore", snap: snap(e) }); e.conflict = null; op({ k: "edit", ref: e.id }); toast(t("conflictResolved")); },
+  "conflict-ok": el => { trip().exps.find(x => x.id === el.dataset.id).conflict = null; },
+  "settle-open": el => { S.settle = { from: el.dataset.from, to: el.dataset.to, amountStr: toInput(+el.dataset.c), date: TODAY }; S.anim.sheet = true; },
+  "settle-new": () => { const tr = trip(); S.settle = { from: tr.me, to: tr.people.find(p => p.id !== tr.me).id, amountStr: "", date: TODAY }; S.anim.sheet = true; },
+  "settle-close": () => (S.settle = null),
+  "settle-scrim": () => { S.settle = null; },
+  "settle-save": () => { const st = S.settle, c = parseAmt(st.amountStr); if (!(c > 0) || st.from === st.to) return; const before = balances(trip()); recordSettlement(st.from, st.to, c, st.date); S.settle = null; closeEqAfter(before); checkPari(before); toast(t("recorded")); },
+  "settle-all": () => { const before = balances(trip()); suggest(trip()).forEach(s => recordSettlement(s.from, s.to, s.c, TODAY)); closeEqAfter(before); checkPari(before); toast(t("recordedAll")); },
+  "del-set": el => { const s = trip().sets.find(x => x.id === el.dataset.id); s.deleted = true; op({ k: "setdel", ref: s.id }); S.settle = null; toast(t("setDeleted"), { act: "restore-set", id: s.id }); },
+  "restore-set": el => { const s = trip().sets.find(x => x.id === el.dataset.id); s.deleted = false; op({ k: "setrestore", ref: s.id }); toast(t("setRestored")); },
+  "pari-close": () => (S.pari = false),
+  "regen-yes": () => { const tr = trip(); tr.oldToken = tr.token; tr.token = Array.from({ length: 22 }, () => "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0123456789"[Math.floor(Math.random() * 58)]).join(""); op({ k: "regen" }); S.confirm = null; toast(t("regened")); },
+  "see-old": () => (S.screen = "linkchanged"),
+  rename: el => { S.editing = { type: "person", id: el.dataset.id }; S.form.rename = nm(el.dataset.id); setTimeout(() => document.getElementById("ren-" + el.dataset.id)?.focus()); },
+  "rename-save": el => { const p = person(el.dataset.id), n = (S.form.rename || "").trim(); if (n && n !== p.name) { op({ k: "rename", from: p.name, to: n }); p.name = n; } S.editing = null; S.form.rename = undefined; },
+  "rm-person": el => { const tr = trip(); tr.people = tr.people.filter(p => p.id !== el.dataset.id); },
+  "add-person": () => { const n = (S.form.newPerson || "").trim(), tr = trip(); if (!n || tr.people.some(p => p.name.toLowerCase() === n.toLowerCase())) return; const id = "p" + Date.now(); tr.people.push(P(id, n)); if (tr.dsplit.m === "shares") tr.dsplit.w[id] = 1; op({ k: "person", ref: id }); S.form.newPerson = ""; },
+  "ds-m": el => { const tr = trip(); tr.dsplit = el.dataset.v === "shares" ? { m: "shares", w: Object.fromEntries(tr.people.map(p => [p.id, 1])) } : { m: "equal" }; op({ k: "dsplit" }); },
+  "cat-add": () => { const n = (S.form.catName || "").trim(), em = (S.form.catEmoji || "").trim() || "🏷️", tr = trip(); if (!n) return; tr.cats.push({ id: "c-" + Date.now(), name: n, emoji: em }); op({ k: "cat", name: n }); S.form.catName = ""; S.form.catEmoji = ""; toast(t("catAdded")); },
+  "cat-rename": el => { S.editing = { type: "cat", id: el.dataset.id }; S.form.catRename = trip().cats.find(c => c.id === el.dataset.id).name; },
+  "cat-rename-save": el => { const c = trip().cats.find(c => c.id === el.dataset.id), n = (S.form.catRename || "").trim(); if (n) c.name = n; S.editing = null; S.form.catRename = undefined; },
+  "cat-del": el => { const tr = trip(), c = tr.cats.find(c => c.id === el.dataset.id); tr.exps.forEach(e => { if (e.cat === c.id) e.cat = "altro"; }); tr.cats = tr.cats.filter(x => x !== c); op({ k: "catdel", name: c.name }); toast(t("catDeleted")); },
+  export: () => toast(t("exportToast")),
+  "close-yes": () => { trip().status = "closed"; op({ k: "close" }); S.confirm = null; toast(t("closedToast")); },
+  reopen: () => { trip().status = "open"; op({ k: "reopen" }); toast(t("reopenedToast")); },
+  "delete-yes": () => { const tr = trip(); tr.deleted = { on: TODAY, until: addDays(TODAY, 30) }; S.confirm = null; S.screen = "landing"; },
+  "restore-trip": el => { S.trips.find(x => x.id === el.dataset.id).deleted = null; },
+};
+const IN = {
+  code: el => { S.code = el.value; S.codeErr = false; },
+  q: el => { S.q = el.value; render(); },
+  "c-name": el => { S.create.name = el.value; },
+  "c-cur": el => (S.create.cur = el.value),
+  "c-from": el => (S.create.from = el.value),
+  "c-to": el => (S.create.to = el.value),
+  "c-new": el => { S.create.newName = el.value; render(); },
+  form: el => (S.form[el.dataset.k] = el.value),
+  "d-desc": el => { S.sheet.d.desc = el.value; sheetDerived(); },
+  "d-amt": el => { S.sheet.d.amountStr = el.value; sheetDerived(); },
+  "d-date": el => { S.sheet.d.date = el.value; },
+  "d-pay": el => { S.sheet.d.payStr[el.dataset.id] = el.value; sheetDerived(); },
+  "d-exact": el => { S.sheet.d.exactStr[el.dataset.id] = el.value; sheetDerived(); },
+  "d-pct": el => { S.sheet.d.pctStr[el.dataset.id] = el.value; sheetDerived(); },
+  "st-from": el => { S.settle.from = el.value; render(); },
+  "st-to": el => { S.settle.to = el.value; render(); },
+  "st-amt": el => { S.settle.amountStr = el.value; const b = document.querySelector('[data-act="settle-save"]'); const c = parseAmt(el.value); if (b) b.disabled = !(c > 0) || S.settle.from === S.settle.to; },
+  "st-date": el => { S.settle.date = el.value; render(); },
+};
+document.addEventListener("click", ev => {
+  const el = ev.target.closest("[data-act]"); if (!el) return;
+  const f = A[el.dataset.act]; if (!f) return;
+  if (el.tagName === "BUTTON") ev.preventDefault();
+  if (el.dataset.act.endsWith("scrim") && ev.target !== el) return;
+  if (f(el, ev) === SKIP) return;
+  render();
+});
+document.addEventListener("input", ev => { const el = ev.target.closest("[data-in]"); if (el && IN[el.dataset.in]) IN[el.dataset.in](el, ev); });
+document.addEventListener("change", ev => { const el = ev.target.closest("select[data-in]"); if (el && IN[el.dataset.in]) IN[el.dataset.in](el, ev); });
+document.addEventListener("keydown", ev => {
+  if (ev.key === "Escape") { if (S.pari) S.pari = false; else if (S.sheet) S.sheet = null; else if (S.settle) S.settle = null; else if (S.overlay) S.overlay = null; else return; render(); }
+  if (ev.key === "Enter" && ev.target.matches("input")) { const form = ev.target.closest("form"); const btn = form && form.querySelector("button[data-act]"); if (btn && !btn.disabled) { ev.preventDefault(); btn.click(); } }
+});
+
+/* ================= boot ================= */
+(function boot() {
+  try { const s = JSON.parse(localStorage.getItem("quits-proto") || "null"); if (s) Object.assign(S, { variant: s.variant || S.variant, theme: s.theme || S.theme, lang: s.lang || S.lang }); } catch (_) {}
+  const h = (location.hash || "").slice(1);
+  if (VARIANTS.some(v => v.id === h)) S.variant = h;
+  applyLook();
+  const proto = document.getElementById("proto");
+  if (matchMedia("(min-width: 761px)").matches) proto.open = true;
+  proto.querySelector && proto.addEventListener("click", ev => { if (ev.target.closest("summary") && matchMedia("(min-width: 761px)").matches) ev.preventDefault(); });
+  render();
+})();
+</script>
+</body>
+</html>
