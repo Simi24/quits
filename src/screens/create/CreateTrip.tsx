@@ -2,14 +2,13 @@ import { CaretLeft } from "@phosphor-icons/react";
 import { useState } from "react";
 import { Button, ErrorLine, IconButton, SelectField, TextField, useSingleFlight } from "../../components";
 import { NAME_MAX_LENGTH } from "../../../domain";
+import { CURRENCIES } from "../../create-trip/currencies";
 import { buildTripCreation, newTripIssues } from "../../create-trip/new-trip";
 import type { NewTripForm } from "../../create-trip/new-trip";
 import { createTrip } from "../../db";
 import { useDevice } from "../../device";
 import { DefaultSplitField } from "./DefaultSplitField";
 import { PeopleField } from "./PeopleField";
-
-const CURRENCIES = ["EUR", "USD", "GBP", "CHF", "JPY"];
 
 interface CreateTripProps {
   onBack: () => void;
