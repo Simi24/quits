@@ -23,7 +23,7 @@ Whoever holds a valid creator code. A creator can create trips but has no specia
 _Avoid_: Admin, owner, organiser
 
 **Participant**:
-A name inside one trip. There are no accounts: a participant exists only within its trip.
+A name inside one trip, standing for one person or for a unit that pays together (a couple, a family). There are no accounts: a participant exists only within its trip.
 _Avoid_: Member, user, friend
 
 **Trip currency**:
