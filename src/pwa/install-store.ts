@@ -10,16 +10,18 @@ const emit = () => {
   for (const listener of listeners) listener();
 };
 
-// Registered when the module loads: the browser can fire this before the first screen is drawn.
-window.addEventListener("beforeinstallprompt", (event) => {
-  event.preventDefault();
-  deferred = event as BeforeInstallPromptEvent;
-  emit();
-});
-window.addEventListener("appinstalled", () => {
-  deferred = null;
-  emit();
-});
+/** Called once at startup, before the first screen: the browser can fire this event before React has drawn anything. */
+export function listenForInstall(): void {
+  window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+    deferred = event as BeforeInstallPromptEvent;
+    emit();
+  });
+  window.addEventListener("appinstalled", () => {
+    deferred = null;
+    emit();
+  });
+}
 
 const subscribe = (listener: () => void) => {
   listeners.add(listener);
