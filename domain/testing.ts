@@ -1,5 +1,5 @@
 // Test helpers only: not exported from index.ts, not part of the public interface.
-import type { Operation, SequencedOperation, ExpenseSnapshot } from "./index.ts";
+import type { ExpenseSnapshot, Operation, SequencedOperation, StoredOperation } from "./index.ts";
 
 type Payload = Record<string, unknown> & { type: string };
 
@@ -22,7 +22,7 @@ export function op(
 }
 
 /** Assigns sequence numbers 1..n in array order, as the server would. */
-export function sequence(operations: Operation[], from = 1): SequencedOperation[] {
+export function sequence(operations: StoredOperation[], from = 1): SequencedOperation[] {
   return operations.map((operation, i) => ({ seq: from + i, operation }));
 }
 
