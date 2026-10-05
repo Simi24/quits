@@ -2,8 +2,7 @@ import { ArrowUUpLeft } from "@phosphor-icons/react";
 import { Avatar, Button } from "../../components";
 import { useDevice } from "../../device";
 import { instantTime, listNames } from "../../format";
-import { changedFields } from "../../history";
-import type { ChangedField } from "../../history";
+import { versionChange } from "../../history";
 import type { ExpenseRecord, ExpenseVersion } from "../../../domain";
 import { avatarIndex, useTrip } from "../../trip";
 
@@ -19,13 +18,11 @@ export const ExpenseVersions = ({ expense, onRestored }: ExpenseVersionsProps) =
   const { versions } = expense;
   const latest = versions.at(-1);
 
-  const what = (version: ExpenseVersion, index: number): string => {
-    const previous = versions[index - 1];
-    if (!previous) return t.history.created;
-    // Same content as a version before the one it replaced: someone put an older one back.
-    if (versions.slice(0, index - 1).some((v) => JSON.stringify(v.snapshot) === JSON.stringify(version.snapshot))) return t.history.restoredVersion;
-    const fields: ChangedField[] = changedFields(previous.snapshot, version.snapshot);
-    return t.history.changed(listNames(fields.map((f) => t.history[`f_${f}`]), lang));
+  const what = (index: number): string => {
+    const change = versionChange(versions, index);
+    if (change.kind === "created") return t.history.created;
+    if (change.kind === "restored") return t.history.restoredVersion;
+    return t.history.changed(listNames(change.fields.map((f) => t.history[`f_${f}`]), lang));
   };
 
   const restore = async (version: ExpenseVersion) => {
@@ -50,7 +47,7 @@ export const ExpenseVersions = ({ expense, onRestored }: ExpenseVersionsProps) =
                 <Avatar name={nameOf(version.by)} index={avatarIndex(trip, version.by)} size="sm" />
                 <div className="min-w-0">
                   <p>
-                    <b>{nameOf(version.by)}</b> {what(version, index)}
+                    <b>{nameOf(version.by)}</b> {what(index)}
                   </p>
                   <p className="num text-[13px] text-ink-2">
                     {instantTime(version.at, lang)}: {money(version.snapshot.amount)}

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { foldWithPending } from "../../domain";
 import type { Operation } from "../../domain";
 import { expense, expenseCreated, op, sequence, tripCreated } from "../../domain/testing.ts";
-import { changedFields } from "./changed-fields";
+import { changedFields, versionChange } from "./changed-fields";
 import { historyItems } from "./model";
 
 const fold = (ops: Operation[]) => foldWithPending(sequence(ops), []);
@@ -71,6 +71,19 @@ describe("changedFields", () => {
     const b = expense({ amount: 100, date: "2026-06-15", description: "Pranzo" });
     expect(changedFields(a, b)).toEqual(["description", "amount", "date"]);
     expect(changedFields(a, a)).toEqual([]);
+    // The same split written with its keys in another order (the sheet and the schema do not agree on one) is no change.
+    expect(changedFields(a, expense({ split: { among: ["p1", "p2", "p3"], method: "equal" } as never }))).toEqual([]);
     expect(changedFields(a, expense({ categoryId: "transport", payers: [{ participantId: "p2", amount: 9000 }], split: { method: "exact", amounts: { p1: 9000 } } }))).toEqual(["category", "payers", "split"]);
+  });
+});
+
+describe("versionChange", () => {
+  const versionsOf = (ops: Operation[]) => fold(ops).expenses[0]?.versions ?? [];
+  const edit = (id: string, base: string, amount: number) => op({ type: "ExpenseEdited", expenseId: "e1", baseOpId: base, expense: expense({ amount }) }, { id });
+
+  it("reads the creation, a change, and the return of an older version", () => {
+    const back = { ...expense(), split: { among: ["p1", "p2", "p3"], method: "equal" } } as never;
+    const versions = versionsOf([tripCreated(), expenseCreated("e1"), edit("a", "create-e1", 100), op({ type: "ExpenseEdited", expenseId: "e1", baseOpId: "a", expense: back }, { id: "b" })]);
+    expect(versions.map((_, i) => versionChange(versions, i))).toEqual([{ kind: "created" }, { kind: "changed", fields: ["amount"] }, { kind: "restored" }]);
   });
 });
