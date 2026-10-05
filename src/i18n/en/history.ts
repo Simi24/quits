@@ -18,7 +18,6 @@ export const history: Dictionary["history"] = {
         : "The server did not accept it. It stays on this device only and is not tried again.",
   afterClose: "added while the trip was closed",
   waiting: "waiting to be sent",
-  conflictMark: "at the same time",
   ignored: (reason) =>
     ({
       currency_has_expenses: "currency change ignored: there were already expenses",
@@ -56,7 +55,6 @@ export const history: Dictionary["history"] = {
   conflicts: (n) => (n === 1 ? "1 expense edited at the same time" : `${n} expenses edited at the same time`),
   conflictsShow: "Show",
   conflictsAll: "Show all expenses",
-  conflictsOnly: "Only the expenses edited at the same time",
   edits: "Changes",
   restoreVersion: "Restore this version",
   current: "Current version",

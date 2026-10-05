@@ -17,7 +17,6 @@ export const history = {
         : "Il server non l'ha accettata. Resta solo su questo dispositivo e non viene più riprovata.",
   afterClose: "aggiunta a viaggio chiuso",
   waiting: "in attesa di invio",
-  conflictMark: "in contemporanea",
   ignored: (reason: string) =>
     ({
       currency_has_expenses: "cambio di valuta ignorato: c'erano già spese",
@@ -57,7 +56,6 @@ export const history = {
   conflicts: (n: number) => (n === 1 ? "1 spesa modificata in contemporanea" : `${n} spese modificate in contemporanea`),
   conflictsShow: "Mostra",
   conflictsAll: "Mostra tutte le spese",
-  conflictsOnly: "Solo le spese modificate in contemporanea",
   // Versions of one expense.
   edits: "Modifiche",
   restoreVersion: "Ripristina questa versione",

@@ -39,16 +39,19 @@ export const SpeseScreen = ({ printId, onPrinted, onOpenExpense, onOpenSettlemen
 
   return (
     <div className="grid gap-3.5 px-4 pt-1.5 pb-24">
-      <SummaryReceipt />
+      {/* At the top of Spese, before the summary: it is what changed while you were away (SPEC.md §7.6 item 7). */}
       {conflicts.length ? (
-        <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2.5 rounded-[14px] bg-[color-mix(in_srgb,var(--sun)_34%,var(--paper))] p-3.5 text-[14.5px]" data-testid="conflict-banner">
-          <Warning size={20} weight="fill" aria-hidden="true" />
-          <b>{t.history.conflicts(conflicts.length)}</b>
-          <Button size="sm" variant="ghost" aria-pressed={filtering} onClick={() => setOnlyConflicts(!filtering)}>
-            {filtering ? t.history.conflictsAll : t.history.conflictsShow}
-          </Button>
+        <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-2.5 rounded-[14px] bg-[color-mix(in_srgb,var(--sun)_34%,var(--paper))] p-3.5 text-[14.5px]" data-testid="conflict-banner">
+          <Warning size={20} weight="fill" className="mt-0.5" aria-hidden="true" />
+          <div className="grid justify-items-start gap-2.5">
+            <b>{t.history.conflicts(conflicts.length)}</b>
+            <Button size="sm" variant="ghost" onClick={() => setOnlyConflicts(!filtering)}>
+              {filtering ? t.history.conflictsAll : t.history.conflictsShow}
+            </Button>
+          </div>
         </div>
       ) : null}
+      <SummaryReceipt />
       <div className="flex items-center gap-2">
         <div className="min-w-0 grow">
           <SearchField value={query} onChange={setQuery} />
