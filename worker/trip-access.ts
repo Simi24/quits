@@ -18,5 +18,8 @@ export async function resolveTrip(request: Request, env: Env): Promise<ResolvedT
   // Unknown and purged tokens look the same: the token leads to no trip.
   if (!entry) return fail(404, "trip_unavailable");
   if (entry.state === "retired") return fail(410, "link_changed", { tripId: entry.tripId });
-  return { tripId: entry.tripId, tokenHash, trip: tripStub(env, entry.tripId) };
+  const trip = tripStub(env, entry.tripId);
+  // The Directory knows the token but the trip has no state: it is as good as purged.
+  if (!(await trip.exists())) return fail(404, "trip_unavailable");
+  return { tripId: entry.tripId, tokenHash, trip };
 }

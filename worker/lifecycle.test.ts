@@ -1,6 +1,7 @@
-import { env, runDurableObjectAlarm } from "cloudflare:test";
+import { env, runDurableObjectAlarm, runInDurableObject } from "cloudflare:test";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { expense, expenseCreated, op } from "../domain/testing.ts";
+import { Directory } from "./directory.ts";
 import { tripStub } from "./jurisdiction.ts";
 import { api, bearer, newTrip } from "./testing/api.ts";
 
@@ -105,5 +106,75 @@ describe("purging a deleted trip", () => {
     await deleteTrip(regenerated.body.token);
     await runDurableObjectAlarm(tripStub(env, tripId));
     expect((await api("GET", "/api/pull", { auth: bearer(token) })).status).toBe(404);
+  });
+});
+
+describe("retried delete and restore (SPEC.md §6.3)", () => {
+  it("answers a retried delete with the original outcome and changes nothing, even after a restore", async () => {
+    const { token } = await newTrip();
+    const first = await deleteTrip(token, "p2");
+    expect(first.body).toMatchObject({ seq: 2, alreadyApplied: false });
+    await restoreTrip(token, "p3");
+
+    const retry = await deleteTrip(token, "p2");
+    expect(retry.status).toBe(200);
+    expect(retry.body).toEqual({ ...first.body, alreadyApplied: true });
+
+    // The trip is still alive and the log has exactly the three operations.
+    const pull = await api("GET", "/api/pull", { auth: bearer(token) });
+    expect(pull.status).toBe(200);
+    expect(pull.body.operations).toHaveLength(3);
+  });
+
+  it("answers a retried restore as already applied, without lifting a later delete", async () => {
+    const { token } = await newTrip();
+    await deleteTrip(token, "p2");
+    const restore = op({ type: "TripRestored" }, { by: "p3", id: "res-fixed" });
+    const send = () => api("POST", "/api/trip/restore", { auth: bearer(token), body: { operation: restore } });
+    const first = await send();
+    expect(first.body).toMatchObject({ restored: true, seq: 3, alreadyApplied: false });
+    await api("POST", "/api/trip/delete", { auth: bearer(token), body: { operation: op({ type: "TripDeleted" }, { by: "p1", id: "del-again" }) } });
+
+    const retry = await send();
+    expect(retry.status).toBe(200);
+    expect(retry.body).toMatchObject({ restored: true, seq: 3, alreadyApplied: true });
+    expect((await api("GET", "/api/pull", { auth: bearer(token) })).status).toBe(410);
+  });
+});
+
+describe("a purge alarm that cannot reach the Directory", () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it("reschedules itself instead of giving up, and purges once the Directory answers", async () => {
+    const { tripId, token } = await newTrip();
+    await deleteTrip(token);
+    const stub = tripStub(env, tripId);
+    const purge = vi.spyOn(Directory.prototype, "purgeTrip").mockImplementation(async () => { throw new Error("directory down"); });
+
+    expect(await runDurableObjectAlarm(stub)).toBe(true);
+    const next = await runInDurableObject(stub, (_, state) => state.storage.getAlarm());
+    expect(next).not.toBeNull();
+    expect(next! - Date.now()).toBeLessThanOrEqual(60 * 60 * 1000);
+    // Not purged yet: the trip is still deleted, not gone.
+    expect((await api("GET", "/api/pull", { auth: bearer(token) })).status).toBe(410);
+
+    purge.mockRestore();
+    expect(await runDurableObjectAlarm(stub)).toBe(true);
+    expect((await api("GET", "/api/pull", { auth: bearer(token) })).status).toBe(404);
+  });
+
+  it("backs off: each failure waits longer, never more than an hour", async () => {
+    const { tripId, token } = await newTrip();
+    await deleteTrip(token);
+    const stub = tripStub(env, tripId);
+    vi.spyOn(Directory.prototype, "purgeTrip").mockImplementation(async () => { throw new Error("directory down"); });
+    const delays: number[] = [];
+    for (let i = 0; i < 10; i++) {
+      await runDurableObjectAlarm(stub);
+      delays.push((await runInDurableObject(stub, (_, state) => state.storage.getAlarm()))! - Date.now());
+    }
+    expect(delays[1]).toBeGreaterThan(delays[0]! * 1.5);
+    expect(Math.max(...delays)).toBeLessThanOrEqual(60 * 60 * 1000);
+    expect(delays[9]).toBeGreaterThan(55 * 60 * 1000);
   });
 });

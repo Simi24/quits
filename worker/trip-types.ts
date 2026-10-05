@@ -19,3 +19,7 @@ export type Gated<T> = { status: "ok"; value: T } | { status: "deleted"; deleted
 
 export type PulledOperation = { seq: number; operation: StoredOperation };
 export type Page = { operations: PulledOperation[]; hasMore: boolean };
+
+/** What a delete answers; `alreadyApplied` is true for a retry of an operation already stored (SPEC.md §6.3). */
+export type DeleteOutcome = { seq: number; alreadyApplied: boolean } & DeletedInfo;
+export type RestoreOutcome = { restored: boolean; seq: number | null; alreadyApplied: boolean };

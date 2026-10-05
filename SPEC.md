@@ -256,6 +256,8 @@ The paths of push, pull, regenerate, delete and restore were fixed in S3 ([G-B1]
 ### 6.3 Ordering and idempotency
 The Durable Object is single-threaded with input/output gates: push looks the operation id up and inserts it inside `transactionSync` (an `INSERT OR IGNORE` on an `AUTOINCREMENT` table burns a sequence number on every ignored retry, which would leave gaps; fixed in S3), pull a `SELECT ... WHERE seq > ?` ([#3](https://github.com/Simi24/quits/issues/3)). No counters, conditions or retries are needed. Server actions append their operation inside the same kind of transaction, so it is sequenced like any other.
 
+**Strict idempotency of delete and restore (fixed in #18).** A retry of a delete or restore whose operation id is already stored is a no-op: it changes no state and answers `200` with the original outcome plus `"alreadyApplied": true` (`false` on the first application). A delete retried after a restore therefore does not delete the trip again, and a restore retried after a new delete does not lift it, so the log and the server state never disagree. The delete's original answer (`seq`, `deletedBy`, `deletedAt`, `restoreUntil`) is kept in the trip's Durable Object for this purpose. A restore of a trip that is not deleted still answers `{ "restored": false, "seq": null }`.
+
 ### 6.4 Errors the client must tell apart
 From the decided UX, with the status codes decided under delegation, 2026-10-05:
 - **`410 link_changed`**: the token was **regenerated** ("Il link è cambiato"); the body carries the `tripId`. The outbox is kept until the new link is opened ([§4](#4-access-without-accounts)).
@@ -264,6 +266,8 @@ From the decided UX, with the status codes decided under delegation, 2026-10-05:
 - **A rejected operation**: reported per operation in the push result, never as a failure of the whole batch ([§6.2](#62-endpoints)).
 - **`403`** on create or creator check: the creator code is wrong or revoked.
 - **The network being unreachable**: the outbox simply waits.
+
+A token the Directory knows but whose trip has no state is answered like a purged trip, `404 trip_unavailable` (fixed in #18; it used to be a `500`).
 
 Other status codes, the purged-trip answer and all error bodies are [G-B1](#17-open-gaps).
 
@@ -740,7 +744,7 @@ Where a decision under delegation already fixed part of an item, that part is no
   - Fixed in S3: the Durable Object classes are `Trip` (binding `TRIP`) and `Directory` (binding `DIRECTORY`), migration tag `v1`; the var is `JURISDICTION` (§11.3); the Directory is the single instance named `directory`. Shipped migrations are never edited: a change is a new tag.
   - Fixed in S0: the Worker is named **`quits`** (`wrangler.jsonc`). `compatibility_date` is **`2026-08-22`**, the newest date the workerd binary bundled with the pinned `@cloudflare/vitest-pool-workers` accepts; raise it together with the Wrangler pin. The Durable Object classes, secrets (`CREATOR_CODES` is already fixed), cookie, IndexedDB database and manifest keys stay open for S2, S3 and S8.
 - **G-B4** Purge mechanism for deleted trips, e.g. a Durable Object alarm (S4).
-  - Fixed in S3: the trip's Durable Object sets an alarm 30 days after the delete (a restore cancels it). The alarm deletes the trip's rows from the Directory first and then all the trip's storage, so a failure is retried by the alarm and loses nothing.
+  - Fixed in S3: the trip's Durable Object sets an alarm 30 days after the delete (a restore cancels it). The alarm deletes the trip's rows from the Directory first and then all the trip's storage, so a failure loses nothing. The alarm never gives up (fixed in #18): if the Directory call or the deletion throws, the alarm catches it and schedules itself again with an exponential backoff (1 min, 2, 4, ... capped at 1 h) until the purge succeeds; a restore cancels it.
 - **G-B5** The currency list at creation (the prototype offers EUR, USD, GBP, CHF, JPY) (S4).
 - **G-B6** CSV columns (S6).
 - **G-B7** Privacy page route; mapping of browser languages other than Italian and English; desktop column width for the non-chart tabs (S5, S6).
