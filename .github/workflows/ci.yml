@@ -33,7 +33,7 @@ jobs:
       - name: Performance budget (blocking)
         run: npm run budget
       - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
       - name: Playwright smoke and axe (blocking)
         run: npm run test:e2e
       - uses: actions/upload-artifact@v5
