@@ -1,5 +1,4 @@
-import { lazy, Suspense, useMemo, useState } from "react";
-import { balances } from "../../../domain";
+import { lazy, Suspense, useState } from "react";
 import type { SuggestedSettlement } from "../../../domain";
 import { Toast, useSingleFlight } from "../../components";
 import { useDevice } from "../../device";
@@ -43,11 +42,7 @@ export const TripShell = ({ onLeave }: TripShellProps) => {
   const [sheet, setSheetState] = useState<OpenSheet | null>(null);
   const [printId, setPrintId] = useState<string | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
-  const even = useMemo(() => {
-    const owed = balances(trip);
-    return { allEven: trip.participants.every((p) => (owed[p.id] ?? 0) === 0), settlements: trip.settlements.filter((s) => !s.deleted).length };
-  }, [trip]);
-  const celebration = useCelebration(even);
+  const celebration = useCelebration(trip);
   const { toast, show, hide } = useToast();
 
   // A toast never sits on top of a sheet that has just opened.

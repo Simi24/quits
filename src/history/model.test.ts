@@ -3,7 +3,6 @@ import { foldWithPending } from "../../domain";
 import type { Operation } from "../../domain";
 import { expense, expenseCreated, op, sequence, tripCreated } from "../../domain/testing.ts";
 import { changedFields } from "./changed-fields";
-import { celebrationDue } from "./celebration";
 import { historyItems } from "./model";
 
 const fold = (ops: Operation[]) => foldWithPending(sequence(ops), []);
@@ -73,19 +72,5 @@ describe("changedFields", () => {
     expect(changedFields(a, b)).toEqual(["description", "amount", "date"]);
     expect(changedFields(a, a)).toEqual([]);
     expect(changedFields(a, expense({ categoryId: "transport", payers: [{ participantId: "p2", amount: 9000 }], split: { method: "exact", amounts: { p1: 9000 } } }))).toEqual(["category", "payers", "split"]);
-  });
-});
-
-describe("celebrationDue", () => {
-  const state = (allEven: boolean, settlements: number) => ({ allEven, settlements });
-  it("fires once, when a payment makes everyone even", () => {
-    expect(celebrationDue(state(false, 0), state(true, 1))).toBe(true);
-    expect(celebrationDue(state(true, 1), state(true, 1))).toBe(false);
-    expect(celebrationDue(state(true, 1), state(false, 1))).toBe(false);
-    expect(celebrationDue(state(false, 0), state(false, 1))).toBe(false);
-  });
-  it("does not fire when the expenses change, or for the state the trip opened in", () => {
-    expect(celebrationDue(state(false, 0), state(true, 0))).toBe(false);
-    expect(celebrationDue(null, state(true, 2))).toBe(false);
   });
 });

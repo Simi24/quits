@@ -7,3 +7,5 @@ export { avatarIndex, categoryName } from "./labels";
 export { isUnseenConflict, unseenConflicts } from "./conflicts";
 export { tripLinkOf } from "./trip-link";
 export { useMergeUndo } from "./useMergeUndo";
+export { celebrationDue, evenState } from "./celebration";
+export type { EvenState } from "./celebration";

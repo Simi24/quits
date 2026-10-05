@@ -2,5 +2,3 @@ export { historyItems } from "./model";
 export type { HistoryAction, HistoryItem } from "./model";
 export { changedFields } from "./changed-fields";
 export type { ChangedField } from "./changed-fields";
-export { celebrationDue } from "./celebration";
-export type { EvenState } from "./celebration";
