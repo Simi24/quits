@@ -7,7 +7,7 @@ import { useDevice } from "../device";
 import { requestPersist } from "../pwa";
 import { openLink, restoreTrip } from "../sync";
 import { api, store } from "../sync/client";
-import { buildOperation } from "../trip";
+import { buildOperation, tokenInAddressBar } from "../trip";
 import { CreateTrip } from "./create";
 import { Landing } from "./landing";
 import { ProblemScreen } from "./link";
@@ -29,9 +29,7 @@ interface AppScreensProps {
   start: BootOpen;
 }
 
-/** The trip link is `/v/#<token>`; the fragment never reaches the server (SPEC.md §4). */
-const linkToken = (): string => (window.location.pathname.startsWith("/v") ? window.location.hash.slice(1) : "");
-
+/** Off the trip link: the token leaves the address bar (SPEC.md §4). */
 const leaveLink = () => window.history.replaceState(null, "", "/");
 
 /** Which screen is showing, and what a link in the address bar does. */
@@ -74,10 +72,10 @@ export const AppScreens = ({ initialTrips, start }: AppScreensProps) => {
   }, []);
 
   useEffect(() => {
-    const token = linkToken();
+    const token = tokenInAddressBar();
     if (token) void openToken(token);
     const onHash = () => {
-      const next = linkToken();
+      const next = tokenInAddressBar();
       if (next) void openToken(next);
     };
     window.addEventListener("hashchange", onHash);

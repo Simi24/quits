@@ -3,6 +3,6 @@ export { adoptTrip, appendOperations, dismissConflict, foldStored, listTrips, lo
 export type { StoredTrip, TripSummary } from "./trips";
 export { idbSyncStore } from "./sync-store";
 export type { DeviceRecord, ThemeChoice, TripMeta } from "./schema";
-export { restoreFromBridge, snapshotBridge } from "./bridge";
+export { restoreFromBridge, tripRecords } from "./bridge";
 export { onTripsChanged } from "./changes";
 export { tripIdsWithPending } from "./pending";

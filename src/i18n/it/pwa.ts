@@ -18,14 +18,14 @@ export const pwa = {
   iosNeedsNetwork: "La prima volta che apri l'app installata serve una connessione.",
   gotIt: "Ho capito",
   // In-app browsers (SPEC.md §5.7).
-  inAppTitle: "Stai usando il browser di un'altra app",
+  inAppTitle: "Stai usando il browser di un'altra app.",
   inAppBody: "Qui il viaggio potrebbe non restare salvato. Apri il link in Safari o in Chrome.",
   copyLink: "Copia link",
   linkCopied: "Link copiato",
   copyFailed: "Non riesco a copiare. Tieni premuto sul link e copialo a mano.",
   // Open or paste a trip link (SPEC.md §5.8).
   openLink: "Apri o incolla un link di viaggio",
-  openLinkHelp: "Incolla il link che ti hanno mandato. Va bene anche solo il codice dopo il #.",
+  openLinkHelp: "Incolla il link che ti hanno mandato. Va bene anche solo la parte dopo il #.",
   openLinkAction: "Apri",
   openLinkBad: "Questo non sembra un link di Quits. Controlla di averlo copiato intero.",
 };

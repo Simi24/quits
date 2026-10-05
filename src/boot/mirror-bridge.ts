@@ -1,6 +1,14 @@
-import { onTripsChanged, snapshotBridge } from "../db";
+import { onTripsChanged, readDevice, tripRecords } from "../db";
 import { isIos } from "../pwa";
+import { bridgeFrom } from "./bridge-from";
+import type { Bridge } from "./cookie-bridge";
 import { writeBridgeCookie } from "./cookie";
+
+/** The bridge as IndexedDB says it should be right now. */
+const snapshotBridge = async (): Promise<Bridge> => {
+  const [device, trips] = await Promise.all([readDevice(), tripRecords()]);
+  return bridgeFrom(device.deviceId, trips);
+};
 
 /**
  * Keeps the cookie bridge equal to IndexedDB: an installed iOS app gets a copy of the cookies at the moment

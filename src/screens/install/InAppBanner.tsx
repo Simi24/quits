@@ -23,7 +23,7 @@ export const InAppBanner = () => {
     <div role="status" className="mx-4 mb-2" data-testid="in-app-banner">
       <Notice>
         <p>
-          <b>{t.pwa.inAppTitle}.</b> {t.pwa.inAppBody}
+          <b>{t.pwa.inAppTitle}</b> {t.pwa.inAppBody}
         </p>
         <div className="flex flex-wrap items-center gap-2.5">
           <Button size="sm" onClick={() => void copy()}>

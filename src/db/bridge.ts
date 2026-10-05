@@ -1,13 +1,12 @@
-import { bridgeFrom } from "../boot/bridge-from";
-import type { Bridge, BridgeEntry } from "../boot/cookie-bridge";
-import { freshDevice as fresh, readDevice } from "./device";
+import type { BridgeEntry } from "../boot/cookie-bridge";
+import { freshDevice } from "./device";
 import { openQuitsDb } from "./open";
 import type { DeviceRecord, TripMeta } from "./schema";
 
-/** The bridge as IndexedDB says it should be right now. */
-export async function snapshotBridge(): Promise<Bridge> {
-  const [device, db] = await Promise.all([readDevice(), openQuitsDb()]);
-  return bridgeFrom(device.deviceId, await db.getAll("trips"));
+/** Every trip record on this device, as stored: what the cookie bridge mirrors. */
+export async function tripRecords(): Promise<TripMeta[]> {
+  const db = await openQuitsDb();
+  return db.getAll("trips");
 }
 
 /**
@@ -18,7 +17,7 @@ export async function restoreFromBridge(deviceId: string, entries: BridgeEntry[]
   const db = await openQuitsDb();
   const tx = db.transaction(["device", "trips"], "readwrite");
   const stored = await tx.objectStore("device").get("device");
-  const device: DeviceRecord = { ...fresh(deviceId), ...stored, deviceId };
+  const device: DeviceRecord = { ...freshDevice(deviceId), ...stored, deviceId };
   await tx.objectStore("device").put(device);
   // The bridge lists the most recent first; the oldest gets the oldest stamp so the order survives.
   const now = Date.now();
