@@ -13,8 +13,12 @@ export async function activateCreatorCode(page: Page, code = E2E_CREATOR_CODE) {
 /** Opens the creation form from the landing, entering the creator code first when the device does not have it yet. */
 export async function openCreateForm(page: Page) {
   await page.goto("/");
-  if (await page.getByLabel("Hai un codice da creatore?").isVisible()) await activateCreatorCode(page);
-  await page.getByRole("button", { name: "Crea un viaggio" }).click();
+  const codeField = page.getByLabel("Hai un codice da creatore?");
+  const create = page.getByRole("button", { name: "Crea un viaggio" });
+  // The landing reads IndexedDB before it knows whether the device has a code: wait for either answer.
+  await expect(codeField.or(create)).toBeVisible();
+  if (await codeField.isVisible()) await activateCreatorCode(page);
+  await create.click();
 }
 
 export async function fillTripForm(page: Page, name: string, people: string[]) {

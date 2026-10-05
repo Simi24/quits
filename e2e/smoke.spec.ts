@@ -12,6 +12,8 @@ test("the empty app renders, with no request leaving for another origin", async 
 
 test("the self-hosted fonts load", async ({ page }) => {
   await page.goto("/");
+  // Fonts load when text that uses them is on the page, and the landing renders after IndexedDB answers.
+  await expect(page.getByRole("heading", { level: 1, name: "quits" })).toBeVisible();
 
   const loaded = await page.evaluate(async () => {
     await document.fonts.ready;
