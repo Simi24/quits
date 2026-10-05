@@ -20,11 +20,31 @@ const MAX_BODY_BYTES = 1_000_000;
 
 /** The request's JSON body, or a ready 4xx response. */
 export async function readJson(request: Request): Promise<{ body: unknown } | { response: Response }> {
-  const text = await request.text();
-  if (text.length > MAX_BODY_BYTES) return { response: fail(413, "too_large") };
+  const text = await readCapped(request, MAX_BODY_BYTES);
+  if (text === null) return { response: fail(413, "too_large") };
   try {
     return { body: JSON.parse(text) };
   } catch {
     return { response: fail(400, "bad_request") };
   }
+}
+
+/** The body as text, or null past `maxBytes`: reading stops there, so a huge body is never buffered whole. */
+async function readCapped(request: Request, maxBytes: number): Promise<string | null> {
+  if (Number(request.headers.get("Content-Length") ?? 0) > maxBytes) return null;
+  if (!request.body) return "";
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  for await (const chunk of request.body) {
+    size += chunk.byteLength;
+    if (size > maxBytes) return null;
+    chunks.push(chunk);
+  }
+  const bytes = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return new TextDecoder().decode(bytes);
 }

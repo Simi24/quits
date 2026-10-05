@@ -122,6 +122,16 @@ describe("push and pull", () => {
   });
 });
 
+describe("request size", () => {
+  it("measures the body in bytes, not characters: over 1 MB is 413 too_large", async () => {
+    const { token } = await newTrip();
+    // 600,000 characters, 1.2 MB in UTF-8.
+    const response = await api("POST", "/api/push", { auth: bearer(token), body: { operations: [], pad: "é".repeat(600_000) } });
+    expect(response.status).toBe(413);
+    expect(response.body.error).toBe("too_large");
+  });
+});
+
 describe("authorization", () => {
   it("answers 401 without a bearer token and 404 trip_unavailable for a token that leads nowhere", async () => {
     expect((await api("GET", "/api/pull")).status).toBe(401);
