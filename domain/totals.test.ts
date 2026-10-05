@@ -49,6 +49,11 @@ describe("tripTotals", () => {
     expect(tripTotals(trip)).toMatchObject({ total: 88000, preTripTotal: 80000, days: 8, perDay: 1000 });
   });
 
+  it("with only a start date, leaves earlier bookings out of the per-day averages and counts days to the last expense", () => {
+    const trip = fold({ to: null }, spend("booking", 80000, "2026-05-01", "accommodation"), spend("e1", 4000, "2026-06-14"));
+    expect(tripTotals(trip)).toMatchObject({ total: 84000, preTripTotal: 80000, days: 2, perDay: 2000 });
+  });
+
   it("shows paid and due per participant (expenses only), settlements left out", () => {
     const trip = fold({}, spend("e1", 9000, "2026-06-13"), op({ type: "SettlementRecorded", settlementId: "s1", fromParticipantId: "p2", toParticipantId: "p1", amount: 500, date: "2026-06-14" }));
     expect(tripTotals(trip).paidDue).toEqual([

@@ -7,7 +7,7 @@ import type { Trip } from "./trip.ts";
 export type Totals = {
   /** Σ live expenses, refunds as negatives. */
   total: number;
-  /** Trip days, dates inclusive; for an undated trip, the span of the expense dates (SPEC.md §8.3). */
+  /** Trip days, dates inclusive; a missing date is the first or last expense date counted (SPEC.md §8.3). */
   days: number;
   /** Σ shares of the default split, or the number of participants when it is equal. */
   heads: number;
@@ -28,16 +28,15 @@ const inclusiveDays = (from: string, to: string) => Math.max(1, dayNumber(to) - 
 export function tripTotals(trip: Trip): Totals {
   const live = trip.expenses.filter((e) => !e.deleted);
   const total = live.reduce((sum, e) => sum + e.snapshot.amount, 0);
-  const dated = trip.from !== null && trip.to !== null;
-  const preTripTotal = dated
-    ? live.filter((e) => e.snapshot.date < trip.from!).reduce((sum, e) => sum + e.snapshot.amount, 0)
-    : 0;
-  let days = 1;
-  if (dated) days = inclusiveDays(trip.from!, trip.to!);
-  else if (live.length > 0) {
-    const dates = live.map((e) => e.snapshot.date).sort();
-    days = inclusiveDays(dates[0]!, dates[dates.length - 1]!);
-  }
+  // Bookings dated before the start are in the total, out of the per-day averages (SPEC.md §8.3).
+  const start = trip.from;
+  const counted = start === null ? live : live.filter((e) => e.snapshot.date >= start);
+  const preTripTotal = total - counted.reduce((sum, e) => sum + e.snapshot.amount, 0);
+  // A missing date is replaced by the first or last counted expense date.
+  const dates = counted.map((e) => e.snapshot.date).sort();
+  const first = trip.from ?? dates[0];
+  const last = trip.to ?? dates.at(-1) ?? first;
+  const days = first !== undefined && last !== undefined ? inclusiveDays(first, last) : 1;
   const split = mergeDefaultSplit(trip, trip.defaultSplit);
   const shareHeads = split.method === "shares" ? Object.values(split.shares).reduce((a, b) => a + b, 0) : 0;
   const heads = shareHeads > 0 ? shareHeads : Math.max(1, trip.participants.length);
