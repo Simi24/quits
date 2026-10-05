@@ -25,7 +25,7 @@ export const history: Dictionary["history"] = {
       unknown_target: "ignored: it involves something that does not exist",
       participant_in_use: "ignored: the person still appears in expenses or settlements",
       invalid_merge: "ignored: the merge was not possible",
-    })[reason] ?? "ignored",
+    })[reason],
   h_create: "created the trip",
   h_add: (d) => `added ${d}`,
   h_edit: (d) => `edited ${d}`,

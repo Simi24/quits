@@ -1,6 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Button, Stamp } from "../../components";
-import { useModalFocus } from "../../components/useModalFocus";
+import { Button, Stamp, useModalFocus } from "../../components";
 import { useDevice } from "../../device";
 import { throwConfetti } from "./confetti";
 

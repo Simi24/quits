@@ -1,3 +1,5 @@
+import type { IgnoredReason } from "../../../domain";
+
 export const history = {
   title: "Cronologia",
   help: "Ogni modifica resta qui, non si cancella. Spese e pagamenti eliminati si ripristinano da qui.",
@@ -17,14 +19,14 @@ export const history = {
         : "Il server non l'ha accettata. Resta solo su questo dispositivo e non viene più riprovata.",
   afterClose: "aggiunta a viaggio chiuso",
   waiting: "in attesa di invio",
-  ignored: (reason: string) =>
+  ignored: (reason: IgnoredReason): string =>
     ({
       currency_has_expenses: "cambio di valuta ignorato: c'erano già spese",
       unknown_participant: "ignorata: riguarda una persona che non è nel viaggio",
       unknown_target: "ignorata: riguarda qualcosa che non esiste",
       participant_in_use: "ignorata: la persona compare ancora in spese o pagamenti",
       invalid_merge: "ignorata: l'unione non era possibile",
-    })[reason] ?? "ignorata",
+    })[reason],
   // What happened (prototype keys h_*, plus the operations the prototype does not draw).
   h_create: "ha creato il viaggio",
   h_add: (d: string) => `ha aggiunto ${d}`,

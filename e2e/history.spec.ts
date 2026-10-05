@@ -154,8 +154,8 @@ test("a closed trip disables every edit control", async ({ page }) => {
 const conflictOps = () => [
   ...dinner(),
   expenseCreated("e2", expense({ description: "Pizza", amount: 3000 })),
-  op({ type: "ExpenseEdited", expenseId: "e1", baseOpId: "create-e1", expense: expense({ description: "Cena", amount: 10000 }) }, { id: "mine", by: "p1" }),
-  op({ type: "ExpenseEdited", expenseId: "e1", baseOpId: "create-e1", expense: expense({ description: "Cena", amount: 11000 }) }, { id: "theirs", by: "p2" }),
+  op({ type: "ExpenseEdited", expenseId: "e1", baseOpId: "create-e1", expense: expense({ description: "Cena", amount: 10000, payers: [{ participantId: "p1", amount: 10000 }] }) }, { id: "mine", by: "p1" }),
+  op({ type: "ExpenseEdited", expenseId: "e1", baseOpId: "create-e1", expense: expense({ description: "Cena", amount: 11000, payers: [{ participantId: "p1", amount: 11000 }] }) }, { id: "theirs", by: "p2" }),
 ];
 
 test("the conflict banner shows on open, filters the list, and goes away once seen", async ({ page }) => {

@@ -1,5 +1,6 @@
 import { upcastOperation } from "../../domain";
-import type { IgnoredReason, Operation, StoredOperation, Trip } from "../../domain";
+import type { IgnoredReason, Operation, Trip } from "../../domain";
+import type { RejectedItem } from "../sync";
 
 export type HistoryAction =
   | { kind: "restore-expense"; expenseId: string }
@@ -26,12 +27,6 @@ export interface HistoryItem {
   action: HistoryAction | null;
 }
 
-interface Refused {
-  operation: StoredOperation;
-  reason: string;
-  detail: string;
-}
-
 /** Ids of the edits of an expense that were made without knowing about each other, and the ones they overwrote. */
 function conflictingEdits(trip: Trip): Set<string> {
   const flagged = new Set<string>();
@@ -47,19 +42,26 @@ function conflictingEdits(trip: Trip): Set<string> {
   return flagged;
 }
 
-/** The latest delete of each expense or settlement that is still deleted: the one that carries "Ripristina". */
-function restorableDeletes(trip: Trip, ops: Map<string, Operation>): Map<string, HistoryAction> {
-  const latest = new Map<string, string>();
+/**
+ * The actions the history offers, by the operation that carries them: "Ripristina" on the latest delete of an expense
+ * or settlement that is still deleted, "Annulla unione" on a merge that still stands.
+ */
+function actionsByOp(trip: Trip, ops: Map<string, Operation>): Map<string, HistoryAction> {
+  const lastExpenseDelete = new Map<string, string>();
+  const lastSettlementDelete = new Map<string, string>();
   for (const entry of trip.history) {
     const op = ops.get(entry.opId);
-    if (op?.type === "ExpenseDeleted") latest.set(`e:${op.expenseId}`, op.id);
-    if (op?.type === "SettlementDeleted") latest.set(`s:${op.settlementId}`, op.id);
+    if (op?.type === "ExpenseDeleted") lastExpenseDelete.set(op.expenseId, op.id);
+    if (op?.type === "SettlementDeleted") lastSettlementDelete.set(op.settlementId, op.id);
   }
   const actions = new Map<string, HistoryAction>();
-  for (const [key, opId] of latest) {
-    const id = key.slice(2);
-    if (key.startsWith("e:") && trip.expenses.find((e) => e.id === id)?.deleted) actions.set(opId, { kind: "restore-expense", expenseId: id });
-    if (key.startsWith("s:") && trip.settlements.find((s) => s.id === id)?.deleted) actions.set(opId, { kind: "restore-settlement", settlementId: id });
+  for (const expense of trip.expenses) {
+    const opId = lastExpenseDelete.get(expense.id);
+    if (expense.deleted && opId) actions.set(opId, { kind: "restore-expense", expenseId: expense.id });
+  }
+  for (const settlement of trip.settlements) {
+    const opId = lastSettlementDelete.get(settlement.id);
+    if (settlement.deleted && opId) actions.set(opId, { kind: "restore-settlement", settlementId: settlement.id });
   }
   for (const merge of trip.merges) if (!merge.undone) actions.set(merge.opId, { kind: "undo-merge", mergeOpId: merge.opId });
   return actions;
@@ -86,9 +88,9 @@ function previousNames(trip: Trip, ops: Map<string, Operation>): Map<string, str
  * The history, newest first (SPEC.md §3.15): every operation of the folded log, then the ones this device
  * made that the server refused, placed by time. Pure; the screen only words it.
  */
-export function historyItems(trip: Trip, operations: Operation[], rejected: Refused[]): HistoryItem[] {
+export function historyItems(trip: Trip, operations: Operation[], rejected: RejectedItem[]): HistoryItem[] {
   const ops = new Map(operations.map((o) => [o.id, o]));
-  const actions = restorableDeletes(trip, ops);
+  const actions = actionsByOp(trip, ops);
   const conflicts = conflictingEdits(trip);
   const renamedFrom = previousNames(trip, ops);
 
