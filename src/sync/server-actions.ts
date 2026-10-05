@@ -35,7 +35,7 @@ export async function deleteTrip({ api, store }: Deps, tripId: string, token: st
   const answer = await api.deleteTrip(token, operation);
   if (answer.kind !== "ok") return failed(answer);
   const deletion: Deletion = { deletedBy: answer.deletedBy, deletedAt: answer.deletedAt, restoreUntil: answer.restoreUntil };
-  await store.setAccess(tripId, "deleted", deletion);
+  await store.setAccess(tripId, token, "deleted", deletion);
   return { status: "ok", deletion };
 }
 
@@ -44,7 +44,7 @@ export async function restoreTrip({ api, store }: Deps, tripId: string | null, t
   const answer = await api.restoreTrip(token, operation);
   if (answer.kind !== "ok") return failed(answer);
   if (tripId && (await store.hasTrip(tripId))) {
-    await store.setAccess(tripId, "ok", null);
+    await store.setAccess(tripId, token, "ok", null);
     await syncTrip({ tripId, store, api });
   }
   return { status: "ok" };

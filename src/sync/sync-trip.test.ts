@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { expenseCreated, op, tripCreated } from "../../domain/testing";
+import type { Operation } from "../../domain";
 import { syncTrip } from "./sync-trip";
 import { deletion, FakeServer } from "./testing/fake-server";
 import { MemoryStore } from "./testing/memory-store";
@@ -89,6 +90,20 @@ describe("syncTrip", () => {
     expect(store.lastSeq).toBe(2);
   });
 
+  it("an operation this version cannot read is asked for again on the next round, so an updated app still folds it", async () => {
+    const { server, store, run } = setup();
+    server.external(op({ type: "TripRenamed", name: "A" }, { id: "x1" }));
+    server.external({ ...op({ type: "TripRenamed", name: "B" }, { id: "from-the-future" }), v: 99 } as unknown as Operation);
+    server.external(op({ type: "TripRenamed", name: "C" }, { id: "x3" }));
+
+    await run();
+    await run();
+
+    expect(store.confirmedLog().map((e) => e.operation.id)).toEqual(["x1", "x3"]);
+    expect(store.lastSeq).toBe(1);
+    expect(server.pullCalls).toEqual([0, 1]);
+  });
+
   it("offline: the outbox stays as it is", async () => {
     const { server, store, run } = setup();
     server.failure = { kind: "offline" };
@@ -114,6 +129,25 @@ describe("syncTrip", () => {
     server.failure = null;
     expect((await run()).status).toBe("link_changed");
     expect(server.pushCalls).toHaveLength(1);
+  });
+
+  it("an answer about a token the device has meanwhile replaced does not mark the new link as old", async () => {
+    const { server, store } = setup();
+    store.write(expenseCreated("e1"));
+    // This device regenerates the link while a round with the old token is in flight.
+    const api = {
+      ...server.api,
+      push: async () => {
+        await store.adoptTrip("trip-1", "token-2");
+        return { kind: "link_changed" as const, tripId: "trip-1" };
+      },
+    };
+
+    await syncTrip({ tripId: "trip-1", store, api });
+
+    expect(store.access).toBe("ok");
+    expect(store.outbox).toHaveLength(1);
+    expect((await syncTrip({ tripId: "trip-1", store, api: server.api })).status).toBe("synced");
   });
 
   it("410 trip_deleted: keeps the outbox and the deletion, and pushes it all once the trip is restored", async () => {
@@ -153,6 +187,36 @@ describe("syncTrip", () => {
 
     expect((await run()).status).toBe("local");
     expect(server.pushCalls).toEqual([]);
+  });
+
+  it("an operation the push answer says nothing about stays in the outbox: only a rejection is final", async () => {
+    const { server, store } = setup();
+    const push = server.api.push;
+    const api = {
+      ...server.api,
+      push: async (...args: Parameters<typeof push>) => {
+        const answer = await push(...args);
+        return answer.kind === "ok" ? { ...answer, results: answer.results.slice(0, 1) } : answer;
+      },
+    };
+    store.write(expenseCreated("e1"), expenseCreated("e2"));
+
+    await syncTrip({ tripId: "trip-1", store, api });
+
+    expect(store.rejected).toEqual([]);
+    expect(store.outbox.map((item) => item.operation.id)).toEqual(["create-e2"]);
+    expect((await syncTrip({ tripId: "trip-1", store, api: server.api })).status).toBe("synced");
+    expect(store.outbox).toEqual([]);
+  });
+
+  it("a push answer without results is an error and loses nothing", async () => {
+    const { server, store } = setup();
+    const api = { ...server.api, push: async () => ({ kind: "ok" as const, tripId: "trip-1" }) as Awaited<ReturnType<typeof server.api.push>> };
+    store.write(expenseCreated("e1"));
+
+    expect((await syncTrip({ tripId: "trip-1", store, api })).status).toBe("error");
+    expect(store.outbox).toHaveLength(1);
+    expect(store.rejected).toEqual([]);
   });
 
   it("an unexpected server answer is an error and loses nothing", async () => {

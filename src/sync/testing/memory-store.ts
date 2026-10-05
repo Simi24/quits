@@ -38,7 +38,8 @@ export class MemoryStore implements LinkStore {
     this.lastSeq = Math.max(this.lastSeq, lastSeq);
   };
 
-  setAccess = async (_tripId: string, access: Access, deletion: Deletion | null) => {
+  setAccess = async (_tripId: string, token: string, access: Access, deletion: Deletion | null) => {
+    if (token !== this.token) return;
     this.access = access;
     this.deletion = deletion;
   };

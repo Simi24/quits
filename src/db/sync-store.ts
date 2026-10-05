@@ -41,11 +41,11 @@ export const idbSyncStore: LinkStore = {
     await tx.done;
   },
 
-  async setAccess(tripId, access, deletion) {
+  async setAccess(tripId, token, access, deletion) {
     const db = await openQuitsDb();
     const tx = db.transaction("trips", "readwrite");
     const meta = await tx.store.get(tripId);
-    if (meta) await tx.store.put({ ...meta, access, deletion });
+    if (meta && meta.token === token) await tx.store.put({ ...meta, access, deletion });
     await tx.done;
   },
 

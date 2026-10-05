@@ -78,7 +78,11 @@ export interface SyncStore {
   applyPush: (tripId: string, settled: Settled[]) => Promise<void>;
   /** Adds the operations to the confirmed log and moves the cursor, in one step. */
   applyPull: (tripId: string, operations: SequencedOperation[], lastSeq: number) => Promise<void>;
-  setAccess: (tripId: string, access: Access, deletion: Deletion | null) => Promise<void>;
+  /**
+   * Remembers what the server said about the trip when asked with `token`. Ignored once the trip holds
+   * another token: an answer about a link this device has since replaced is no longer about this trip's link.
+   */
+  setAccess: (tripId: string, token: string, access: Access, deletion: Deletion | null) => Promise<void>;
 }
 
 /** What opening a link needs on top of syncing: finding the trip a token belongs to, and adopting one. */

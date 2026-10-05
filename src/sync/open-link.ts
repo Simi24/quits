@@ -32,7 +32,7 @@ export async function openLink({ token, store, api }: OpenLinkDeps): Promise<Lin
     case "deleted":
       if (await store.hasTrip(answer.tripId)) {
         await store.adoptTrip(answer.tripId, token);
-        await store.setAccess(answer.tripId, "deleted", answer.deletion);
+        await store.setAccess(answer.tripId, token, "deleted", answer.deletion);
       }
       return { status: "deleted", tripId: answer.tripId, deletion: answer.deletion };
     case "link_changed":
