@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
-import { activateCreatorCode, createTrip, fillTripForm, openCreateForm, sheet, tab } from "./trip-flow.ts";
+import { activateCreatorCode, addExpense, createTrip, fillTripForm, openCreateForm, sheet, tab } from "./trip-flow.ts";
 
 // Issue #29: on a phone nothing scrolls sideways, the two date fields never overlap, and no form
 // control is small enough to make iOS zoom the page on focus. Runs on the "pixel" and "iphone" projects.
@@ -47,6 +47,24 @@ const SCREENS: { name: string; open: (page: Page) => Promise<void> }[] = [
     },
   },
   {
+    name: "Saldi",
+    open: async (page) => {
+      await createTrip(page);
+      await addExpense(page, { description: "Cena", amount: "100" });
+      await tab(page, "Saldi").click();
+      await expect(page.getByRole("button", { name: "Registra", exact: true }).first()).toBeVisible();
+    },
+  },
+  {
+    name: "expense detail",
+    open: async (page) => {
+      await createTrip(page);
+      await addExpense(page, { description: "Cena", amount: "100" });
+      await page.getByTestId("expense-row").filter({ hasText: "Cena" }).click();
+      await expect(page.getByRole("button", { name: "Modifica", exact: true })).toBeVisible();
+    },
+  },
+  {
     name: "Viaggio",
     open: async (page) => {
       await createTrip(page);
@@ -70,6 +88,40 @@ const smallControls = (page: Page) =>
       .filter((c) => c.size < 16),
   );
 
+/**
+ * Interactive elements whose real hit area is under 44 px either way (WCAG 2.5.5, iOS guidelines). The hit
+ * area is measured the way a finger meets it: the run of points around the centre that land on the control
+ * itself, so a padded or extended (pseudo-element) area counts and a bare 38 px pill does not. Links inside a
+ * line of text are exempt, as in WCAG. Whole pixels are probed, so 43 stands for a 44 px box.
+ */
+const smallHitAreas = (page: Page) =>
+  page.evaluate(() => {
+    const TARGETS = "button, a[href], input:not([type=hidden]), select, textarea, summary, [role=tab], [role=button], [role=switch]";
+    const owns = (el: Element, x: number, y: number) => {
+      const hit = document.elementFromPoint(x, y);
+      return hit !== null && (hit === el || el.contains(hit) || hit.closest("label")?.control === el);
+    };
+    const run = (el: Element, cx: number, cy: number, dx: number, dy: number) => {
+      let n = 0;
+      while (n < 60 && owns(el, cx + dx * (n + 1), cy + dy * (n + 1))) n++;
+      return n;
+    };
+    return [...document.querySelectorAll<HTMLElement>(TARGETS)]
+      .filter((el) => el.getClientRects().length > 0 && getComputedStyle(el).visibility !== "hidden" && !el.closest("[inert], [aria-hidden=true]"))
+      .filter((el) => !(el.tagName === "A" && el.closest("p, li") && getComputedStyle(el).display === "inline"))
+      .map((el) => {
+        el.scrollIntoView({ block: "center", inline: "center" });
+        const r = el.getBoundingClientRect();
+        const cx = Math.round(r.left + r.width / 2);
+        const cy = Math.round(r.top + r.height / 2);
+        if (!owns(el, cx, cy)) return null; // behind a sheet or off screen: not a target right now
+        const width = run(el, cx, cy, -1, 0) + run(el, cx, cy, 1, 0) + 1;
+        const height = run(el, cx, cy, 0, -1) + run(el, cx, cy, 0, 1) + 1;
+        return { name: el.getAttribute("aria-label") || el.textContent?.trim().slice(0, 30) || el.id || el.tagName, width, height };
+      })
+      .filter((c) => c !== null && (c.width < 43 || c.height < 43));
+  });
+
 const dateBoxes = async (page: Page, from: string, to: string) => {
   const a = await page.locator(`#${from}`).boundingBox();
   const b = await page.locator(`#${to}`).boundingBox();
@@ -88,6 +140,13 @@ for (const width of WIDTHS) {
         await screen.open(page);
         expect(await overflowing(page)).toEqual([]);
         expect(await smallControls(page)).toEqual([]);
+      });
+    }
+
+    for (const screen of SCREENS) {
+      test(`${screen.name}: every control has a 44 px hit area`, async ({ page }) => {
+        await screen.open(page);
+        expect(await smallHitAreas(page)).toEqual([]);
       });
     }
 

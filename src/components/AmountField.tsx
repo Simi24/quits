@@ -31,7 +31,7 @@ export const AmountField = ({ id, label, value, currency, negative = false, onCh
           value={value}
           onChange={(event) => onChange(event.target.value)}
           placeholder={lang === "it" ? "0,00" : "0.00"}
-          className="display num min-w-0 flex-1 bg-transparent p-0 text-[calc(40px*var(--d-scale))] outline-none placeholder:text-ink-2 placeholder:opacity-60"
+          className="display num -my-1.5 min-w-0 flex-1 bg-transparent px-0 py-1.5 text-[calc(40px*var(--d-scale))] outline-none placeholder:text-ink-2 placeholder:opacity-60"
         />
         <span className="text-[22px] font-bold text-ink-2">{currency}</span>
       </div>

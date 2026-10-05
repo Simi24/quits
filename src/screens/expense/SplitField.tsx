@@ -44,7 +44,7 @@ export const SplitField = ({ draft, evaluation, onChange }: SplitFieldProps) => 
       {draft.fromDefault && draft.method === "shares" ? <small className="text-[13.5px] text-ink-2">{t.expenses.fromDefault}</small> : null}
       {draft.method === "equal" ? (
         <div className="flex justify-end">
-          <button type="button" onClick={() => onChange({ among: trip.participants.map((p) => p.id) })} className="min-h-11 text-sm font-semibold underline decoration-ink-2 decoration-[1.5px] underline-offset-[3px]">
+          <button type="button" onClick={() => onChange({ among: trip.participants.map((p) => p.id) })} className="min-h-11 min-w-11 text-sm font-semibold underline decoration-ink-2 decoration-[1.5px] underline-offset-[3px]">
             {t.expenses.everyone}
           </button>
         </div>
