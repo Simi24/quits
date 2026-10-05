@@ -14,6 +14,7 @@ export { SelectField } from "./SelectField";
 export { Sheet } from "./Sheet";
 export { Stamp } from "./Stamp";
 export { Stepper } from "./Stepper";
+export { DateRangeField } from "./DateRangeField";
 export { TextField } from "./TextField";
 export { Ticket } from "./Ticket";
 export { Toast } from "./Toast";

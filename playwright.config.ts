@@ -16,6 +16,8 @@ const devVarsFile = new URL(".dev.vars", import.meta.url);
 // watches `.dev.vars`, from restarting under a running test.
 if (!existsSync(devVarsFile) || readFileSync(devVarsFile, "utf8") !== devVars) writeFileSync(devVarsFile, devVars);
 
+const PHONE_SPEC = /phone-layout\.spec\.ts$/;
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
@@ -28,7 +30,12 @@ export default defineConfig({
     locale: "it-IT",
     trace: "retain-on-failure",
   },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  projects: [
+    { name: "chromium", use: { ...devices["Desktop Chrome"] }, testIgnore: PHONE_SPEC },
+    // The phone-layout spec runs on device emulation only: Chromium (Pixel) and WebKit (iPhone), the engine of iOS.
+    { name: "pixel", use: { ...devices["Pixel 7"] }, testMatch: PHONE_SPEC },
+    { name: "iphone", use: { ...devices["iPhone 13"] }, testMatch: PHONE_SPEC },
+  ],
   // The built app served by the same runtime as production, locally and with no
   // network (SPEC.md G-B11). `npm run build` must have run first.
   webServer: {

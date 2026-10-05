@@ -37,3 +37,31 @@ select:focus-visible {
   text-wrap: balance;
 }
 
+
+/* Native date inputs bring a minimum width of their own (the iOS and Android pickers): normalise them
+   so the field takes the width of its grid cell instead of pushing the form sideways (issue #29). */
+input[type="date"] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  text-align: start;
+}
+
+input[type="date"]::-webkit-date-and-time-value {
+  min-width: 0;
+  text-align: start;
+}
+
+/* iOS zooms the page on focus into a control under 16px: keep them at 16px on phones, without ever
+   turning the user's own zoom off. In the base layer so a utility (the big amount input) still wins. */
+@layer base {
+  @media (max-width: 767px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px;
+    }
+  }
+}

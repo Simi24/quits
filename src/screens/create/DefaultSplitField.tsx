@@ -13,7 +13,9 @@ export const DefaultSplitField = ({ people, method, shares, onMethod, onShares }
   const { t } = useDevice();
   return (
     <div className="grid gap-2.5">
-      <span className="text-sm font-semibold">{t.create.defSplit}</span>
+      <span className="text-sm font-semibold">
+        {t.create.defSplit} <span className="font-normal text-ink-2">({t.create.optionalOne})</span>
+      </span>
       <Segmented
         label={t.create.defSplit}
         value={method}

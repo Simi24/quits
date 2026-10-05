@@ -22,6 +22,11 @@ describe("newTripIssues", () => {
     expect(newTripIssues(form({ name: " ", people: ["Simone"] }))).toEqual(["name_missing", "people_missing"]);
   });
 
+  it("tells apart a missing creator name from a missing second person", () => {
+    expect(newTripIssues(form({ people: [] }))).toEqual(["you_missing", "people_missing"]);
+    expect(newTripIssues(form({ people: ["Simone"] }))).toEqual(["people_missing"]);
+  });
+
   it("refuses an end date before the start", () => {
     expect(newTripIssues(form({ from: "2026-06-20", to: "2026-06-13" }))).toEqual(["dates_reversed"]);
   });
