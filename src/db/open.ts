@@ -26,6 +26,16 @@ export const openQuitsDb = (): Promise<IDBPDatabase<QuitsDb>> => {
         }
       }
     },
+    // A newer build wants to upgrade: let it, or its start would hang behind this tab or the service worker.
+    // The next call here opens again.
+    blocking() {
+      void opened?.then((db) => db.close());
+      opened = undefined;
+    },
+    // The browser closed the connection (storage cleared, a crash): the next call opens a new one.
+    terminated() {
+      opened = undefined;
+    },
   });
   return opened;
 };
