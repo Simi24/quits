@@ -5,7 +5,7 @@ import { participantHandlers } from "./handlers/participants.ts";
 import { settlementHandlers } from "./handlers/settlements.ts";
 import { tripHandlers } from "./handlers/trip.ts";
 import { upcastOperation } from "./operations.ts";
-import type { Operation, SequencedOperation } from "./operations.ts";
+import type { Operation, SequencedOperation, StoredOperation } from "./operations.ts";
 import type { IgnoredReason, Trip } from "./trip.ts";
 
 const handlers: Handlers = { ...tripHandlers, ...expenseHandlers, ...settlementHandlers, ...participantHandlers, ...categoryHandlers };
@@ -78,5 +78,21 @@ export function foldTrip(log: SequencedOperation[]): Trip {
   const entries = [...log]
     .sort((a, b) => a.seq - b.seq)
     .map(({ seq, operation }) => ({ seq, operation: upcastOperation(operation), pending: false }));
+  return foldEntries(entries);
+}
+
+/**
+ * The confirmed log with the device's pending operations folded on top, in outbox order (SPEC.md §5.1).
+ * Call it again after every pull: a pending operation the server has since confirmed counts once,
+ * at its confirmed place.
+ */
+export function foldWithPending(confirmed: SequencedOperation[], pending: StoredOperation[]): Trip {
+  const sorted = [...confirmed].sort((a, b) => a.seq - b.seq);
+  const confirmedIds = new Set(sorted.map((c) => c.operation.id));
+  const lastSeq = sorted.at(-1)?.seq ?? 0;
+  const entries: FoldEntry[] = sorted.map(({ seq, operation }) => ({ seq, operation: upcastOperation(operation), pending: false }));
+  pending
+    .filter((operation) => !confirmedIds.has(operation.id))
+    .forEach((operation, i) => entries.push({ seq: lastSeq + 1 + i, operation: upcastOperation(operation), pending: true }));
   return foldEntries(entries);
 }
