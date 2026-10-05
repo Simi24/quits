@@ -41,4 +41,10 @@ describe("findDuplicateSettlement", () => {
   it("does not match a deleted settlement", () => {
     expect(findDuplicateSettlement(trip, { fromParticipantId: "p3", toParticipantId: "p1", amount: 500, date: "2026-06-15" })).toBeUndefined();
   });
+
+  it("sees through a merge: a settlement by X is a duplicate of the same one by Y", () => {
+    const merged = foldTrip(sequence([tripCreated(), record("s1", "p3", "p1"), op({ type: "ParticipantsMerged", fromParticipantId: "p3", intoParticipantId: "p2" })]));
+    const found = findDuplicateSettlement(merged, { fromParticipantId: "p2", toParticipantId: "p1", amount: 1000, date: "2026-06-15" });
+    expect(found?.id).toBe("s1");
+  });
 });
