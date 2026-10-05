@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { parseOperation, balances, expenseShares, foldTrip, foldWithPending, suggestSettlements, tripTotals } from "./index.ts";
 import type { Operation, StoredOperation } from "./index.ts";
-import { sequence } from "./testing.ts";
+import { op, sequence } from "./testing.ts";
 import { sardegnaOperations } from "./sardegna.fixture.ts";
 
 // Expected numbers come from running the prototype's own code (docs/prototype/flussi.html) on its seed.
 const log = () => sequence(sardegnaOperations());
 const trip = () => foldTrip(log());
+const expenseOf = (operations: Operation[], opId: string) =>
+  (operations.find((o) => o.id === opId) as Extract<Operation, { type: "ExpenseCreated" }>).expense;
 
 describe("Sardegna 2026, rebuilt as operations", () => {
   it("reproduces the prototype's balances, which sum to zero", () => {
@@ -66,35 +68,42 @@ describe("Sardegna 2026, rebuilt as operations", () => {
     expect(foldTrip(shuffled)).toEqual(expected);
   });
 
-  it("converges between two devices that each made a change offline and the server sequenced both", () => {
+  it("converges between two devices that each edited the same expense offline, once the server sequenced both", () => {
     const base = sardegnaOperations();
-    const a: Operation = { ...base.find((o) => o.id === "delete-e23")!, id: "a-rename", type: "TripRenamed", name: "Sardegna!" } as unknown as Operation;
-    const b: Operation = { ...a, id: "b-rename", name: "Cala Gonone" } as Operation;
-    const serverLog = sequence([...base, b, a]);
-    const deviceA = foldWithPending(serverLog, [a]);
-    const deviceB = foldWithPending(serverLog, []);
+    const e4 = expenseOf(base, "create-e4");
+    const fromA = op({ type: "ExpenseEdited", expenseId: "e4", baseOpId: "e4-theirs", expense: { ...e4, description: "Cena A" } }, { id: "a-edit", by: "p1", device: "a" });
+    const fromB = op({ type: "ExpenseEdited", expenseId: "e4", baseOpId: "e4-theirs", expense: { ...e4, description: "Cena B" } }, { id: "b-edit", by: "p2", device: "b" });
+    const confirmed = sequence(base);
+    // Offline, each device sees only its own edit.
+    expect(foldWithPending(confirmed, [fromA]).expenses.find((e) => e.id === "e4")?.snapshot.description).toBe("Cena A");
+    expect(foldWithPending(confirmed, [fromB]).expenses.find((e) => e.id === "e4")?.snapshot.description).toBe("Cena B");
+    // The server sequenced B's push, then A's; each device pulls that log and still has its own in the outbox.
+    const serverLog = sequence([...base, fromB, fromA]);
+    const deviceA = foldWithPending([...serverLog].reverse(), [fromA]);
+    const deviceB = foldWithPending(serverLog, [fromB]);
     expect(deviceA).toEqual(deviceB);
-    expect(deviceA.name).toBe("Sardegna!");
+    expect(deviceA.expenses.find((e) => e.id === "e4")?.conflict).toEqual({ baseOpId: "e4-theirs", winnerOpId: "a-edit", loserOpIds: ["b-edit"] });
+    for (const { operation } of serverLog) expect(parseOperation(operation)).toMatchObject({ ok: true });
   });
 });
 
 describe("restore after delete-wins, on the Sardegna trip", () => {
   it("brings back the edit that lost to the delete", () => {
     const base = sardegnaOperations();
-    const gorropu = base.find((o) => o.id === "create-e10")!;
-    const edited = { ...(gorropu as Extract<Operation, { type: "ExpenseCreated" }>).expense, amount: 16000, payers: [{ participantId: "p5", amount: 16000 }] };
-    const log = sequence([
+    const edited = { ...expenseOf(base, "create-e10"), amount: 16000, payers: [{ participantId: "p5", amount: 16000 }] };
+    const operations = [
       ...base,
-      { ...gorropu, id: "del-e10", type: "ExpenseDeleted" } as unknown as Operation,
-      { ...gorropu, id: "edit-e10", type: "ExpenseEdited", baseOpId: "create-e10", expense: edited } as unknown as Operation,
-    ]);
-    const stillDeleted = foldTrip(log).expenses.find((e) => e.id === "e10")!;
+      op({ type: "ExpenseDeleted", expenseId: "e10" }, { id: "del-e10" }),
+      op({ type: "ExpenseEdited", expenseId: "e10", baseOpId: "create-e10", expense: edited }, { id: "edit-e10" }),
+    ];
+    const stillDeleted = foldTrip(sequence(operations)).expenses.find((e) => e.id === "e10")!;
     expect(stillDeleted.deleted).toBe(true);
-    const restored = foldTrip(sequence([...log.map((l) => l.operation), { ...gorropu, id: "restore-e10", type: "ExpenseRestored" } as unknown as Operation]));
-    const e10 = restored.expenses.find((e) => e.id === "e10")!;
+    const restoredLog = sequence([...operations, op({ type: "ExpenseRestored", expenseId: "e10" }, { id: "restore-e10" })]);
+    for (const { operation } of restoredLog) expect(parseOperation(operation)).toMatchObject({ ok: true });
+    const e10 = foldTrip(restoredLog).expenses.find((e) => e.id === "e10")!;
     expect(e10.deleted).toBe(false);
     expect(e10.snapshot.amount).toBe(16000);
-    expect(tripTotals(restored).total).toBe(456518 + 1000);
+    expect(tripTotals(foldTrip(restoredLog)).total).toBe(456518 + 1000);
   });
 });
 
