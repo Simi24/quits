@@ -139,7 +139,7 @@ Each operation is immutable and carries: a **client-generated id**, the **partic
 
 | Area | Operations | Payload |
 |---|---|---|
-| Trip | created\*; renamed (`TripRenamed`); dates changed (`TripDatesChanged`); currency changed (`TripCurrencyChanged`, only while no expenses); default split changed; closed; reopened; link regenerated\*; deleted\*; restored\* | creation fields of §3.2; the new name; the new dates (either may be empty); the new currency; the new default split |
+| Trip | created\*; renamed (`TripRenamed`); dates changed (`TripDatesChanged`); currency changed (`TripCurrencyChanged`, only while no expenses; a `TripCurrencyChanged` that the server sequences after the first expense or refund, e.g. from an offline device, is ignored by the fold and shown in the history as "cambio di valuta ignorato: c'erano già spese", decided under delegation, 2026-10-05); default split changed; closed; reopened; link regenerated\*; deleted\*; restored\* | creation fields of §3.2; the new name; the new dates (either may be empty); the new currency; the new default split |
 | Participants | added; renamed; removed (only if unused); merged; merge undone (`MergeUndone`) | name; old and new name; the merged pair (X into Y); the merge operation it undoes |
 | Expenses | created; edited; deleted; restored | **edited carries the full new expense snapshot** (description, amount, date, category, payers, split method and inputs) **plus `baseOpId`**, the operation it was based on ([#3](https://github.com/Simi24/quits/issues/3)) |
 | Settlements | recorded; deleted; restored | from, to, amount, date |
