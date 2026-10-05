@@ -1,13 +1,29 @@
-import { EqualMark } from "./components/EqualMark";
+import { useEffect, useState } from "react";
+import { listTrips, readDevice } from "./db";
+import type { DeviceRecord, TripSummary } from "./db";
+import { DeviceProvider } from "./device";
+import { AppScreens } from "./screens/AppScreens";
 
-export const App = () => (
-  <main className="grid min-h-full place-items-center bg-paper px-4">
-    <div className="flex flex-col items-start gap-4">
-      <div className="flex items-center gap-3">
-        <EqualMark />
-        <h1 className="display text-[calc(56px*var(--d-scale))]">quits</h1>
-      </div>
-      <p className="max-w-[28ch] text-ink-2">Chi ha pagato cosa in vacanza, e come tornare pari.</p>
+interface Boot {
+  device: DeviceRecord;
+  trips: TripSummary[];
+}
+
+/** Reads the device record and the trips on this device from IndexedDB, then hands over to the screens. */
+export const App = () => {
+  const [boot, setBoot] = useState<Boot | null>(null);
+
+  useEffect(() => {
+    void Promise.all([readDevice(), listTrips()]).then(([device, trips]) => setBoot({ device, trips }));
+  }, []);
+
+  return (
+    <div className="relative mx-auto h-full max-w-[30rem] overflow-hidden border-line bg-paper md:border-x-[1.5px]">
+      {boot ? (
+        <DeviceProvider device={boot.device}>
+          <AppScreens initialTrips={boot.trips} lastTripId={boot.device.lastTripId} />
+        </DeviceProvider>
+      ) : null}
     </div>
-  </main>
-);
+  );
+};
