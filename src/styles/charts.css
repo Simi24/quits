@@ -1,0 +1,144 @@
+/* Grafici (SPEC.md §8). Ported from the approved prototype (docs/prototype/grafici.html, variant Scelta); colours are the
+   tokens of tokens.css, so both themes follow. Only what utilities cannot say lives here: SVG text, textures, motion. */
+.charts-screen { container-type: inline-size; }
+.app-col:has(.charts-screen) { max-width: 760px; }
+
+.charts .feed { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); align-items: start; padding: 4px 16px 28px; }
+@container (min-width: 620px) {
+  .charts .feed { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; padding-inline: 24px; }
+  .charts .chart-wide { grid-column: 1 / -1; }
+}
+
+.charts .mini-btn { flex: none; min-height: 44px; padding: 0 13px; border-radius: 999px; font-size: 13.5px; font-weight: 700; box-shadow: inset 0 0 0 1.5px var(--line); color: var(--ink); }
+.charts .mini-btn:hover { box-shadow: inset 0 0 0 1.5px var(--ink-2); }
+.charts .mini-btn[aria-pressed="true"] { background: var(--ink); color: var(--receipt); box-shadow: none; }
+
+.charts .readout { min-height: 64px; padding: 10px 12px; border-radius: 12px; background: var(--paper-2); }
+
+/* the chart canvas */
+.charts .chart { position: relative; min-height: 40px; touch-action: pan-y; }
+.charts .chart svg { display: block; width: 100%; height: auto; overflow: visible; -webkit-user-select: none; user-select: none; }
+.charts .chart svg text { font-family: var(--f-text); fill: var(--ink-2); font-size: 11.5px; font-variant-numeric: tabular-nums; }
+.charts .chart svg text.strong { fill: var(--ink); font-weight: 700; font-size: 12.5px; }
+.charts .chart svg text.today { fill: var(--ink); font-weight: 700; }
+.charts .chart svg text.dim { opacity: 0.55; }
+.charts .chart svg .gl { stroke: var(--grid); stroke-width: 1; shape-rendering: crispEdges; }
+.charts .chart svg .base { stroke: var(--ink-2); stroke-width: 1; shape-rendering: crispEdges; }
+.charts .chart svg .hit { fill: transparent; cursor: pointer; outline: none; }
+.charts .chart svg .hit:focus-visible { fill: color-mix(in srgb, var(--ink) 7%, transparent); }
+.charts .chart svg .xh line { stroke: var(--ink); stroke-width: 1; }
+.charts .chart svg .lbl-bg { fill: var(--receipt); }
+.charts .chart svg .line-lead { stroke: var(--lead); }
+.charts .chart svg .line-ink { stroke: var(--ink); }
+.charts .chart svg .area { fill: color-mix(in srgb, var(--lead) 13%, transparent); stroke: none; }
+.charts .chart svg .dot-lead { fill: var(--lead); stroke: var(--receipt); }
+.charts .chart svg .dot-open { fill: var(--receipt); stroke: var(--lead); }
+.charts .chart svg .dot-ink { fill: var(--ink); stroke: var(--receipt); }
+
+.charts .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--ink-2); }
+.charts .legend span { display: inline-flex; align-items: center; gap: 6px; }
+.charts .legend b { color: var(--ink); font-weight: 600; }
+.charts .sw { width: 12px; height: 12px; border-radius: 3px; flex: none; background-color: var(--c); }
+.charts .key-line { display: inline-block; width: 18px; height: 0; border-top: 2.5px solid var(--lead); }
+.charts .key-dash { display: inline-block; width: 18px; height: 0; border-top: 2.5px dashed var(--lead); opacity: 0.8; }
+
+/* textures on HTML marks; the SVG ones are the patterns of TexturePatterns */
+.charts .tx-a { background-image: repeating-linear-gradient(45deg, var(--tx) 0 1.6px, transparent 1.6px 6px); }
+.charts .tx-b { background-image: repeating-linear-gradient(135deg, var(--tx) 0 1.6px, transparent 1.6px 6px); }
+.charts .tx-c { background-image: repeating-linear-gradient(45deg, var(--tx) 0 1.4px, transparent 1.4px 3.6px); }
+.charts .tx-d { background-image: radial-gradient(var(--tx) 1.2px, transparent 1.4px); background-size: 5px 5px; }
+.charts .tx-e { background-image: repeating-linear-gradient(135deg, var(--tx) 0 1.4px, transparent 1.4px 3.6px); }
+.charts .tx-x { background-image: repeating-linear-gradient(45deg, var(--tx) 0 1.3px, transparent 1.3px 6px), repeating-linear-gradient(135deg, var(--tx) 0 1.3px, transparent 1.3px 6px); }
+
+/* chart 1: category bars */
+.charts .catrow { display: grid; gap: 7px; padding: 8px 0; width: 100%; min-height: 44px; text-align: left; border-radius: 10px; }
+.charts .catrow:focus-visible { outline-offset: 2px; }
+.charts .hbar { display: block; height: 12px; border-radius: 0 4px 4px 0; background-color: var(--c); min-width: 2px; }
+.charts .catrow[data-selected] .hbar, .charts .catrow:hover .hbar { filter: brightness(1.06) saturate(1.05); }
+.charts [data-selected] { box-shadow: inset 0 0 0 0 transparent; }
+.charts .catrow[data-selected] { background: color-mix(in srgb, var(--ink) 5%, transparent); }
+
+/* chart 7: the long receipt */
+.charts .rk { display: grid; grid-template-columns: 26px 44px minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; padding: 10px 0; width: 100%; text-align: left; }
+.charts .rk-item + .rk-item { border-top: 2px dotted var(--line); }
+.charts .rk[data-selected] { background: color-mix(in srgb, var(--ink) 5%, transparent); }
+.charts .rk-pos { font-size: calc(20px * var(--d-scale)); color: var(--ink-2); text-align: center; }
+.charts .rk-d { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; font-weight: 700; font-size: 15px; line-height: 1.25; }
+.charts .rk-m { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 13px; color: var(--ink-2); line-height: 1.3; }
+.charts .rk-a { text-align: right; font-weight: 700; font-size: 15.5px; }
+.charts .rk-a small { display: block; font-weight: 500; font-size: 12.5px; color: var(--ink-2); }
+
+/* chart 3: paid and due */
+.charts .pvd { display: grid; gap: 6px; }
+.charts .pr { display: grid; gap: 8px; padding: 10px 0; width: 100%; text-align: left; transition: opacity 0.25s; }
+.charts .pr + .pr { border-top: 1.5px solid var(--line); }
+.charts .pr[data-selected] { background: color-mix(in srgb, var(--ink) 5%, transparent); }
+.charts .pr.dim { opacity: 0.55; }
+.charts .track { position: relative; height: 22px; }
+.charts .track > i { position: absolute; top: 5px; height: 12px; display: block; }
+.charts .track .paid { left: 0; background: var(--ink); border-radius: 0 4px 4px 0; }
+.charts .track .over { background: var(--pos); border-radius: 0 4px 4px 0; }
+.charts .track .short { background-color: color-mix(in srgb, var(--neg) 22%, transparent); background-image: repeating-linear-gradient(135deg, color-mix(in srgb, var(--neg) 70%, transparent) 0 1.5px, transparent 1.5px 5px); border-radius: 0 4px 4px 0; }
+.charts .track .due { top: 0; height: 22px; width: 3px; margin-left: -1.5px; background: var(--ink); border-radius: 2px; box-shadow: 0 0 0 2px var(--receipt); }
+.charts .pvd-key { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--ink-2); }
+.charts .pvd-key span { display: inline-flex; align-items: center; gap: 6px; }
+.charts .pvd-key i { display: inline-block; }
+.charts .k-paid { width: 16px; height: 10px; background: var(--ink); border-radius: 0 3px 3px 0; }
+.charts .k-due { width: 3px; height: 16px; background: var(--ink); border-radius: 2px; }
+.charts .k-over { width: 16px; height: 10px; background: var(--pos); border-radius: 0 3px 3px 0; }
+.charts .k-short { width: 16px; height: 10px; border-radius: 0 3px 3px 0; background-color: color-mix(in srgb, var(--neg) 22%, transparent); background-image: repeating-linear-gradient(135deg, color-mix(in srgb, var(--neg) 70%, transparent) 0 1.5px, transparent 1.5px 5px); }
+
+/* postcards: the charts one tap away */
+.charts .postcard {
+  position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 84px; gap: 14px; align-items: center;
+  width: 100%; padding: 18px 16px 18px 18px; text-align: left; border-radius: 16px;
+  background: var(--receipt); box-shadow: inset 0 0 0 1.5px var(--line);
+  transition: transform 0.18s cubic-bezier(0.3, 0.7, 0.4, 1.4);
+}
+.charts .postcard:active { transform: translateY(1px) rotate(-0.3deg); }
+.charts .postcard::after { content: ""; position: absolute; top: 14px; bottom: 14px; right: 112px; border-left: 1.5px dashed var(--line); }
+.charts .stamp-mini {
+  --r: 4px; width: 84px; height: 100px; padding: 9px; background: var(--paper-2); display: grid; place-items: center;
+  -webkit-mask: radial-gradient(circle var(--r) at var(--r) var(--r), #0000 97%, #000) calc(-1 * var(--r)) calc(-1 * var(--r)) / calc(var(--r) * 3) calc(var(--r) * 3) round;
+          mask: radial-gradient(circle var(--r) at var(--r) var(--r), #0000 97%, #000) calc(-1 * var(--r)) calc(-1 * var(--r)) / calc(var(--r) * 3) calc(var(--r) * 3) round;
+  transform: rotate(3deg);
+}
+.charts .stamp-mini svg { width: 100%; height: 100%; display: block; }
+
+/* chart 5: heat table */
+.charts .heat-wrap { overflow-x: auto; margin-inline: -4px; padding-inline: 4px; }
+.charts .heat { width: 100%; border-collapse: separate; border-spacing: 3px; table-layout: fixed; font-variant-numeric: tabular-nums; }
+.charts .heat th { font-size: 12px; font-weight: 600; color: var(--ink-2); padding: 0 1px 4px; line-height: 1.2; vertical-align: bottom; text-align: center; hyphens: none; }
+.charts .heat th.rowh { text-align: left; width: 104px; font-size: 13.5px; color: var(--ink); vertical-align: middle; padding: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.charts .heat th.hl { color: var(--ink); }
+.charts .heat th.hl span { box-shadow: inset 0 -3px 0 var(--hi); }
+.charts .heat td { padding: 0; }
+.charts .heat td button { width: 100%; height: 44px; text-align: center; border-radius: 8px; font-size: 13px; font-weight: 600; background: var(--h); color: var(--ink); }
+.charts .heat td button.inv { color: var(--on-lead); }
+.charts .heat td button.zero { background: transparent; box-shadow: inset 0 0 0 1.5px var(--line); color: var(--ink-2); font-weight: 500; }
+.charts .heat td.hl button { box-shadow: 0 0 0 2px var(--ink); }
+.charts .heat td button[data-selected] { outline: 2px solid var(--ink); outline-offset: 1px; }
+.charts .heat tfoot td { font-size: 13px; font-weight: 700; text-align: center; padding-top: 6px; border-top: 2px dashed var(--line); }
+.charts .heat tfoot th { padding-top: 6px; border-top: 2px dashed var(--line); }
+.charts .ramp { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink-2); }
+.charts .ramp i { flex: 1; max-width: 160px; height: 10px; border-radius: 3px; background: linear-gradient(90deg, color-mix(in srgb, var(--lead) 8%, var(--receipt)), color-mix(in srgb, var(--lead) 92%, var(--receipt))); box-shadow: inset 0 0 0 1px var(--line); }
+
+/* "Numeri": every chart's table twin */
+.charts .nt { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+.charts .nt th { text-align: left; font-size: 12.5px; color: var(--ink-2); font-weight: 600; padding: 0 6px 6px 0; }
+.charts .nt th.rowhead { font-size: 14px; color: var(--ink); font-weight: 400; padding: 7px 6px 7px 0; border-top: 1.5px solid var(--line); }
+.charts .nt td { padding: 7px 6px 7px 0; border-top: 1.5px solid var(--line); }
+.charts .nt .r { text-align: right; padding-right: 0; }
+.charts .nt .est th, .charts .nt .est td { color: var(--ink-2); font-style: italic; }
+
+/* motion only when the data changes, and never under reduced motion (SPEC.md §7.9) */
+@media (prefers-reduced-motion: no-preference) {
+  .charts .gx { animation: gx 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both; transform-origin: left center; }
+  .charts .gy { animation: gy 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both; transform-box: view-box; }
+  .charts .draw { stroke-dasharray: 1 1; animation: draw 0.9s cubic-bezier(0.4, 0, 0.2, 1) both; }
+  .charts .later { animation: fade 0.35s ease-out 0.75s both; }
+}
+@keyframes gx { from { transform: scaleX(0); } }
+@keyframes gy { from { transform: scaleY(0); } }
+@keyframes draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@media (forced-colors: active) { .charts .hbar, .charts .sw, .charts .track > i { forced-color-adjust: none; } }

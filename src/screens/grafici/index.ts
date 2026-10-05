@@ -1,0 +1,1 @@
+export { GraficiScreen } from "./GraficiScreen";

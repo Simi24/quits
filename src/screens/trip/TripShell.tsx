@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import type { SuggestedSettlement } from "../../../domain";
 import { Toast, useSingleFlight } from "../../components";
 import { useDevice } from "../../device";
@@ -10,12 +10,14 @@ import { SaldiScreen, SettlementDetail, SettlementSheet } from "../saldi";
 import { SpeseScreen } from "../spese";
 import { ViaggioScreen } from "../viaggio";
 import { WhoAreYou } from "../who";
-import { ChartsPlaceholder } from "./ChartsPlaceholder";
 import { Fab } from "./Fab";
 import { TabBar } from "./TabBar";
 import type { Tab } from "./TabBar";
 import { TripBar } from "./TripBar";
 import { useToast } from "./useToast";
+
+// The charts and their library load when the tab is first opened; the service worker precaches the chunk, so it works offline.
+const GraficiScreen = lazy(() => import("../grafici").then((m) => ({ default: m.GraficiScreen })));
 
 type OpenSheet =
   | { kind: "expense"; editingId: string | null }
@@ -86,7 +88,11 @@ export const TripShell = ({ onLeave }: TripShellProps) => {
           <SpeseScreen printId={printId} onOpenExpense={setDetailId} onOpenSettlement={(id) => setSheet({ kind: "settlement", id })} />
         ) : null}
         {tab === "saldi" ? <SaldiScreen onRecord={(prefill) => setSheet({ kind: "settle", prefill })} onRecordAll={(s) => void settleAll.run(s)} /> : null}
-        {tab === "grafici" ? <ChartsPlaceholder /> : null}
+        {tab === "grafici" ? (
+          <Suspense fallback={null}>
+            <GraficiScreen />
+          </Suspense>
+        ) : null}
         {tab === "viaggio" ? <ViaggioScreen onNotMe={() => setChoosingWho(true)} notify={(text) => show({ text })} /> : null}
       </main>
       {tab === "spese" ? <Fab label={t.expenses.newExpense} onClick={() => setSheet({ kind: "expense", editingId: null })} /> : null}

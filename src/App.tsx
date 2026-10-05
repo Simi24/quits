@@ -18,7 +18,7 @@ export const App = () => {
   }, []);
 
   return (
-    <div className="relative mx-auto h-full max-w-[30rem] overflow-hidden border-line bg-paper md:border-x-[1.5px]">
+    <div className="app-col relative mx-auto h-full max-w-[30rem] overflow-hidden border-line bg-paper md:border-x-[1.5px]">
       {boot ? (
         <DeviceProvider device={boot.device}>
           <AppScreens initialTrips={boot.trips} lastTripId={boot.device.lastTripId} />
