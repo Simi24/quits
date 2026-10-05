@@ -7,8 +7,20 @@ Splitting the shared costs of a trip among friends, until everyone is even.
 ### The trip
 
 **Trip**:
-A shared, time-bounded set of costs among a fixed circle of friends, kept in one currency. It is either open or closed; a closed trip is read-only until someone reopens it.
+A shared, time-bounded set of costs among a fixed circle of friends, kept in one currency. It is either open or closed; a closed trip is read-only until someone reopens it. A deleted trip can be restored for 30 days.
 _Avoid_: Group, event, archive (an archived trip is just a closed one)
+
+**Trip link**:
+The secret link to a trip. Whoever has it is in the trip; regenerating it makes the old one stop working.
+_Avoid_: Invite, share code
+
+**Creator code**:
+A personal secret that lets its holder create trips. Each one belongs to a named person and can be revoked on its own.
+_Avoid_: Admin password, invite
+
+**Creator**:
+Whoever holds a valid creator code. A creator can create trips but has no special powers inside one.
+_Avoid_: Admin, owner, organiser
 
 **Participant**:
 A name inside one trip. There are no accounts: a participant exists only within its trip.
