@@ -310,6 +310,7 @@ test("a deleted trip is listed on the landing with Ripristina", async ({ page })
   await tab(page, "Viaggio").click();
   await page.getByRole("button", { name: "Elimina il viaggio" }).click();
   await page.getByRole("button", { name: "Sì, elimina per tutti" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "Questo viaggio è stato eliminato" })).toBeVisible();
   await page.getByRole("button", { name: "Torna all'inizio" }).click();
 
   await expect(page.getByRole("heading", { name: "Eliminati" })).toBeVisible();
