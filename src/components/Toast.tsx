@@ -11,7 +11,7 @@ export const Toast = ({ text, action }: ToastProps) => (
   >
     <span>{text}</span>
     {action ? (
-      <button type="button" onClick={action.run} className="ml-auto min-h-11 px-2 font-bold text-hi">
+      <button type="button" onClick={action.run} className="ml-auto min-h-11 px-2 font-bold text-paper underline underline-offset-2">
         {action.label}
       </button>
     ) : null}

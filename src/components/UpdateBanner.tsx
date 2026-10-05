@@ -13,7 +13,7 @@ export const UpdateBanner = () => {
       <Button size="sm" onClick={acceptUpdate}>
         {t.pwa.updateNow}
       </Button>
-      <button type="button" onClick={dismissUpdate} className="min-h-11 px-2 font-bold text-hi">
+      <button type="button" onClick={dismissUpdate} className="min-h-11 px-2 font-bold text-paper underline underline-offset-2">
         {t.pwa.later}
       </button>
     </div>
