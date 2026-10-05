@@ -1,7 +1,6 @@
-import { expenseShares } from "./balances.ts";
+import { paidAndDue } from "./balances.ts";
 import { resolveCategory } from "./categories.ts";
 import type { ParticipantId } from "./ids.ts";
-import { effectiveExpense } from "./merge.ts";
 import type { Trip } from "./trip.ts";
 
 export type Totals = {
@@ -42,12 +41,9 @@ export function tripTotals(trip: Trip): Totals {
   const heads = shareHeads > 0 ? shareHeads : Math.max(1, trip.participants.length);
   const base = total - preTripTotal;
 
-  const paid: Record<ParticipantId, number> = {};
-  const due: Record<ParticipantId, number> = {};
+  const { paid, due } = paidAndDue(trip);
   const byCategory = new Map<string, number>();
   for (const e of live) {
-    for (const p of effectiveExpense(trip, e.snapshot).payers) paid[p.participantId] = (paid[p.participantId] ?? 0) + p.amount;
-    for (const [id, share] of Object.entries(expenseShares(trip, e).shares)) due[id] = (due[id] ?? 0) + share;
     const categoryId = resolveCategory(trip, e.snapshot.categoryId).id;
     byCategory.set(categoryId, (byCategory.get(categoryId) ?? 0) + e.snapshot.amount);
   }

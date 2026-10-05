@@ -2,14 +2,14 @@ import type { Operation } from "../operations.ts";
 import { participantsOf } from "../references.ts";
 import type { ExpenseRecord, ExpenseVersion, Trip } from "../trip.ts";
 import { conflictAfter } from "./conflict.ts";
-import type { Ctx, Handlers } from "./context.ts";
-import { allKnownIn, reviveParticipants } from "./references.ts";
+import type { HandlerContext, Handlers } from "./context.ts";
+import { allKnownIn, reviveParticipants } from "./revive.ts";
 
 type ExpenseWrite = Extract<Operation, { type: "ExpenseCreated" | "ExpenseEdited" }>;
 
 const findExpense = (trip: Trip, id: string): ExpenseRecord | undefined => trip.expenses.find((e) => e.id === id);
 
-const versionOf = ({ entry, afterClose }: Ctx, op: ExpenseWrite): ExpenseVersion => ({
+const versionOf = ({ entry, afterClose }: HandlerContext, op: ExpenseWrite): ExpenseVersion => ({
   opId: op.id,
   seq: entry.seq,
   by: op.by,

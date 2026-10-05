@@ -4,7 +4,7 @@ import type { IgnoredReason, Trip } from "../trip.ts";
 export type FoldEntry = { seq: number; operation: Operation; pending: boolean };
 
 /** What a handler sees while applying one operation. */
-export type Ctx = {
+export type HandlerContext = {
   trip: Trip;
   entry: FoldEntry;
   /** True when the trip is closed as this operation is applied (SPEC.md §3.2). */
@@ -14,5 +14,5 @@ export type Ctx = {
 };
 
 export type Handlers = {
-  [T in Operation["type"]]?: (ctx: Ctx, op: Extract<Operation, { type: T }>) => void;
+  [T in Operation["type"]]?: (ctx: HandlerContext, op: Extract<Operation, { type: T }>) => void;
 };

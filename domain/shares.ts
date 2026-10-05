@@ -44,12 +44,12 @@ export function splitExpense(amount: number, split: Split, order: ParticipantId[
     const w = weights[index] ?? 0;
     return { id, index, w, floor: Math.floor((total * w) / weightSum), remainder: (total * w) % weightSum };
   });
-  const rem = total - rows.reduce((a, row) => a + row.floor, 0);
+  const leftoverCount = total - rows.reduce((a, row) => a + row.floor, 0);
   const byRemainder = rows
     .filter((row) => row.w > 0)
     .sort((a, b) => b.remainder - a.remainder || a.index - b.index);
   const leftover: ParticipantId[] = [];
-  for (const row of byRemainder.slice(0, rem)) {
+  for (const row of byRemainder.slice(0, leftoverCount)) {
     row.floor += 1;
     leftover.push(row.id);
   }

@@ -82,7 +82,7 @@ describe("suggestSettlements", () => {
     expect(suggestSettlements(foldTrip(sequence([tripCreated()])))).toEqual([]);
   });
 
-  it("has the largest debtor pay the largest creditor, at most N-1 payments", () => {
+  it("has whoever owes most pay whoever is owed most, at most N-1 payments", () => {
     const trip = foldTrip(
       sequence([
         tripCreated(),

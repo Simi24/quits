@@ -1,5 +1,5 @@
 import type { Handlers } from "./context.ts";
-import { allKnown, reviveParticipants } from "./references.ts";
+import { allKnown, reviveParticipants } from "./revive.ts";
 
 export const settlementHandlers: Handlers = {
   SettlementRecorded({ trip, afterClose, ignore }, op) {

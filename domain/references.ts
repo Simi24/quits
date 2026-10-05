@@ -1,18 +1,12 @@
 import type { ExpenseSnapshot } from "./expense.ts";
 import type { ParticipantId } from "./ids.ts";
 import { resolveParticipant, effectiveExpense } from "./merge.ts";
+import { splitParticipantIds } from "./split.ts";
 import type { Trip } from "./trip.ts";
 
 /** Every participant id an expense names, as payer or in its split. */
 export function participantsOf(snapshot: ExpenseSnapshot): ParticipantId[] {
-  const { split } = snapshot;
-  const inSplit =
-    split.method === "equal"
-      ? split.among
-      : Object.keys(
-          split.method === "exact" ? split.amounts : split.method === "percentage" ? split.percentages : split.shares,
-        );
-  return [...new Set([...snapshot.payers.map((p) => p.participantId), ...inSplit])];
+  return [...new Set([...snapshot.payers.map((p) => p.participantId), ...splitParticipantIds(snapshot.split)])];
 }
 
 /** In a live expense or settlement, or in a merge that stands. */

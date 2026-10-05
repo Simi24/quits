@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { dateSchema, expenseSnapshotSchema } from "./expense.ts";
 import { idSchema } from "./ids.ts";
+import { positiveMinorUnits } from "./money.ts";
 import { defaultSplitSchema } from "./split.ts";
 import { validateExpense } from "./validate.ts";
 
@@ -19,7 +20,6 @@ const currency = z
       return false;
     }
   });
-const minorUnits = z.number().int().positive();
 
 // Version 1 wrote the category of an expense as `category`; version 2 calls it `categoryId`.
 const { categoryId: _categoryId, ...snapshotFields } = expenseSnapshotSchema.shape;
@@ -76,7 +76,7 @@ function operationSchemaOf<V extends number, S extends z.ZodType>(v: V, expense:
       settlementId: idSchema,
       fromParticipantId: idSchema,
       toParticipantId: idSchema,
-      amount: minorUnits,
+      amount: positiveMinorUnits,
       date: dateSchema,
     }),
     kind("SettlementDeleted", { settlementId: idSchema }),
@@ -96,7 +96,7 @@ const operationSchemaV1 = operationSchemaOf(
 );
 
 /** A settlement is between two different participants (SPEC.md §3.9). */
-const checked = <T extends z.ZodType>(schema: T) =>
+const withDistinctSettlementParties = <T extends z.ZodType>(schema: T) =>
   schema.refine(
     (o) => {
       const operation = o as { type: string; fromParticipantId?: string; toParticipantId?: string };
@@ -120,7 +120,10 @@ export type ParseResult =
   | { ok: true; operation: StoredOperation }
   | { ok: false; reason: "malformed" | "unknown_version"; detail: string };
 
-const knownSchemas = { 1: checked(operationSchemaV1), 2: checked(operationSchemaV2) };
+const knownSchemas = {
+  1: withDistinctSettlementParties(operationSchemaV1),
+  2: withDistinctSettlementParties(operationSchemaV2),
+};
 
 /**
  * Validates an operation received from outside (the Worker's push, a JSON backup).
