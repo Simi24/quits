@@ -3,6 +3,7 @@ import { listTrips, readDevice } from "./db";
 import type { DeviceRecord, TripSummary } from "./db";
 import { DeviceProvider } from "./device";
 import { AppScreens } from "./screens/AppScreens";
+import { isPrivacyPath, PrivacyScreen } from "./screens/privacy";
 
 interface Boot {
   device: DeviceRecord;
@@ -21,7 +22,11 @@ export const App = () => {
     <div className="app-col relative mx-auto h-full max-w-[30rem] overflow-hidden border-line bg-paper md:border-x-[1.5px]">
       {boot ? (
         <DeviceProvider device={boot.device}>
-          <AppScreens initialTrips={boot.trips} lastTripId={boot.device.lastTripId} />
+          {isPrivacyPath(window.location.pathname) ? (
+            <PrivacyScreen />
+          ) : (
+            <AppScreens initialTrips={boot.trips} lastTripId={boot.device.lastTripId} />
+          )}
         </DeviceProvider>
       ) : null}
     </div>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DevicePreferences, EqualMark, Segmented } from "../../components";
+import { DevicePreferences, EqualMark, FooterLinks, Segmented } from "../../components";
 import { useDevice } from "../../device";
 import type { TripSummary } from "../../db";
 import { CreatorCode } from "./CreatorCode";
@@ -81,6 +81,9 @@ export const Landing = ({ trips, onOpen, onCreate, onRestore }: LandingProps) =>
       <CreatorCode onCreate={onCreate} />
       <footer className="border-t-2 border-dashed border-line px-4 py-7">
         <DevicePreferences />
+        <nav aria-label={t.manage.footerLabel} className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-[14.5px]">
+          <FooterLinks />
+        </nav>
       </footer>
     </main>
   );

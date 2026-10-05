@@ -3,6 +3,8 @@ name: CI
 on:
   pull_request:
   workflow_dispatch:
+  # The deploy workflow runs the same gate before it ships (SPEC.md §11.4).
+  workflow_call:
 
 permissions:
   contents: read
