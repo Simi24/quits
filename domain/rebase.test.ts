@@ -56,3 +56,26 @@ describe("foldWithPending", () => {
     expect(foldTrip([...log].reverse())).toEqual(deviceA);
   });
 });
+
+describe("folding never changes the log", () => {
+  const log = () =>
+    sequence([
+      tripCreated({ defaultSplit: { method: "shares", shares: { p1: 2, p2: 1, p3: 1 } } }),
+      op({ type: "ParticipantAdded", participantId: "p4", name: "Chiara" }),
+      op({ type: "ParticipantRemoved", participantId: "p3" }),
+    ]);
+
+  it("leaves the operations as they were", () => {
+    const operations = log();
+    const before = structuredClone(operations);
+    foldTrip(operations);
+    expect(operations).toEqual(before);
+  });
+
+  it("gives the same trip when the same log is folded again after a longer one", () => {
+    const operations = log();
+    const first = structuredClone(foldTrip(operations.slice(0, 1)));
+    foldTrip(operations);
+    expect(foldTrip(operations.slice(0, 1))).toEqual(first);
+  });
+});
