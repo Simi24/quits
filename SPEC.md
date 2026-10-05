@@ -251,10 +251,10 @@ The sync path depends only on push and pull, so the backend choice stays reversi
 | **delete** (`POST`) | token | the trip-deleted operation | soft-deletes the trip (restorable for 30 days) and appends the operation. |
 | **restore** (`POST`) | token | the trip-restored operation | lifts the soft delete within the 30 days and appends the operation. |
 
-The paths of push, pull, regenerate, delete and restore are fixed in the slice that builds them ([G-B1](#17-open-gaps)); like every trip-scoped path they carry no trip id.
+The paths of push, pull, regenerate, delete and restore were fixed in S3 ([G-B1](#17-open-gaps), "Fixed in S3"); like every trip-scoped path they carry no trip id.
 
 ### 6.3 Ordering and idempotency
-The Durable Object is single-threaded with input/output gates: push is an `INSERT OR IGNORE` inside `transactionSync`, pull a `SELECT ... WHERE seq > ?` ([#3](https://github.com/Simi24/quits/issues/3)). No counters, conditions or retries are needed. Server actions append their operation inside the same kind of transaction, so it is sequenced like any other.
+The Durable Object is single-threaded with input/output gates: push looks the operation id up and inserts it inside `transactionSync` (an `INSERT OR IGNORE` on an `AUTOINCREMENT` table burns a sequence number on every ignored retry, which would leave gaps; fixed in S3), pull a `SELECT ... WHERE seq > ?` ([#3](https://github.com/Simi24/quits/issues/3)). No counters, conditions or retries are needed. Server actions append their operation inside the same kind of transaction, so it is sequenced like any other.
 
 ### 6.4 Errors the client must tell apart
 From the decided UX, with the status codes decided under delegation, 2026-10-05:
@@ -272,7 +272,7 @@ Two Durable Object classes, both SQLite-backed and in the EU jurisdiction.
 - **Trip** (one per trip, `idFromName(tripId)`):
   - `ops`: `seq INTEGER PRIMARY KEY AUTOINCREMENT`, `op_id TEXT UNIQUE`, and the operation itself as validated JSON ([#3](https://github.com/Simi24/quits/issues/3)).
   - Trip metadata: the `tripId`, the creator code (label) that created the trip ([#6](https://github.com/Simi24/quits/issues/6)) and the soft-delete time ([#7](https://github.com/Simi24/quits/issues/7)).
-- **Directory** (a singleton; decided under delegation, 2026-10-05): one row per token ever issued, `token_hash` (SHA-256 of the token, primary key), `trip_id`, `state` (`active` or `retired`). A trip has exactly one `active` row; tokens are never stored in clear, in the Directory, in the trip or in any operation.
+- **Directory** (a singleton; decided under delegation, 2026-10-05): one row per token ever issued, `token_hash` (SHA-256 of the token, primary key), `trip_id`, `state` (`active` or `retired`). A trip has exactly one `active` row; tokens are never stored in clear, in the Directory, in the trip or in any operation. When a trip is purged its rows are deleted, so its tokens, retired ones included, lead nowhere (S3).
 - Classes and migrations are declared in `wrangler.jsonc` (SQLite-backed classes, `new_sqlite_classes`) and deployed by Wrangler ([#7](https://github.com/Simi24/quits/issues/7)).
 - Backups: Durable Objects' built-in **30-day point-in-time recovery**, plus the JSON export ([#7](https://github.com/Simi24/quits/issues/7)).
 
@@ -493,7 +493,7 @@ docs/prototype/, docs/research/, prototypes/pwa/   the contract and the research
 Worker with `main` (the Worker entry), `assets` (the Vite build, single-page-application fallback, the API path running the Worker first), the two Durable Object bindings (trip and Directory) and their migrations, the Custom Domain route `quits.simonepetta.com`, a pinned `compatibility_date`. Security headers on pages: `Referrer-Policy: no-referrer` ([#6](https://github.com/Simi24/quits/issues/6)).
 
 ### 11.3 Jurisdiction
-All trip Durable Objects, and the Directory (decided under delegation, 2026-10-05), are created in the **EU jurisdiction** ([#12](https://github.com/Simi24/quits/issues/12)). **Verify at implementation that it is available on the Free plan; if it is not, stop and return to the author.**
+All trip Durable Objects, and the Directory (decided under delegation, 2026-10-05), are created in the **EU jurisdiction** ([#12](https://github.com/Simi24/quits/issues/12)). **Verify at implementation that it is available on the Free plan; if it is not, stop and return to the author.** Checked in S3 against the Cloudflare documentation: the Durable Objects data-location and pricing pages state no plan restriction for jurisdictions (SQLite-backed Durable Objects are the Free-plan option and `jurisdiction("eu")` is a property of the namespace); it can only be confirmed for real at the first deploy (S5), where a failure would show on the first request. workerd, locally and in tests, does not implement jurisdictions ("Jurisdiction restrictions are not implemented in workerd"), so the Worker reads the var `JURISDICTION` (`wrangler.jsonc`, `"eu"`) and only the explicit value `none` (set by the Vitest pool and by the Playwright dev server) turns the jurisdiction off; any other value keeps the EU.
 
 ### 11.4 Deploy
 **GitHub Actions** deploys on **merge to `main`** with a **new, minimally scoped Cloudflare API token** (a one-time manual step by the author) ([#7](https://github.com/Simi24/quits/issues/7)). The workflow runs the tests before deploying; if they fail, nothing ships.
@@ -699,6 +699,7 @@ No ticket decided these. **Group A**, the decisions that needed the author, was 
 
 ### Group B: implementation details, fixed in the slice
 Where a decision under delegation already fixed part of an item, that part is no longer open: in G-B1 the `403`/`410 link_changed`/`410 trip_deleted` answers and the paths `POST /api/trips` and `POST /api/creator/check` (the other endpoint paths of §6.2 are fixed with G-B1); in G-B2 the `Creator <code>` scheme (the trip-token scheme stays open); in G-B3 the secret name `CREATOR_CODES`; in G-B9 the script location `scripts/creator-codes.ts`.
+- Fixed in S4 (server side): `scripts/creator-codes.ts` has `add <label>`, `revoke <label>`, `list` and `sync` (re-uploads the secret when an upload failed; added because the file is saved before the upload). The code is shown once, before the upload. The secret and the JSON file are a list of `{ label, hash }` (hash: lowercase hex SHA-256 of the code trimmed and upper-cased). `QUITS_CONFIG_DIR` overrides `~/.config/quits` (tests use it).
 - **G-B1** Exact field names of operations and API bodies (S1, from the zod schemas); HTTP status codes and error bodies (S3); pull page size.
   - **Fixed in S1: operation field names** (the zod schemas in `domain/operations.ts` are the source of truth; this is their summary). Every operation is a flat object: `id` (client-generated), `v`, `by` (participant id), `device` (anonymous device id), `at` (ISO 8601 client time), `type`, plus the payload. The server's sequence number is not in the operation: the log is `{ seq, operation }`. Payloads:
     - `TripCreated { name, currency, participants: [{ id, name }] (at least 2, unique ids), from, to (date or null), defaultSplit }`; `TripRenamed { name }`; `TripDatesChanged { from, to }`; `TripCurrencyChanged { currency }`; `DefaultSplitChanged { defaultSplit }`; `TripClosed`, `TripReopened`, `LinkRegenerated`, `TripDeleted`, `TripRestored` (no payload; the last three are server actions, §3.13).
@@ -722,10 +723,24 @@ Where a decision under delegation already fixed part of an item, that part is no
     - The fold never changes an operation it is given: folding the same log twice gives the same trip.
     - `perDay = round(total / days)`, `perPersonPerDay = round(total / days / heads)`, as the prototype.
     - Rebase: the device folds its confirmed log, then its pending operations in outbox order, skipping any the server has since confirmed.
+  - **Fixed in S3: the HTTP API.** Every response is JSON, with `Referrer-Policy: no-referrer`, `Cache-Control: no-store` and `X-Content-Type-Options: nosniff`; every trip-scoped response carries `tripId`. Errors are `{ "error": "<code>" }` plus the fields named here.
+    - `POST /api/creator/check` (`Creator <code>`): `200 { ok: true }`; `403 invalid_creator_code`. The code is matched case-insensitively (hashed after trim and upper-casing).
+    - `POST /api/trips` (`Creator <code>`), body `{ operation: TripCreated }`: `201 { tripId, token, seq }`; `403 invalid_creator_code`; `400 invalid_operation` (`reason`, `detail`; also for an operation of another kind).
+    - `POST /api/push` (`Bearer`), body `{ operations: [...] }` (at most 100, else `413 too_large`; the client sends a longer outbox in batches): `200 { tripId, results }`, one result per operation, in order: `{ id, status: "appended", seq }`, `{ id, status: "stored", seq }` (already stored: idempotent retry), or `{ id: string | null, status: "rejected", reason, detail }` with `reason` `malformed`, `unknown_version` or `server_action` (create, regenerate, delete and restore only travel through their endpoints, §3.13). `detail` names failing fields, never contents. `400 bad_request` for a body that is not `{ operations: array }`.
+    - `GET /api/pull?after=<seq>` (`Bearer`; `after` defaults to 0): `200 { tripId, operations: [{ seq, operation }], hasMore }`, in sequence order, at most **500** per page (the pull page size); the client pulls again from the last `seq` while `hasMore`. `400 bad_request` for a bad `after`.
+    - `POST /api/trip/regenerate-link` (`Bearer`), body `{ operation: LinkRegenerated }`: `200 { tripId, token, seq }` with the new token; the old one is `410 link_changed` from then on. The operation is appended first and the token rotated second, so a failure never strands the trip; two simultaneous regenerations leave one winner and one `410 link_changed`.
+    - `POST /api/trip/delete` (`Bearer`), body `{ operation: TripDeleted }`: `200 { tripId, seq, deletedBy, deletedAt, restoreUntil }`.
+    - `POST /api/trip/restore` (`Bearer`), body `{ operation: TripRestored }`: `200 { tripId, restored, seq }`; the only request a deleted trip accepts; restoring a trip that is not deleted is `{ restored: false, seq: null }` and appends nothing.
+    - `410 trip_deleted { tripId, deletedBy, deletedAt, restoreUntil }` (`deletedBy` is a participant id, `deletedAt` and `restoreUntil` are ISO 8601, 30 days apart) answers every trip-scoped request but restore on a deleted trip, delete included; `410 link_changed { tripId }` answers a retired token.
+    - `401 unauthorized` (no or malformed `Bearer`), `404 trip_unavailable` (a token that leads to no trip: unknown, or its trip was purged; the two are indistinguishable on purpose), `404 not_found` (unknown `/api` path), `405 method_not_allowed`, `500 internal_error`.
+    - Logging: the Worker logs only a caught error, as `{ event, where, error }` (the route and the error's class name): no header, IP, token or operation content (§10.1).
 - **G-B2** `Authorization` scheme (S3).
+  - Fixed in S3: the trip token travels as `Authorization: Bearer <token>`; a missing or malformed one gets `401 unauthorized`.
 - **G-B3** Names: Worker, Durable Object class, secrets, cookie, IndexedDB database; the manifest `id` and `scope` (the PWA prototype used `/v/` and `/`) (S0, S3, S8).
+  - Fixed in S3: the Durable Object classes are `Trip` (binding `TRIP`) and `Directory` (binding `DIRECTORY`), migration tag `v1`; the var is `JURISDICTION` (§11.3); the Directory is the single instance named `directory`. Shipped migrations are never edited: a change is a new tag.
   - Fixed in S0: the Worker is named **`quits`** (`wrangler.jsonc`). `compatibility_date` is **`2026-08-22`**, the newest date the workerd binary bundled with the pinned `@cloudflare/vitest-pool-workers` accepts; raise it together with the Wrangler pin. The Durable Object classes, secrets (`CREATOR_CODES` is already fixed), cookie, IndexedDB database and manifest keys stay open for S2, S3 and S8.
 - **G-B4** Purge mechanism for deleted trips, e.g. a Durable Object alarm (S4).
+  - Fixed in S3: the trip's Durable Object sets an alarm 30 days after the delete (a restore cancels it). The alarm deletes the trip's rows from the Directory first and then all the trip's storage, so a failure is retried by the alarm and loses nothing.
 - **G-B5** The currency list at creation (the prototype offers EUR, USD, GBP, CHF, JPY) (S4).
 - **G-B6** CSV columns (S6).
 - **G-B7** Privacy page route; mapping of browser languages other than Italian and English; desktop column width for the non-chart tabs (S5, S6).
