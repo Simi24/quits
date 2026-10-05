@@ -319,7 +319,7 @@ Roles: `--desk` page behind the app column; `--paper` app background; `--paper-2
 
 ### 7.3 Typography and icons
 - Display **Bagel Fat One** (weight 400, tracking 0, size scale .94); text **Onest** (400, 500, 600, 700) with **tabular figures (`tnum`) for amounts**. Bagel Fat One has no `tnum` and is never used for numbers that must align ([#9](https://github.com/Simi24/quits/issues/9)). Body 16 px, line-height 1.45 (prototype).
-- **Fonts are self-hosted** (decided under delegation, 2026-10-05): woff2 files of Bagel Fat One and Onest (both under the SIL Open Font License), **Latin subset**, served by the Worker's static assets and precached by the service worker ([§5.4](#54-service-worker-and-background-sync)). **No Google Fonts at runtime** (the prototypes' Google Fonts links are not carried over). Their total weight is within the budget of [§12.1](#121-testing).
+- **Fonts are self-hosted** (decided under delegation, 2026-10-05): woff2 files of Bagel Fat One and Onest (both under the SIL Open Font License), **Latin subset**, served by the Worker's static assets and precached by the service worker ([§5.4](#54-service-worker-and-background-sync)). **No Google Fonts at runtime** (the prototypes' Google Fonts links are not carried over). Files (decided in S0, group B): `src/fonts/bagel-fat-one-latin.woff2` (17 KB) and `src/fonts/onest-latin.woff2` (34 KB, one variable file for 400 to 700), taken from the `latin` block of the Google Fonts CSS API, with their provenance in `src/fonts/README.md`; Vite hashes and emits them, and `font-display: swap`. Their total weight is within the budget of [§12.1](#121-testing).
 - Icons: **Phosphor** (fill/duotone) via `@phosphor-icons/react` ([#4](https://github.com/Simi24/quits/issues/4), [#7](https://github.com/Simi24/quits/issues/7)); the prototype's icon set is the reference.
 
 ### 7.4 Shapes and signature objects
@@ -437,6 +437,8 @@ Exactly these; **versions pinned exactly** at implementation time (no ranges). A
 | Build | `vite`, `vite-plugin-pwa`, `typescript`, `tailwindcss` and its Vite integration, the Vite React plugin | [#7](https://github.com/Simi24/quits/issues/7) (React/Vite/Tailwind companions implied, R20) |
 | Dev / test | `wrangler`, `vitest`, `@cloudflare/vitest-pool-workers`, `@playwright/test`, `@axe-core/playwright` | [#7](https://github.com/Simi24/quits/issues/7); `@axe-core/playwright` decided under delegation, 2026-10-05 |
 
+**Type packages and peers** (decided in S0, group B): `@types/react`, `@types/react-dom` (React ships no types) and `@types/node` (the budget script and Playwright config; major pinned to the Node LTS) are dev dependencies that never ship. The Worker's runtime types come from `wrangler types` (the committed `worker-configuration.d.ts`), not from a package. `vite-plugin-pwa` pulls `workbox-build` and `workbox-window` as peers; they are installed by npm and not listed. **`vitest` is pinned to the 4.x line** because `@cloudflare/vitest-pool-workers` declares `vitest ^4.1.0` as a peer.
+
 No i18n library, no chart library beyond the four visx packages, no sync or local-first library, no IndexedDB wrapper other than `idb`.
 
 **Justification for `@axe-core/playwright`** (decided under delegation, 2026-10-05): the blocking accessibility gate of [§12.1](#121-testing) runs the axe rules inside the Playwright tests that already exist, which is what this package does; it is a dev dependency and never ships. Fonts are files in the repository, not packages ([§7.3](#73-typography-and-icons)). The performance budget is checked by a small script of ours, with no dependency.
@@ -526,6 +528,8 @@ The only configuration outside code; the author provides them when the slice ask
 - **No network and no credentials in tests.**
 - **Accessibility**: AA contrast in both themes ([#4](https://github.com/Simi24/quits/issues/4)). **Automated gate** (decided under delegation, 2026-10-05): axe (`@axe-core/playwright`) runs on the main screens in **both themes** and **blocks** CI on any violation.
 - **Performance budget** (decided under delegation, 2026-10-05), **blocking**, checked on `dist` by a script: initial JS **≤ 200 KB gzip**, fonts **≤ 120 KB**.
+  - **How it is measured** (decided in S0, group B): `scripts/check-budget.ts`. *Initial JS* is the gzip size of the scripts and `modulepreload` chunks that `dist/index.html` references (lazy chunks are not counted). *Fonts* is the raw size of every `woff2`/`woff`/`ttf`/`otf` file in `dist` (woff2 is already compressed). 1 KB = 1024 bytes. The script exits 1 on an overrun.
+  - **Axe gate** (S0): `e2e/accessibility.spec.ts` runs `@axe-core/playwright` on every main screen in light and dark, each theme through both the system preference and the `data-theme` attribute, and fails on any violation.
 
 ### 12.2 Conventions ([#7](https://github.com/Simi24/quits/issues/7), as on simonepetta.com)
 - `AGENTS.md` + ralph-gh as on simonepetta.com.
@@ -698,6 +702,7 @@ Where a decision under delegation already fixed part of an item, that part is no
 - **G-B1** Exact field names of operations and API bodies (S1, from the zod schemas); HTTP status codes and error bodies (S3); pull page size.
 - **G-B2** `Authorization` scheme (S3).
 - **G-B3** Names: Worker, Durable Object class, secrets, cookie, IndexedDB database; the manifest `id` and `scope` (the PWA prototype used `/v/` and `/`) (S0, S3, S8).
+  - Fixed in S0: the Worker is named **`quits`** (`wrangler.jsonc`). `compatibility_date` is **`2026-08-22`**, the newest date the workerd binary bundled with the pinned `@cloudflare/vitest-pool-workers` accepts; raise it together with the Wrangler pin. The Durable Object classes, secrets (`CREATOR_CODES` is already fixed), cookie, IndexedDB database and manifest keys stay open for S2, S3 and S8.
 - **G-B4** Purge mechanism for deleted trips, e.g. a Durable Object alarm (S4).
 - **G-B5** The currency list at creation (the prototype offers EUR, USD, GBP, CHF, JPY) (S4).
 - **G-B6** CSV columns (S6).
@@ -705,4 +710,4 @@ Where a decision under delegation already fixed part of an item, that part is no
 - **G-B8** PR preview deploys (simonepetta.com has them; not decided here) (S5).
 - **G-B9** Location of the creator-code script (S4).
 - **G-B10** Indexing: `noindex` on `/v/` pages and whether the landing is indexable (S5).
-- **G-B11** The local server Playwright runs against (e.g. `wrangler dev` in local mode, no network) (S0).
+- **G-B11** Fixed in S0: Playwright runs against `wrangler dev --local` (port 8787, `WRANGLER_SEND_METRICS=false`, no Cloudflare credentials) serving the `dist` of `npm run build`, i.e. the production runtime with the single-page-application fallback. Locally an already running server is reused; in CI a fresh one starts.
