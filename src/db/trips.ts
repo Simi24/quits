@@ -1,6 +1,7 @@
 import { foldWithPending, parseOperation, upcastOperation } from "../../domain";
 import type { Operation, SequencedOperation, Trip } from "../../domain";
 import type { RejectedItem } from "../sync/types";
+import { notifyTripsChanged } from "./changes";
 import { openQuitsDb } from "./open";
 import type { OutboxEntry, TripMeta } from "./schema";
 
@@ -72,6 +73,7 @@ export async function adoptTrip(tripId: string, token: string, meId: string | nu
   const existing = await tx.store.get(tripId);
   await tx.store.put(existing ? { ...existing, token, access: "ok", deletion: null } : newMeta(tripId, token, meId));
   await tx.done;
+  notifyTripsChanged();
 }
 
 /**
@@ -90,6 +92,7 @@ export async function appendOperations(tripId: string, operations: Operation[]):
   }
   await tx.objectStore("trips").put({ ...meta, nextOutbox: meta.nextOutbox + operations.length, lastUsedAt: new Date().toISOString() });
   await tx.done;
+  notifyTripsChanged();
 }
 
 /** Read and write in one transaction, like every change to the trip record: a stale copy must never be put back. */
@@ -99,7 +102,11 @@ async function updateMeta(tripId: string, change: (meta: TripMeta) => TripMeta):
   const meta = await tx.store.get(tripId);
   if (meta) await tx.store.put(change(meta));
   await tx.done;
+  notifyTripsChanged();
 }
+
+/** Opening a trip makes it the most recently used one, which is the one the installed app opens (SPEC.md §5.5). */
+export const markTripUsed = (tripId: string) => updateMeta(tripId, (meta) => ({ ...meta, lastUsedAt: new Date().toISOString() }));
 
 /** Remembers who this device is in the trip. */
 export const setMe = (tripId: string, meId: string) => updateMeta(tripId, (meta) => ({ ...meta, meId }));

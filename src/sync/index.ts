@@ -7,3 +7,4 @@ export { syncTrip } from "./sync-trip";
 export type { SyncOutcome } from "./sync-trip";
 export { openTabChannel } from "./tab-channel";
 export type { Access, Api, Deletion, RejectedItem } from "./types";
+export { OUTBOX_TAG, registerOutboxSync, syncPendingTrips } from "./background-sync";

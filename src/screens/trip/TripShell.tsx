@@ -7,6 +7,7 @@ import { useTrip } from "../../trip";
 import type { OperationPayload } from "../../trip";
 import { ExpenseDetail, ExpenseSheet } from "../expense";
 import { HistoryOverlay } from "../history";
+import { InAppBanner, InstallHint } from "../install";
 import { SaldiScreen, SettlementDetail, SettlementSheet } from "../saldi";
 import { SpeseScreen } from "../spese";
 import { ViaggioScreen } from "../viaggio";
@@ -90,6 +91,7 @@ export const TripShell = ({ onLeave }: TripShellProps) => {
     <div className="relative flex h-full flex-col overflow-hidden bg-paper">
       <TripBar onLeave={onLeave} onWho={() => setChoosingWho(true)} />
       <MergedNotice />
+      <InAppBanner />
       <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         {tab === "spese" ? (
           <SpeseScreen printId={printId} onPrinted={() => setPrintId(null)} onOpenExpense={setDetailId} onOpenSettlement={(id) => setSheet({ kind: "settlement", id })} onOpenHistory={() => setHistoryOpen(true)} />
@@ -158,6 +160,7 @@ export const TripShell = ({ onLeave }: TripShellProps) => {
       {historyOpen ? <HistoryOverlay onClose={() => setHistoryOpen(false)} notify={(text) => show({ text })} /> : null}
       {celebration.celebrating ? <PariCelebration onClose={celebration.done} /> : null}
       {toast ? <Toast text={toast.text} action={toast.action} /> : null}
+      <InstallHint />
     </div>
   );
 };

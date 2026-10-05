@@ -23,6 +23,7 @@ export const DeviceProvider = ({ device, children }: DeviceProviderProps) => {
   const [lang, setLangState] = useState<Lang>(device.lang ?? detectLang(navigator.language));
   const [theme, setThemeState] = useState<ThemeChoice>(device.theme);
   const [creatorCode, setCreatorCodeState] = useState<string | null>(device.creatorCode);
+  const [install, setInstall] = useState({ installDismissed: device.installDismissed, installHintShown: device.installHintShown });
 
   useEffect(() => {
     applyTheme(theme);
@@ -42,6 +43,11 @@ export const DeviceProvider = ({ device, children }: DeviceProviderProps) => {
         setCreatorCodeState(code);
         void updateDevice({ creatorCode: code });
       },
+      ...install,
+      setInstallFlag: (flag) => {
+        setInstall((current) => ({ ...current, [flag]: true }));
+        void updateDevice({ [flag]: true });
+      },
       setLang: (next) => {
         setLangState(next);
         void updateDevice({ lang: next });
@@ -51,7 +57,7 @@ export const DeviceProvider = ({ device, children }: DeviceProviderProps) => {
         void updateDevice({ theme: next });
       },
     }),
-    [device.deviceId, lang, theme, creatorCode],
+    [device.deviceId, lang, theme, creatorCode, install],
   );
 
   return <DeviceContext.Provider value={value}>{children}</DeviceContext.Provider>;
