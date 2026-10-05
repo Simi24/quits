@@ -28,3 +28,4 @@ export type { CategoryColor, ResolvedCategory } from "./categories.ts";
 export { tripTotals } from "./totals.ts";
 export type { Totals } from "./totals.ts";
 export { minorDigits } from "./money.ts";
+export * from "./charts/index.ts";
