@@ -26,6 +26,22 @@ describe("syncTrip", () => {
     expect(server.log).toHaveLength(2);
   });
 
+  it("two rounds at once, the page's and the service worker's, lose nothing and log each operation once", async () => {
+    const { server, store, run } = setup();
+    store.write(tripCreated(), expenseCreated("e1"));
+
+    const both = Promise.all([run(), run()]);
+    store.write(expenseCreated("e2"));
+    await both;
+    await run();
+
+    const ids = ["created", "create-e1", "create-e2"];
+    expect(server.log.map((e) => e.operation.id)).toEqual(ids);
+    expect(store.confirmedLog().map((e) => e.operation.id)).toEqual(ids);
+    expect(store.outbox).toEqual([]);
+    expect(store.rejected).toEqual([]);
+  });
+
   it("sends a long outbox in chunks of at most 100, in order", async () => {
     const { server, store, run } = setup();
     const many = Array.from({ length: 250 }, (_, i) => op({ type: "TripRenamed", name: `Nome ${i}` }, { id: `r-${i}` }));
