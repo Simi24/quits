@@ -7,8 +7,8 @@ import { storedDevice, tab } from "./trip-flow.ts";
 // Issue #28: a compact IT/EN switch, "Come funziona", explanatory empty states, one first-use tip (SPEC.md §7.6).
 
 const PHONE = { width: 390, height: 844 };
-// The landing footer holds a second, full-size switch (SPEC.md §7.8): this is the one in the corner.
-const langSwitch = (page: Page) => page.getByRole("group", { name: /^(Lingua|Language)$/ }).first();
+// The corner pill is the only language switch on the landing (SPEC.md §7.8).
+const langSwitch = (page: Page) => page.getByRole("group", { name: /^(Lingua|Language)$/ });
 const tip = (page: Page) => page.getByTestId("first-tip");
 const leaveTrip = async (page: Page) => {
   await page.getByRole("button", { name: "Torna all'inizio" }).click();
@@ -39,6 +39,53 @@ test.describe("landing", () => {
     expect(await title.boundingBox()).toEqual(before);
     expect(await langSwitch(page).boundingBox()).toEqual(box);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(PHONE.width);
+  });
+
+  test("the footer has no big selectors; the corner has the language pill and a theme button", async ({ page }) => {
+    await page.goto("/");
+    await expect(langSwitch(page)).toHaveCount(1);
+    await expect(page.getByRole("group", { name: "Tema" })).toHaveCount(0);
+    await expect(page.getByLabel("Informazioni su Quits").getByRole("group")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Tema: sistema" })).toBeVisible();
+  });
+
+  test("the theme button cycles system, light, dark and keeps the title and the pill where they are", async ({ page }) => {
+    await page.goto("/");
+    const title = page.getByRole("heading", { level: 1, name: "quits" });
+    const titleBox = await title.boundingBox();
+    const pill = await langSwitch(page).boundingBox();
+    const button = page.getByRole("button", { name: /^Tema: / });
+    const buttonBox = await button.boundingBox();
+    // Same height as the pill, on the same row, inside the screen.
+    expect(buttonBox!.height).toBeCloseTo(pill!.height, 0);
+    expect(buttonBox!.y).toBeCloseTo(pill!.y, 0);
+    expect(buttonBox!.x + buttonBox!.width).toBeLessThanOrEqual(PHONE.width);
+    expect(buttonBox!.x).toBeGreaterThan(pill!.x + pill!.width - 1);
+    // It does not sit over the wordmark.
+    expect(Math.max(buttonBox!.x, pill!.x)).toBeGreaterThanOrEqual(titleBox!.x + titleBox!.width - 4);
+
+    const root = page.locator("html");
+    await button.click();
+    await expect(page.getByRole("button", { name: "Tema: chiaro" })).toBeVisible();
+    await expect(root).toHaveAttribute("data-theme", "light");
+    await page.getByRole("button", { name: "Tema: chiaro" }).click();
+    await expect(root).toHaveAttribute("data-theme", "dark");
+    await page.getByRole("button", { name: "Tema: scuro" }).click();
+    await expect(root).not.toHaveAttribute("data-theme");
+    await expect(page.getByRole("button", { name: "Tema: sistema" })).toBeVisible();
+
+    await langSwitch(page).getByRole("button", { name: "EN" }).click();
+    await expect(page.getByRole("button", { name: "Theme: system" })).toBeVisible();
+    expect(await title.boundingBox()).toEqual(titleBox);
+    expect(await langSwitch(page).boundingBox()).toEqual(pill);
+  });
+
+  test("the theme chosen on the landing is kept on the device", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: "Tema: sistema" }).click();
+    await expect.poll(async () => (await storedDevice(page))?.theme).toBe("light");
+    await page.reload();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   });
 
   test("Come funziona shows the three steps in Italian and in English", async ({ page }) => {

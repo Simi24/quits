@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DevicePreferences, EqualMark, FooterLinks, Segmented } from "../../components";
+import { EqualMark, FooterLinks, Segmented, ThemeButton } from "../../components";
 import { useDevice } from "../../device";
 import type { TripSummary } from "../../db";
 import { CreatorCode } from "./CreatorCode";
@@ -31,17 +31,20 @@ export const Landing = ({ trips, onOpen, onCreate, onRestore }: LandingProps) =>
   return (
     <main className="h-full overflow-y-auto">
       <section className="relative grid gap-[18px] px-5 pt-6 pb-[26px]">
-        <div className="absolute top-4 right-4 w-[84px]">
-          <Segmented
-            compact
-            label={t.settings.lang}
-            value={lang}
-            onChange={setLang}
-            options={[
-              { value: "it", label: "IT" },
-              { value: "en", label: "EN" },
-            ]}
-          />
+        <div className="absolute top-2 right-4 flex items-center gap-1.5">
+          <div className="w-[84px]">
+            <Segmented
+              compact
+              label={t.settings.lang}
+              value={lang}
+              onChange={setLang}
+              options={[
+                { value: "it", label: "IT" },
+                { value: "en", label: "EN" },
+              ]}
+            />
+          </div>
+          <ThemeButton />
         </div>
         <div className="flex items-center gap-4">
           <EqualMark />
@@ -81,8 +84,7 @@ export const Landing = ({ trips, onOpen, onCreate, onRestore }: LandingProps) =>
       ) : null}
       <CreatorCode onCreate={onCreate} />
       <footer className="border-t-2 border-dashed border-line px-4 py-7">
-        <DevicePreferences />
-        <nav aria-label={t.manage.footerLabel} className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-[14.5px]">
+        <nav aria-label={t.manage.footerLabel} className="flex flex-wrap gap-x-5 gap-y-2 text-[14.5px]">
           <FooterLinks />
         </nav>
       </footer>

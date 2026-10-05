@@ -25,3 +25,4 @@ export { LoadingLine } from "./LoadingLine";
 export { useModalFocus } from "./useModalFocus";
 export { EmptyState } from "./EmptyState";
 export { FirstTip } from "./FirstTip";
+export { ThemeButton } from "./ThemeButton";
