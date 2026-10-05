@@ -140,6 +140,8 @@ test("settling all suggested payments brings every balance to zero", async ({ pa
   await expect(page.getByTestId("suggestion")).toHaveCount(2);
   await page.getByRole("button", { name: "Registra tutti i pagamenti suggeriti" }).click();
 
+  // The celebration lands first; "Bello" puts it away.
+  await page.getByRole("dialog", { name: "Tutti pari!" }).getByRole("button", { name: "Bello" }).click();
   await expect(page.getByTestId("balance-hero")).toHaveText("Sei pari");
   await expect(page.getByText("PARI", { exact: true })).toBeVisible();
   await expect(page.getByText("Siete tutti pari")).toBeVisible();
