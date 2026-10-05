@@ -1,4 +1,5 @@
 export { readDevice, updateDevice } from "./device";
-export { appendOperations, createTrip, listTrips, loadTrip, setMe } from "./trips";
+export { adoptTrip, appendOperations, dismissConflict, foldStored, listTrips, loadTrip, setMe } from "./trips";
 export type { StoredTrip, TripSummary } from "./trips";
-export type { DeviceRecord, ThemeChoice } from "./schema";
+export { idbSyncStore } from "./sync-store";
+export type { DeviceRecord, ThemeChoice, TripMeta } from "./schema";
