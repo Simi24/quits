@@ -1,4 +1,5 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
+import { balances } from "../../../domain";
 import type { SuggestedSettlement } from "../../../domain";
 import { Toast, useSingleFlight } from "../../components";
 import { useDevice } from "../../device";
@@ -6,15 +7,18 @@ import { todayIso } from "../../format";
 import { useTrip } from "../../trip";
 import type { OperationPayload } from "../../trip";
 import { ExpenseDetail, ExpenseSheet } from "../expense";
+import { HistoryOverlay } from "../history";
 import { SaldiScreen, SettlementDetail, SettlementSheet } from "../saldi";
 import { SpeseScreen } from "../spese";
 import { ViaggioScreen } from "../viaggio";
 import { WhoAreYou } from "../who";
 import { Fab } from "./Fab";
 import { MergedNotice } from "./MergedNotice";
+import { PariCelebration } from "./PariCelebration";
 import { TabBar } from "./TabBar";
 import type { Tab } from "./TabBar";
 import { TripBar } from "./TripBar";
+import { useCelebration } from "./useCelebration";
 import { useToast } from "./useToast";
 
 // The charts and their library load when the tab is first opened; the service worker precaches the chunk, so it works offline.
@@ -38,6 +42,12 @@ export const TripShell = ({ onLeave }: TripShellProps) => {
   const [detailId, setDetailId] = useState<string | null>(null);
   const [sheet, setSheetState] = useState<OpenSheet | null>(null);
   const [printId, setPrintId] = useState<string | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const even = useMemo(() => {
+    const owed = balances(trip);
+    return { allEven: trip.participants.every((p) => (owed[p.id] ?? 0) === 0), settlements: trip.settlements.filter((s) => !s.deleted).length };
+  }, [trip]);
+  const celebration = useCelebration(even);
   const { toast, show, hide } = useToast();
 
   // A toast never sits on top of a sheet that has just opened.
@@ -87,7 +97,7 @@ export const TripShell = ({ onLeave }: TripShellProps) => {
       <MergedNotice />
       <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         {tab === "spese" ? (
-          <SpeseScreen printId={printId} onOpenExpense={setDetailId} onOpenSettlement={(id) => setSheet({ kind: "settlement", id })} />
+          <SpeseScreen printId={printId} onOpenExpense={setDetailId} onOpenSettlement={(id) => setSheet({ kind: "settlement", id })} onOpenHistory={() => setHistoryOpen(true)} />
         ) : null}
         {tab === "saldi" ? <SaldiScreen onRecord={(prefill) => setSheet({ kind: "settle", prefill })} onRecordAll={(s) => void settleAll.run(s)} /> : null}
         {tab === "grafici" ? (
@@ -95,7 +105,7 @@ export const TripShell = ({ onLeave }: TripShellProps) => {
             <GraficiScreen />
           </Suspense>
         ) : null}
-        {tab === "viaggio" ? <ViaggioScreen onNotMe={() => setChoosingWho(true)} notify={(text) => show({ text })} /> : null}
+        {tab === "viaggio" ? <ViaggioScreen onNotMe={() => setChoosingWho(true)} notify={(text) => show({ text })} onOpenHistory={() => setHistoryOpen(true)} /> : null}
       </main>
       {tab === "spese" && !readOnly ? <Fab label={t.expenses.newExpense} onClick={() => setSheet({ kind: "expense", editingId: null })} /> : null}
       <TabBar
@@ -111,6 +121,7 @@ export const TripShell = ({ onLeave }: TripShellProps) => {
           expense={detail}
           onClose={() => setDetailId(null)}
           onEdit={() => setSheet({ kind: "expense", editingId: detail.id })}
+          onVersionRestored={() => show({ text: t.sync.conflictRestored })}
           onDeleted={(expenseId) => {
             setDetailId(null);
             offerUndo(t.expenses.deleted, { type: "ExpenseRestored", expenseId }, t.expenses.restoredExp);
@@ -149,6 +160,8 @@ export const TripShell = ({ onLeave }: TripShellProps) => {
           }}
         />
       ) : null}
+      {historyOpen ? <HistoryOverlay onClose={() => setHistoryOpen(false)} notify={(text) => show({ text })} /> : null}
+      {celebration.celebrating ? <PariCelebration onClose={celebration.done} /> : null}
       {toast ? <Toast text={toast.text} action={toast.action} /> : null}
     </div>
   );

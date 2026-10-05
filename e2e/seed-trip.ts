@@ -5,7 +5,7 @@ import { sardegnaOperations } from "../domain/sardegna.fixture.ts";
 import { expense, expenseCreated, tripCreated } from "../domain/testing.ts";
 
 /** Writes a whole trip into the device's IndexedDB as an outbox, then opens it from the landing. No network, no UI to click through. */
-export async function seedTrip(page: Page, name: string, operations: Operation[]) {
+export async function seedTrip(page: Page, name: string, operations: Operation[]): Promise<string> {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1, name: "quits" })).toBeVisible();
   const tripId = `seed-${Math.random().toString(36).slice(2, 8)}`;
@@ -38,7 +38,25 @@ export async function seedTrip(page: Page, name: string, operations: Operation[]
   await page.goto("/");
   await page.getByRole("button", { name }).click();
   await expect(page.getByRole("heading", { level: 1, name })).toBeVisible();
+  return tripId;
 }
+
+/** Puts an operation in the `rejected` store, as if the server had refused it: the history shows it as "non inviata". */
+export const seedRejected = (page: Page, tripId: string, operation: Operation, reason: string, detail: string) =>
+  page.evaluate(
+    ([id, rejected, why, more]) =>
+      new Promise<void>((resolve, reject) => {
+        const open = indexedDB.open("quits");
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+          const tx = open.result.transaction("rejected", "readwrite");
+          tx.objectStore("rejected").put({ tripId: id, id: (rejected as { id: string }).id, operation: rejected, reason: why, detail: more });
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error);
+        };
+      }),
+    [tripId, operation, reason, detail] as const,
+  );
 
 export const sardegna = () => sardegnaOperations();
 

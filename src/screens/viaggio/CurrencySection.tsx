@@ -16,7 +16,7 @@ export const CurrencySection = ({ onChanged }: CurrencySectionProps) => {
   const open = canChangeCurrency(trip);
   const options = CURRENCIES.includes(trip.currency) ? CURRENCIES : [trip.currency, ...CURRENCIES];
   return (
-    <Setting title={t.settings.currency}>
+    <Setting title={t.settings.currency} edits>
       <SelectField
         id="edit-trip-currency"
         label={t.manage.currencyChange}
