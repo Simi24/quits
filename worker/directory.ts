@@ -30,7 +30,7 @@ export class Directory extends DurableObject<Env> {
   }
 
   async register(tokenHash: string, tripId: string): Promise<void> {
-    this.sql.exec("INSERT INTO tokens (token_hash, trip_id, state) VALUES (?, ?, 'active')", tokenHash, tripId);
+    this.addActive(tokenHash, tripId);
   }
 
   /** Retires the old token and adds the new one in one step. False when the old one was no longer active. */
@@ -40,9 +40,13 @@ export class Directory extends DurableObject<Env> {
         .exec<{ trip_id: string }>("UPDATE tokens SET state = 'retired' WHERE token_hash = ? AND state = 'active' RETURNING trip_id", oldHash)
         .toArray()[0];
       if (!retired) return false;
-      this.sql.exec("INSERT INTO tokens (token_hash, trip_id, state) VALUES (?, ?, 'active')", newHash, retired.trip_id);
+      this.addActive(newHash, retired.trip_id);
       return true;
     });
+  }
+
+  private addActive(tokenHash: string, tripId: string) {
+    this.sql.exec("INSERT INTO tokens (token_hash, trip_id, state) VALUES (?, ?, 'active')", tokenHash, tripId);
   }
 
   /** The trip is gone for good: its tokens lead nowhere (SPEC.md §6.4, a purged trip). */

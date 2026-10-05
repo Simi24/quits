@@ -2,7 +2,7 @@ import { directoryStub } from "../jurisdiction.ts";
 import { fail, json, tripDeleted } from "../http.ts";
 import { sha256Hex } from "../sha256.ts";
 import { newToken } from "../tokens.ts";
-import { openTrip } from "../trip-access.ts";
+import { resolveTrip } from "../trip-access.ts";
 import { readServerOperation } from "./server-operation.ts";
 
 /**
@@ -11,17 +11,17 @@ import { readServerOperation } from "./server-operation.ts";
  * whereas rotating first could strand the trip with a new token nobody received.
  */
 export async function regenerateLink(request: Request, env: Env): Promise<Response> {
-  const opened = await openTrip(request, env);
-  if (opened instanceof Response) return opened;
-  const read = await readServerOperation(request, "LinkRegenerated", { tripId: opened.tripId });
+  const resolved = await resolveTrip(request, env);
+  if (resolved instanceof Response) return resolved;
+  const read = await readServerOperation(request, "LinkRegenerated", { tripId: resolved.tripId });
   if ("response" in read) return read.response;
 
-  const recorded = await opened.trip.recordLinkRegeneration(read.operation);
-  if (recorded.status === "deleted") return tripDeleted(opened.tripId, recorded.deleted);
+  const recorded = await resolved.trip.recordLinkRegeneration(read.operation);
+  if (recorded.status === "deleted") return tripDeleted(resolved.tripId, recorded.deleted);
 
   const token = newToken();
-  const rotated = await directoryStub(env).rotate(opened.tokenHash, await sha256Hex(token));
+  const rotated = await directoryStub(env).rotate(resolved.tokenHash, await sha256Hex(token));
   // Someone regenerated at the same moment: this token is already the old link.
-  if (!rotated) return fail(410, "link_changed", { tripId: opened.tripId });
-  return json({ tripId: opened.tripId, token, seq: recorded.value });
+  if (!rotated) return fail(410, "link_changed", { tripId: resolved.tripId });
+  return json({ tripId: resolved.tripId, token, seq: recorded.value });
 }

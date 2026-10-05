@@ -1,6 +1,7 @@
 import { DurableObject } from "cloudflare:workers";
 import { parseOperation } from "../domain/index.ts";
 import type { StoredOperation } from "../domain/index.ts";
+import { fieldOf } from "./field.ts";
 import { directoryStub } from "./jurisdiction.ts";
 import { appendOperation, createLogTables, readPage } from "./trip-log.ts";
 import type { DeletedInfo, Gated, Page, PushResult } from "./trip-types.ts";
@@ -96,8 +97,8 @@ export class Trip extends DurableObject<Env> {
   private pushOne(item: unknown): PushResult {
     const parsed = parseOperation(item);
     if (!parsed.ok) {
-      const id = typeof item === "object" && item !== null && typeof (item as { id?: unknown }).id === "string" ? (item as { id: string }).id : null;
-      return { id, status: "rejected", reason: parsed.reason, detail: parsed.detail };
+      const id = fieldOf(item, "id");
+      return { id: typeof id === "string" ? id : null, status: "rejected", reason: parsed.reason, detail: parsed.detail };
     }
     const { operation } = parsed;
     if (SERVER_ACTIONS.has(operation.type)) {

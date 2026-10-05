@@ -6,8 +6,7 @@ const HEADERS = {
   "X-Content-Type-Options": "nosniff",
 };
 
-export const json = (body: unknown, status = 200, extra: HeadersInit = {}) =>
-  Response.json(body, { status, headers: { ...HEADERS, ...extra } });
+export const json = (body: unknown, status = 200) => Response.json(body, { status, headers: HEADERS });
 
 export const fail = (status: number, error: string, extra: Record<string, unknown> = {}) =>
   json({ error, ...extra }, status);

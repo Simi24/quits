@@ -1,8 +1,8 @@
+import { creatorLabel } from "../authorization.ts";
 import { directoryStub, tripStub } from "../jurisdiction.ts";
 import { fail, json } from "../http.ts";
 import { sha256Hex } from "../sha256.ts";
 import { newToken } from "../tokens.ts";
-import { creatorLabel } from "./creator-check.ts";
 import { readServerOperation } from "./server-operation.ts";
 
 /** POST /api/trips: the Worker makes the tripId and the token, starts the trip and registers the token. */
