@@ -1,4 +1,5 @@
 import type { ParticipantId } from "./ids.ts";
+import { percentageWeight } from "./split.ts";
 import type { Split } from "./split.ts";
 
 export type SplitResult = {
@@ -15,7 +16,7 @@ function weightsOf(split: Split, order: ParticipantId[]): number[] {
     case "shares":
       return order.map((id) => split.shares[id] ?? 0);
     case "percentage":
-      return order.map((id) => Math.round((split.percentages[id] ?? 0) * 100));
+      return order.map((id) => percentageWeight(split.percentages[id] ?? 0));
     case "exact":
       return order.map(() => 0);
   }

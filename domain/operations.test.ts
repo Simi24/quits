@@ -24,6 +24,13 @@ describe("parseOperation", () => {
     expect(result).toMatchObject({ ok: false, reason: "malformed" });
   });
 
+  it("rejects a percentage with more than two decimals", () => {
+    const split = { method: "percentage", percentages: { p1: 50.004, p2: 49.996 } } as const;
+    expect(parseOperation(expenseCreated("e1", expense({ split })))).toMatchObject({ ok: false, reason: "malformed" });
+    const twoDecimals = { method: "percentage", percentages: { p1: 33.33, p2: 33.33, p3: 33.34 } } as const;
+    expect(parseOperation(expenseCreated("e2", expense({ split: twoDecimals })))).toMatchObject({ ok: true });
+  });
+
   it("rejects a settlement between the same participant", () => {
     const result = parseOperation(
       op({ type: "SettlementRecorded", settlementId: "s1", fromParticipantId: "p1", toParticipantId: "p1", amount: 500, date: "2026-06-15" }),

@@ -1,4 +1,5 @@
 import type { ExpenseSnapshot } from "./expense.ts";
+import { percentageWeight } from "./split.ts";
 import type { Split } from "./split.ts";
 
 export type ExpenseIssue =
@@ -27,7 +28,7 @@ function splitIssues(amount: number, split: Split): ExpenseIssue[] {
       return [];
     }
     case "percentage": {
-      const weights = sum(Object.values(split.percentages).map((p) => Math.round(p * 100)));
+      const weights = sum(Object.values(split.percentages).map(percentageWeight));
       return weights === 10000 ? [] : [{ code: "percentage_total", total: weights / 100 }];
     }
   }

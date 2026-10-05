@@ -3,7 +3,15 @@ import { idSchema } from "./ids.ts";
 
 const minorUnits = z.number().int().positive();
 const weight = z.number().int().nonnegative();
-const percentage = z.number().min(0).max(100);
+/** The weight of a percentage in the largest remainder (SPEC.md §3.7): 33.33 % weighs 3333. */
+export const percentageWeight = (percentage: number): number => Math.round(percentage * 100);
+
+/** Up to two decimals, as entered (SPEC.md §3.6). */
+const percentage = z
+  .number()
+  .min(0)
+  .max(100)
+  .refine((p) => Math.abs(p * 100 - percentageWeight(p)) < 1e-9);
 
 export const splitSchema = z.discriminatedUnion("method", [
   z.strictObject({ method: z.literal("equal"), among: z.array(idSchema) }),
