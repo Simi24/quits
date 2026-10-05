@@ -7,17 +7,23 @@ import type { PointerEvent } from "react";
  */
 export function useSelection<K extends string | number>() {
   const ref = useRef<HTMLDivElement>(null);
-  const [pinned, setPinned] = useState<K | null>(null);
+  const [pinned, setPinnedState] = useState<K | null>(null);
   const [hovered, setHovered] = useState<K | null>(null);
 
   useEffect(() => {
     if (pinned === null) return;
     const outside = (event: globalThis.PointerEvent) => {
-      if (ref.current && !ref.current.contains(event.target as Node)) setPinned(null);
+      if (ref.current && !ref.current.contains(event.target as Node)) setPinnedState(null);
     };
     document.addEventListener("pointerdown", outside);
     return () => document.removeEventListener("pointerdown", outside);
   }, [pinned]);
+
+  /** Pinning (a tap, a click, the keyboard) wins over a hover left behind by a mouse that has not moved. */
+  const setPinned = (key: K | null) => {
+    setHovered(null);
+    setPinnedState(key);
+  };
 
   const mark = (key: K) => ({
     onPointerEnter: (event: PointerEvent) => {

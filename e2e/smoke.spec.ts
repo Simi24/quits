@@ -12,6 +12,8 @@ test("the empty app renders, with no request leaving for another origin", async 
 
 test("the self-hosted fonts load", async ({ page }) => {
   await page.goto("/");
+  // Fonts are requested once text that uses them is on screen; `fonts.ready` before that is an empty list.
+  await expect(page.getByRole("button", { name: "Crea un viaggio" })).toBeVisible();
 
   const loaded = await page.evaluate(async () => {
     await document.fonts.ready;

@@ -85,6 +85,8 @@ test("the keyboard alone reads every chart", async ({ page }) => {
 test("the keyboard reads the two chart overlays too", async ({ page }) => {
   await openCharts(page);
   await page.getByRole("button", { name: /Persona per categoria/ }).click();
+  // Let the overlay settle: it takes focus as it opens, which would otherwise race the test's own focus.
+  await page.waitForTimeout(700);
   const heat = page.getByTestId("heat");
   await heat.locator("[data-mark]").first().focus();
   await expect(page.getByRole("dialog").getByTestId("readout")).toContainText("Simone");
@@ -93,6 +95,7 @@ test("the keyboard reads the two chart overlays too", async ({ page }) => {
   await page.getByRole("button", { name: "Indietro" }).click();
 
   await page.getByRole("button", { name: /Chi ha fatto da banca/ }).click();
+  await page.waitForTimeout(700);
   const slider = page.getByRole("dialog").getByRole("slider");
   await slider.focus();
   await page.keyboard.press("Home");
