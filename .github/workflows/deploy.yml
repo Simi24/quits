@@ -49,8 +49,12 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      # The Web Analytics token is public (it ends up in the landing's HTML), so it is a variable, not a secret.
+      # Unset, the build has no beacon (SPEC.md §10.1).
       - name: Build
         run: npm run build
+        env:
+          VITE_CF_BEACON_TOKEN: ${{ vars.CF_BEACON_TOKEN }}
       - name: Deploy
         run: npx wrangler deploy
         env:

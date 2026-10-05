@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLandingBeacon } from "../../analytics";
 import { EqualMark, FooterLinks, Segmented, ThemeButton } from "../../components";
 import { useDevice } from "../../device";
 import type { TripSummary } from "../../db";
@@ -19,6 +20,7 @@ interface LandingProps {
 /** The public landing: wordmark, the trips already opened on this device, creation (SPEC.md §7.6 item 1). */
 export const Landing = ({ trips, onOpen, onCreate, onOpenToken, onRestore }: LandingProps) => {
   const { t, lang, setLang } = useDevice();
+  useLandingBeacon();
   const [restoring, setRestoring] = useState<{ tripId: string; failed: boolean } | null>(null);
   const live = trips.filter((s) => s.meta.access !== "deleted" && s.meta.access !== "unavailable");
   const now = Date.now();
