@@ -1,0 +1,44 @@
+{
+  "name": "quits",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "typecheck": "tsc -b",
+    "test": "vitest run --project domain --project node --passWithNoTests",
+    "test:worker": "vitest run --project worker",
+    "test:e2e": "playwright test",
+    "budget": "node scripts/check-budget.ts",
+    "check": "npm run typecheck && npm test && npm run test:worker && npm run build && npm run budget && npm run test:e2e"
+  },
+  "dependencies": {
+    "@phosphor-icons/react": "2.1.10",
+    "@visx/axis": "4.0.0",
+    "@visx/group": "4.0.0",
+    "@visx/scale": "4.0.0",
+    "@visx/shape": "4.0.0",
+    "idb": "8.0.3",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@cloudflare/vitest-pool-workers": "0.22.0",
+    "@playwright/test": "1.63.0",
+    "@tailwindcss/vite": "4.3.3",
+    "@types/node": "24.19.1",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "tailwindcss": "4.3.3",
+    "typescript": "7.0.2",
+    "vite": "8.3.2",
+    "vite-plugin-pwa": "2.0.0",
+    "vitest": "4.1.11",
+    "wrangler": "4.147.0"
+  }
+}
