@@ -1,0 +1,32 @@
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--desk);
+  color: var(--ink);
+  font-family: var(--f-text);
+  font-size: 16px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+.display {
+  font-family: var(--f-display);
+  font-weight: var(--d-wght);
+  letter-spacing: var(--d-track);
+  font-variation-settings: var(--d-opsz);
+  line-height: 1.05;
+  text-wrap: balance;
+}

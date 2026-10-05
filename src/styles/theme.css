@@ -1,0 +1,27 @@
+/* Tailwind consumes the tokens as CSS custom properties (SPEC.md §7.2). */
+@theme inline {
+  --color-desk: var(--desk);
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-receipt: var(--receipt);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-line: var(--line);
+  --color-lead: var(--lead);
+  --color-lead-deep: var(--lead-deep);
+  --color-on-lead: var(--on-lead);
+  --color-hi: var(--hi);
+  --color-on-hi: var(--on-hi);
+  --color-coral: var(--coral);
+  --color-sun: var(--sun);
+  --color-pool: var(--pool);
+  --color-leaf: var(--leaf);
+  --color-sea: var(--sea);
+  --color-stone: var(--stone);
+  --color-pos: var(--pos);
+  --color-neg: var(--neg);
+  --color-stamp: var(--stamp);
+  --color-ticket: var(--ticket);
+  --font-display: var(--f-display);
+  --font-text: var(--f-text);
+}
