@@ -11,7 +11,7 @@ export const expenses = {
   settlementLine: (a: string, b: string) => `${a} ha dato a ${b}`,
   settlement: "Pagamento",
   emptyRoll: "Ancora nessuna spesa.",
-  emptyRollHelp: "Tocca + per aggiungere la prima: il primo scontrino del viaggio.",
+  emptyRollHelp: "Gli scontrini compaiono qui, un giorno per volta. Tocca + per aggiungere la prima spesa: sarà il primo scontrino del viaggio.",
   noResults: (q: string) => `Nessuna spesa con "${q}".`,
   newExpense: "Nuova spesa",
   editExpense: "Modifica spesa",

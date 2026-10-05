@@ -60,6 +60,8 @@ export interface DeviceRecord {
   installDismissed: boolean;
   /** The one-time hint after the third expense has been shown (SPEC.md §5.6). */
   installHintShown: boolean;
+  /** The first-use tip beside "+" was dismissed, or an expense was recorded: it is never shown again on this device (SPEC.md §7.6). */
+  tipSeen: boolean;
 }
 
 export interface QuitsDb extends DBSchema {

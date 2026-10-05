@@ -327,5 +327,5 @@ test("the landing switches language from its IT/EN switch, as in the prototype",
   await page.goto("/");
   await page.getByRole("button", { name: "EN", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Got a creator code?" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "English" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: "EN", exact: true })).toHaveAttribute("aria-pressed", "true");
 });

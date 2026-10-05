@@ -86,7 +86,7 @@ export async function addExpense(page: Page, { description, amount, payer }: Exp
 export const storedDevice = (page: Page) =>
   page.evaluate(
     () =>
-      new Promise<{ lang: string | null; theme: string } | undefined>((resolve, reject) => {
+      new Promise<{ lang: string | null; theme: string; tipSeen: boolean } | undefined>((resolve, reject) => {
         const open = indexedDB.open("quits");
         open.onerror = () => reject(open.error);
         open.onsuccess = () => {

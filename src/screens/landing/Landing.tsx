@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { DevicePreferences, EqualMark, FooterLinks, Segmented } from "../../components";
+import { EqualMark, FooterLinks, Segmented, ThemeButton } from "../../components";
 import { useDevice } from "../../device";
 import type { TripSummary } from "../../db";
 import { CreatorCode } from "./CreatorCode";
 import { DeletedTicket } from "./DeletedTicket";
+import { HowItWorks } from "./HowItWorks";
 import { OpenLinkField } from "./OpenLinkField";
 import { TripTicket } from "./TripTicket";
 
@@ -31,20 +32,22 @@ export const Landing = ({ trips, onOpen, onCreate, onOpenToken, onRestore }: Lan
   };
   return (
     <main className="h-full overflow-y-auto">
-      <div className="flex justify-end px-4 pt-3">
-        <div className="w-[120px]">
-          <Segmented
-            label={t.settings.lang}
-            value={lang}
-            onChange={setLang}
-            options={[
-              { value: "it", label: "IT" },
-              { value: "en", label: "EN" },
-            ]}
-          />
+      <section className="relative grid gap-[18px] px-5 pt-6 pb-[26px]">
+        <div className="absolute top-2 right-4 flex items-center gap-1.5">
+          <div className="w-[84px]">
+            <Segmented
+              compact
+              label={t.settings.lang}
+              value={lang}
+              onChange={setLang}
+              options={[
+                { value: "it", label: "IT" },
+                { value: "en", label: "EN" },
+              ]}
+            />
+          </div>
+          <ThemeButton />
         </div>
-      </div>
-      <section className="grid gap-[18px] px-5 pt-6 pb-[26px]">
         <div className="flex items-center gap-4">
           <EqualMark />
           <h1 className="display text-[calc(76px*var(--d-scale))] leading-[.9]">quits</h1>
@@ -64,6 +67,7 @@ export const Landing = ({ trips, onOpen, onCreate, onOpenToken, onRestore }: Lan
         )}
         <p className="text-[13.5px] text-ink-2">{t.shell.needLink}</p>
       </section>
+      <HowItWorks />
       {deleted.length ? (
         <section className="grid gap-3.5 px-4 pb-7">
           <h2 className="display text-[calc(20px*var(--d-scale))]">{t.sync.deletedTrips}</h2>
@@ -83,8 +87,7 @@ export const Landing = ({ trips, onOpen, onCreate, onOpenToken, onRestore }: Lan
       <OpenLinkField onOpen={onOpenToken} />
       <CreatorCode onCreate={onCreate} />
       <footer className="border-t-2 border-dashed border-line px-4 py-7">
-        <DevicePreferences />
-        <nav aria-label={t.manage.footerLabel} className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-[14.5px]">
+        <nav aria-label={t.manage.footerLabel} className="flex flex-wrap gap-x-5 gap-y-2 text-[14.5px]">
           <FooterLinks />
         </nav>
       </footer>

@@ -1,14 +1,14 @@
 import { openQuitsDb } from "./open";
 import type { DeviceRecord } from "./schema";
 
-export const freshDevice = (deviceId: string = crypto.randomUUID()): DeviceRecord => ({ key: "device", deviceId, lang: null, theme: "system", lastTripId: null, creatorCode: null, installDismissed: false, installHintShown: false });
+export const freshDevice = (deviceId: string = crypto.randomUUID()): DeviceRecord => ({ key: "device", deviceId, lang: null, theme: "system", lastTripId: null, creatorCode: null, installDismissed: false, installHintShown: false, tipSeen: false });
 
 /** The device record, created on first use with its anonymous device id. */
 export async function readDevice(): Promise<DeviceRecord> {
   const db = await openQuitsDb();
   const tx = db.transaction("device", "readwrite");
   const stored = await tx.store.get("device");
-  // A record written before the creator code existed (version 1) has no such field.
+  // A record written before a field existed (the creator code, the install flags, the tip) lacks it: the defaults fill it in.
   const device = stored ? { ...freshDevice(), ...stored } : freshDevice();
   if (!stored) await tx.store.put(device);
   await tx.done;

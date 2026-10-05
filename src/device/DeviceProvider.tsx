@@ -23,6 +23,7 @@ export const DeviceProvider = ({ device, children }: DeviceProviderProps) => {
   const [lang, setLangState] = useState<Lang>(device.lang ?? detectLang(navigator.language));
   const [theme, setThemeState] = useState<ThemeChoice>(device.theme);
   const [creatorCode, setCreatorCodeState] = useState<string | null>(device.creatorCode);
+  const [tipSeen, setTipSeen] = useState(device.tipSeen);
   const [install, setInstall] = useState({ installDismissed: device.installDismissed, installHintShown: device.installHintShown });
 
   useEffect(() => {
@@ -48,6 +49,11 @@ export const DeviceProvider = ({ device, children }: DeviceProviderProps) => {
         setInstall((current) => ({ ...current, [flag]: true }));
         void updateDevice({ [flag]: true });
       },
+      tipSeen,
+      markTipSeen: () => {
+        setTipSeen(true);
+        void updateDevice({ tipSeen: true });
+      },
       setLang: (next) => {
         setLangState(next);
         void updateDevice({ lang: next });
@@ -57,7 +63,7 @@ export const DeviceProvider = ({ device, children }: DeviceProviderProps) => {
         void updateDevice({ theme: next });
       },
     }),
-    [device.deviceId, lang, theme, creatorCode, install],
+    [device.deviceId, lang, theme, creatorCode, install, tipSeen],
   );
 
   return <DeviceContext.Provider value={value}>{children}</DeviceContext.Provider>;

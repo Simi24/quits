@@ -55,6 +55,13 @@ const SCREENS: { name: string; open: (page: Page) => Promise<void> }[] = [
     },
   },
   {
+    name: "empty Saldi",
+    open: async (page) => {
+      await createTrip(page);
+      await tab(page, "Saldi").click();
+    },
+  },
+  {
     name: "Saldi",
     open: async (page) => {
       await createTrip(page);

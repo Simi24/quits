@@ -15,6 +15,9 @@ export interface DeviceValue {
   installDismissed: boolean;
   installHintShown: boolean;
   setInstallFlag: (flag: "installDismissed" | "installHintShown") => void;
+  /** Whether the first-use tip beside "+" has been dealt with on this device. */
+  tipSeen: boolean;
+  markTipSeen: () => void;
   setLang: (lang: Lang) => void;
   setTheme: (theme: ThemeChoice) => void;
 }

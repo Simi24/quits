@@ -1,7 +1,7 @@
 import { lazy, Suspense, useState } from "react";
 import type { SuggestedSettlement } from "../../../domain";
-import { Toast, useSingleFlight } from "../../components";
-import { useDevice } from "../../device";
+import { FirstTip, Toast, useSingleFlight } from "../../components";
+import { firstTipVisible, useDevice } from "../../device";
 import { todayIso } from "../../format";
 import { useTrip } from "../../trip";
 import type { OperationPayload } from "../../trip";
@@ -35,7 +35,7 @@ interface TripShellProps {
 
 /** The trip: bar, the four tabs, the expense detail over them, sheets and toasts (SPEC.md §7.5). */
 export const TripShell = ({ onLeave }: TripShellProps) => {
-  const { t } = useDevice();
+  const { t, tipSeen, markTipSeen } = useDevice();
   const { trip, record, recordMany, readOnly } = useTrip();
   const [tab, setTab] = useState<Tab>("spese");
   const [choosingWho, setChoosingWho] = useState(false);
@@ -104,7 +104,16 @@ export const TripShell = ({ onLeave }: TripShellProps) => {
         ) : null}
         {tab === "viaggio" ? <ViaggioScreen onNotMe={() => setChoosingWho(true)} notify={(text) => show({ text })} onOpenHistory={() => setHistoryOpen(true)} /> : null}
       </main>
-      {tab === "spese" && !readOnly ? <Fab label={t.expenses.newExpense} onClick={() => setSheet({ kind: "expense", editingId: null })} /> : null}
+      {tab === "spese" && !readOnly ? (
+        <Fab
+          label={t.expenses.newExpense}
+          onClick={() => {
+            markTipSeen();
+            setSheet({ kind: "expense", editingId: null });
+          }}
+        />
+      ) : null}
+      {tab === "spese" && firstTipVisible({ tipSeen, readOnly }) ? <FirstTip onClose={markTipSeen} /> : null}
       <TabBar
         tab={tab}
         onChange={(next) => {
