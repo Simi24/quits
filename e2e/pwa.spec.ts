@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { chromium, expect, test } from "@playwright/test";
-import type { Page } from "@playwright/test";
+import type { Browser, BrowserContext, Cookie, Page } from "@playwright/test";
 import { deviceId, outboxOf, readStore, tripMetas } from "./idb.ts";
 import { newDevice } from "./devices.ts";
 import { sardegna, seedTrip } from "./seed-trip.ts";
@@ -29,39 +29,72 @@ const toLanding = async (page: Page) => {
   await expect.poll(async () => (await readStore<{ lastTripId: string | null }>(page, "device"))[0]?.lastTripId).toBeNull();
 };
 
-test("a context with empty storage but the bridge cookie restores every trip it lists, with name and device id", async ({ page, context, browser, baseURL }) => {
-  await createTrip(page, "Sardegna 2026", ["Simone", "Sara", "Luca"]);
-  await toLanding(page);
-  await createTrip(page, "Toscana", ["Simone", "Anna"]);
-  const originalDevice = await deviceId(page);
-  const bridge = (await context.cookies()).filter((cookie) => cookie.name === "quits_bridge");
-  expect(bridge).toHaveLength(1);
-  expect(bridge[0]).toMatchObject({ path: "/v/", secure: true, sameSite: "Lax" });
+const bridgeOf = async (context: BrowserContext) => (await context.cookies()).filter((cookie) => cookie.name === "quits_bridge");
 
-  // The installed iOS app: Safari's cookies, none of its IndexedDB.
-  const installed = await newDevice(browser, baseURL as string);
-  await installed.context.addCookies(bridge);
-  await installed.page.goto(START_URL);
+/** The installed iOS app: Safari's cookies, none of its IndexedDB. */
+const installedIphoneApp = async (browser: Browser, baseURL: string, cookies: Cookie[]) => {
+  const context = await browser.newContext({ baseURL, locale: "it-IT", userAgent: IPHONE_SAFARI });
+  await context.addCookies(cookies);
+  return { context, page: await context.newPage() };
+};
 
-  await expect(heading(installed.page, "Toscana")).toBeVisible();
-  await expect(installed.page.getByRole("button", { name: "Sei Simone" })).toBeVisible();
-  expect(await deviceId(installed.page)).toBe(originalDevice);
+test.describe("the cookie bridge, on an iPhone", () => {
+  test.use({ userAgent: IPHONE_SAFARI });
 
-  await installed.page.getByRole("button", { name: "Torna all'inizio" }).click();
-  await installed.page.getByRole("button", { name: /Sardegna 2026/ }).click();
-  await expect(heading(installed.page, "Sardegna 2026")).toBeVisible();
-  await expect(installed.page.getByRole("button", { name: "Sei Simone" })).toBeVisible();
-  await installed.context.close();
+  test("a context with empty storage but the bridge cookie restores every trip it lists, with name and device id", async ({ page, context, browser, baseURL }) => {
+    await createTrip(page, "Sardegna 2026", ["Simone", "Sara", "Luca"]);
+    await toLanding(page);
+    await createTrip(page, "Toscana", ["Simone", "Anna"]);
+    const originalDevice = await deviceId(page);
+    const bridge = await bridgeOf(context);
+    expect(bridge).toHaveLength(1);
+    expect(bridge[0]).toMatchObject({ path: "/v/", secure: true, sameSite: "Lax" });
+
+    const installed = await installedIphoneApp(browser, baseURL as string, bridge);
+    await installed.page.goto(START_URL);
+
+    await expect(heading(installed.page, "Toscana")).toBeVisible();
+    await expect(installed.page.getByRole("button", { name: "Sei Simone" })).toBeVisible();
+    expect(await deviceId(installed.page)).toBe(originalDevice);
+
+    await installed.page.getByRole("button", { name: "Torna all'inizio" }).click();
+    await installed.page.getByRole("button", { name: /Sardegna 2026/ }).click();
+    await expect(heading(installed.page, "Sardegna 2026")).toBeVisible();
+    await expect(installed.page.getByRole("button", { name: "Sei Simone" })).toBeVisible();
+    await installed.context.close();
+  });
+
+  test("the bridge holds the ten most recent trips, and never a trip with no link", async ({ page, context }) => {
+    await seedTrip(page, "Sardegna 2026", sardegna());
+    await toLanding(page);
+    await createTrip(page, "Con il link", ["Simone", "Sara"]);
+    const [cookie] = await bridgeOf(context);
+    const decoded = JSON.parse(decodeURIComponent(cookie?.value ?? "")) as { t: string[][] };
+    expect(decoded.t).toHaveLength(1);
+    expect(cookie?.value.length).toBeLessThan(4000);
+  });
+
+  test("a start at the landing, where the bridge cannot be read, leaves it as it is", async ({ page, context, browser, baseURL }) => {
+    await createTrip(page, "Sardegna 2026", ["Simone", "Sara"]);
+    const bridge = await bridgeOf(context);
+
+    const installed = await installedIphoneApp(browser, baseURL as string, bridge);
+    await installed.page.goto("/");
+    await expect(installed.page.getByRole("heading", { level: 1, name: "quits" })).toBeVisible();
+    await installed.page.waitForTimeout(300);
+    expect((await bridgeOf(installed.context))[0]?.value).toBe(bridge[0]?.value);
+
+    await installed.page.goto(START_URL);
+    await expect(heading(installed.page, "Sardegna 2026")).toBeVisible();
+    await installed.context.close();
+  });
 });
 
-test("the bridge holds the ten most recent trips, and never a trip with no link", async ({ page, context }) => {
-  await seedTrip(page, "Sardegna 2026", sardegna());
-  await toLanding(page);
-  await createTrip(page, "Con il link", ["Simone", "Sara"]);
-  const [cookie] = (await context.cookies()).filter((c) => c.name === "quits_bridge");
-  const decoded = JSON.parse(decodeURIComponent(cookie?.value ?? "")) as { t: string[][] };
-  expect(decoded.t).toHaveLength(1);
-  expect(cookie?.value.length).toBeLessThan(4000);
+test("off iOS the token stays out of cookies: no bridge is written", async ({ page, context }) => {
+  await createTrip(page);
+  await expect(page.getByRole("button", { name: "Sei Simone" })).toBeVisible();
+  await page.waitForTimeout(300);
+  expect(await bridgeOf(context)).toEqual([]);
 });
 
 // Chromium switches Background Sync off in an incognito-like context, which is what a plain Playwright context

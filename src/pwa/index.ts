@@ -4,5 +4,5 @@ export { requestBackgroundSync } from "./background-sync";
 export { promptInstall } from "./install-store";
 export { shouldHintInstall } from "./install-offer";
 export type { InstallOffer } from "./install-offer";
-export { isInAppBrowser } from "./platform";
+export { isInAppBrowser, isIos } from "./platform";
 export { useInstallOffer } from "./useInstallOffer";
