@@ -138,12 +138,16 @@ test("Background Sync is registered after a change, and a wake-up with the app c
   }
 });
 
-test("opening a second trip never touches the first one's identity or queue", async ({ page, browser, baseURL }) => {
-  // The first trip lives on this device only, so its queue stays put (SPEC.md G-B3).
-  await seedTrip(page, "Sardegna 2026", sardegna());
+test("opening a second trip never touches the first one's identity or queue", async ({ page, context, browser, baseURL }) => {
+  // The first trip has a link and a change made offline, still waiting to go out.
+  await createTrip(page, "Sardegna 2026", ["Simone", "Sara"]);
+  await context.setOffline(true);
+  await addExpense(page, { description: "Cena", amount: "60,00" });
+  await toLanding(page);
+  await context.setOffline(false);
   const [first] = await tripMetas(page);
-  const queued = (await outboxOf(page, first?.tripId as string)).length;
-  expect(queued).toBeGreaterThan(0);
+  const queued = await outboxOf(page, first?.tripId as string);
+  expect(queued).toHaveLength(1);
 
   const host = await newDevice(browser, baseURL as string);
   const link = await createTrip(host.page, "Secondo viaggio", ["Anna", "Bruno"]);
@@ -151,10 +155,11 @@ test("opening a second trip never touches the first one's identity or queue", as
 
   const metas = await tripMetas(page);
   expect(metas).toHaveLength(2);
-  expect(metas.find((m) => m.tripId === first?.tripId)).toMatchObject({ meId: first?.meId, token: null });
-  expect(await outboxOf(page, first?.tripId as string)).toHaveLength(queued);
+  expect(metas.find((m) => m.tripId === first?.tripId)).toEqual(first);
+  expect(await outboxOf(page, first?.tripId as string)).toEqual(queued);
   const second = metas.find((m) => m.tripId !== first?.tripId);
   expect(second?.meId).not.toBeNull();
+  expect(second?.token).not.toBe(first?.token);
   expect(await outboxOf(page, second?.tripId as string)).toHaveLength(0);
   await host.context.close();
 });
@@ -163,6 +168,8 @@ test("started from start_url, the app opens the most recently used trip", async 
   await createTrip(page, "Sardegna 2026", ["Simone", "Sara"]);
   await toLanding(page);
   await createTrip(page, "Toscana", ["Simone", "Anna"]);
+  // Left on the landing: a plain reload would stay there, the installed app opens the most recent trip.
+  await toLanding(page);
 
   await page.goto(START_URL);
   await expect(heading(page, "Toscana")).toBeVisible();
