@@ -97,7 +97,7 @@ export const DaysChart = ({ model, perHead, patterns }: DaysChartProps) => {
   return (
     <div ref={sel.ref} className="grid gap-2.5">
       <div ref={ref} className="chart">
-        <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" aria-label={t.charts.cDay}>
+        <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="group" aria-label={t.charts.cDay}>
           <defs>
             {buckets.map((b, i) => (
               <g key={i}>

@@ -58,7 +58,7 @@ export const CumChart = ({ model }: CumChartProps) => {
   return (
     <div ref={sel.ref} className="grid gap-2.5">
       <div ref={ref} className="chart">
-        <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" aria-label={`${t.charts.cCum}: ${f.money(p.total)}`}>
+        <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="group" aria-label={`${t.charts.cCum}: ${f.money(p.total)}`}>
           {running ? <rect x={PL + n * band} y={PT - 6} width={pw - n * band} height={H - PB - PT + 6} rx={8} style={{ fill: "var(--future)" }} /> : null}
           <YAxis scale={y} ticks={axis.ticks} left={PL} right={W - PR} format={f.whole} />
           <AreaClosed data={points} x={(d) => d.x} y={(d) => y(d.v)} yScale={y} className="later area" />
