@@ -79,5 +79,7 @@ export function useTripSync({ tripId, hasToken, reload }: Options) {
           ? "error"
           : "synced";
 
-  return { syncNow, status, announce: (id: string) => announce.current(id) };
+  // Stable, so the provider's callbacks built on it do not change on every render.
+  const announceChange = useCallback((id: string) => announce.current(id), []);
+  return { syncNow, status, announce: announceChange };
 }

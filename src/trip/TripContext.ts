@@ -33,7 +33,7 @@ export interface TripValue {
   deletion: Deletion | null;
   /** Operations the server refused, with the reason (SPEC.md §5.1). */
   rejected: RejectedItem[];
-  /** Conflicts not yet seen on this device, by the operation that won. */
+  /** Conflicts already seen and dismissed on this device, by the operation that won. */
   seenConflicts: string[];
   dismissConflict: (winnerOpId: string) => Promise<void>;
   /** Server actions: online only (SPEC.md §6.2). */
