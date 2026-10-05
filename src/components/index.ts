@@ -2,6 +2,7 @@ export { Avatar } from "./Avatar";
 export { Button } from "./Button";
 export { CategoryDot } from "./CategoryDot";
 export { Chip } from "./Chip";
+export { FooterLinks } from "./FooterLinks";
 export { EqualMark } from "./EqualMark";
 export { ErrorLine } from "./ErrorLine";
 export { IconButton } from "./IconButton";
