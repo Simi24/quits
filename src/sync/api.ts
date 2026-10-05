@@ -18,7 +18,7 @@ function failureOf(status: number, body: unknown): ApiFailure {
     };
     return { kind: "deleted", tripId, deletion };
   }
-  if (status === 404) return { kind: "unavailable" };
+  if (status === 404 && data.error === "trip_unavailable") return { kind: "unavailable" };
   if (status === 403) return { kind: "forbidden" };
   return { kind: "error", status };
 }
@@ -48,7 +48,9 @@ export const createApi = (fetchFn: FetchFn = (...args) => fetch(...args)): Api =
       parsed = null;
     }
     if (!response.ok) return failureOf(response.status, parsed);
-    return { kind: "ok", ...(isObject(parsed) ? parsed : {}) } as ApiResult<T>;
+    // Every answer of the API is a JSON object; anything else (a captive portal's page) did not come from it.
+    if (!isObject(parsed)) return { kind: "error", status: response.status };
+    return { kind: "ok", ...parsed } as ApiResult<T>;
   }
 
   const bearer = (token: string) => `Bearer ${token}`;

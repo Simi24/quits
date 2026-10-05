@@ -50,6 +50,18 @@ describe("createApi", () => {
     }
   });
 
+  it("only trip_unavailable means the trip is gone: any other 404 is a plain error, so the trip keeps syncing", async () => {
+    const { api } = recording(() => reply(404, { error: "not_found" }));
+
+    expect(await api.pull("t", 0)).toEqual({ kind: "error", status: 404 });
+  });
+
+  it("a success that is not JSON (a captive portal's page) is an error, not an empty answer", async () => {
+    const { api } = recording(() => new Response("<html>Wi-Fi login</html>", { status: 200, headers: { "Content-Type": "text/html" } }));
+
+    expect(await api.pull("t", 0)).toEqual({ kind: "error", status: 200 });
+  });
+
   it("a request that cannot reach the server is offline", async () => {
     const { api } = recording(() => Promise.reject(new TypeError("Failed to fetch")));
 
