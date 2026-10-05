@@ -1,6 +1,6 @@
 import { ClockCounterClockwise, Receipt as ReceiptIcon, Warning } from "@phosphor-icons/react";
 import { useMemo, useState } from "react";
-import { Button, IconButton, Receipt } from "../../components";
+import { Button, EmptyState, IconButton } from "../../components";
 import { useDevice } from "../../device";
 import { resolveCategory } from "../../../domain";
 import { categoryName, unseenConflicts, useTrip } from "../../trip";
@@ -20,7 +20,7 @@ interface SpeseScreenProps {
 /** The roll of receipts: summary, search, days newest first (SPEC.md §7.6 item 4). */
 export const SpeseScreen = ({ printId, onPrinted, onOpenExpense, onOpenSettlement, onOpenHistory }: SpeseScreenProps) => {
   const { t, lang } = useDevice();
-  const { trip, seenConflicts } = useTrip();
+  const { trip, seenConflicts, readOnly } = useTrip();
   const [query, setQuery] = useState("");
   const [onlyConflicts, setOnlyConflicts] = useState(false);
   const conflicts = useMemo(() => unseenConflicts(trip, seenConflicts), [trip, seenConflicts]);
@@ -61,13 +61,11 @@ export const SpeseScreen = ({ printId, onPrinted, onOpenExpense, onOpenSettlemen
         </IconButton>
       </div>
       {emptyRoll ? (
-        <div className="grid justify-items-center gap-2.5 px-5 py-8 text-center">
-          <Receipt className="grid h-[90px] w-[120px] place-items-center">
-            <ReceiptIcon size={34} weight="fill" aria-hidden="true" />
-          </Receipt>
-          <b>{t.expenses.emptyRoll}</b>
-          <p className="text-sm text-ink-2">{t.expenses.emptyRollHelp}</p>
-        </div>
+        <EmptyState
+          icon={<ReceiptIcon size={34} weight="fill" aria-hidden="true" />}
+          title={readOnly ? t.onboarding.emptyRollClosed : t.expenses.emptyRoll}
+          help={readOnly ? t.onboarding.emptyRollClosedHelp : t.expenses.emptyRollHelp}
+        />
       ) : query && days.length === 0 ? (
         <p className="px-5 py-8 text-center text-ink-2">{t.expenses.noResults(query)}</p>
       ) : (

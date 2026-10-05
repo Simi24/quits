@@ -1,7 +1,8 @@
+import { HandCoins, Scales } from "@phosphor-icons/react";
 import { useMemo, useState } from "react";
 import { balances, suggestSettlements } from "../../../domain";
 import type { SuggestedSettlement } from "../../../domain";
-import { Segmented } from "../../components";
+import { Button, EmptyState, Segmented } from "../../components";
 import { useDevice } from "../../device";
 import { useTrip } from "../../trip";
 import { BalanceRow } from "./BalanceRow";
@@ -19,10 +20,12 @@ interface SaldiScreenProps {
 /** Two views in one tab: Saldi, balances and suggested settlements, and Totali (SPEC.md §7.6 item 8). */
 export const SaldiScreen = ({ onRecord, onRecordAll }: SaldiScreenProps) => {
   const { t } = useDevice();
-  const { trip, meId } = useTrip();
+  const { trip, meId, readOnly } = useTrip();
   const [view, setView] = useState<View>("saldi");
   const owed = useMemo(() => balances(trip), [trip]);
   const suggestions = useMemo(() => suggestSettlements(trip), [trip]);
+  // Nothing ever recorded: a trip whose expenses were all deleted is a real, even trip and keeps its hero.
+  const empty = trip.expenses.length === 0 && trip.settlements.length === 0;
   const allEven = trip.participants.every((p) => (owed[p.id] ?? 0) === 0);
 
   return (
@@ -36,7 +39,21 @@ export const SaldiScreen = ({ onRecord, onRecordAll }: SaldiScreenProps) => {
           { value: "totali", label: t.totals.totals },
         ]}
       />
-      {view === "totali" ? (
+      {empty ? (
+        <>
+          <EmptyState
+            icon={<Scales size={34} weight="fill" aria-hidden="true" />}
+            title={view === "totali" ? t.onboarding.emptyTotals : t.onboarding.emptyBalances}
+            help={view === "totali" ? t.onboarding.emptyTotalsHelp : t.onboarding.emptyBalancesHelp}
+          />
+          {view === "saldi" && !readOnly ? (
+            <Button wide variant="ghost" onClick={() => onRecord(null)}>
+              <HandCoins size={20} weight="fill" aria-hidden="true" />
+              {t.balances.recordOther}
+            </Button>
+          ) : null}
+        </>
+      ) : view === "totali" ? (
         <TotaliView />
       ) : (
         <>

@@ -1,5 +1,7 @@
+import { ChartBar } from "@phosphor-icons/react";
 import { useMemo, useState } from "react";
 import { chartModel, resolveCategory } from "../../../domain";
+import { EmptyState } from "../../components";
 import { useDevice } from "../../device";
 import { todayIso } from "../../format";
 import { useTrip } from "../../trip";
@@ -44,6 +46,14 @@ export const GraficiScreen = () => {
   const { matrix, bank } = model;
   const best = matrix.best;
   const matTeaser = best ? t.charts.matTeaser(nameOf(best.participantId), categoryName(resolveCategory(trip, best.categoryId), lang), f.money(best.amount)) : t.charts.noData;
+
+  if (trip.expenses.length === 0) {
+    return (
+      <div className="charts charts-screen" data-testid="grafici">
+        <EmptyState icon={<ChartBar size={34} weight="fill" aria-hidden="true" />} title={t.onboarding.emptyCharts} help={t.onboarding.emptyChartsHelp} />
+      </div>
+    );
+  }
 
   return (
     <div className="charts charts-screen" data-testid="grafici">

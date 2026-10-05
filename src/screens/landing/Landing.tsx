@@ -4,6 +4,7 @@ import { useDevice } from "../../device";
 import type { TripSummary } from "../../db";
 import { CreatorCode } from "./CreatorCode";
 import { DeletedTicket } from "./DeletedTicket";
+import { HowItWorks } from "./HowItWorks";
 import { TripTicket } from "./TripTicket";
 
 interface LandingProps {
@@ -29,9 +30,10 @@ export const Landing = ({ trips, onOpen, onCreate, onRestore }: LandingProps) =>
   };
   return (
     <main className="h-full overflow-y-auto">
-      <div className="flex justify-end px-4 pt-3">
-        <div className="w-[120px]">
+      <section className="relative grid gap-[18px] px-5 pt-6 pb-[26px]">
+        <div className="absolute top-4 right-4 w-[84px]">
           <Segmented
+            compact
             label={t.settings.lang}
             value={lang}
             onChange={setLang}
@@ -41,8 +43,6 @@ export const Landing = ({ trips, onOpen, onCreate, onRestore }: LandingProps) =>
             ]}
           />
         </div>
-      </div>
-      <section className="grid gap-[18px] px-5 pt-6 pb-[26px]">
         <div className="flex items-center gap-4">
           <EqualMark />
           <h1 className="display text-[calc(76px*var(--d-scale))] leading-[.9]">quits</h1>
@@ -62,6 +62,7 @@ export const Landing = ({ trips, onOpen, onCreate, onRestore }: LandingProps) =>
         )}
         <p className="text-[13.5px] text-ink-2">{t.shell.needLink}</p>
       </section>
+      <HowItWorks />
       {deleted.length ? (
         <section className="grid gap-3.5 px-4 pb-7">
           <h2 className="display text-[calc(20px*var(--d-scale))]">{t.sync.deletedTrips}</h2>

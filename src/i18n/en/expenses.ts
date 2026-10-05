@@ -13,7 +13,7 @@ export const expenses: Dictionary["expenses"] = {
   settlementLine: (a, b) => `${a} paid ${b}`,
   settlement: "Settlement",
   emptyRoll: "No expenses yet.",
-  emptyRollHelp: "Tap + to add the first one: the trip's first receipt.",
+  emptyRollHelp: "Receipts show up here, one day at a time. Tap + to add the first expense: it will be the trip's first receipt.",
   noResults: (q) => `No expenses matching "${q}".`,
   newExpense: "New expense",
   editExpense: "Edit expense",
