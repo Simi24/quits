@@ -17,6 +17,12 @@ body {
   border-radius: 6px;
 }
 
+/* Text fields show focus with their own ink border or underline instead, as in the prototype (".input:focus"). */
+input:focus-visible,
+select:focus-visible {
+  outline: none;
+}
+
 .num {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1;

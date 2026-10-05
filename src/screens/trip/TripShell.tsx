@@ -90,7 +90,13 @@ export const TripShell = ({ onLeave }: TripShellProps) => {
         {tab === "viaggio" ? <ViaggioScreen onNotMe={() => setChoosingWho(true)} notify={(text) => show({ text })} /> : null}
       </main>
       {tab === "spese" ? <Fab label={t.expenses.newExpense} onClick={() => setSheet({ kind: "expense", editingId: null })} /> : null}
-      <TabBar tab={tab} onChange={setTab} />
+      <TabBar
+        tab={tab}
+        onChange={(next) => {
+          setPrintId(null);
+          setTab(next);
+        }}
+      />
 
       {detail ? (
         <ExpenseDetail

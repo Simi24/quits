@@ -320,3 +320,10 @@ test("loads offline after the first visit, with everything recorded before", asy
   });
   expect(fonts).toEqual(expect.arrayContaining(["Bagel Fat One", "Onest"]));
 });
+
+test("the landing switches language from its IT/EN switch, as in the prototype", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "EN", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Create a trip" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "English" })).toHaveAttribute("aria-pressed", "true");
+});

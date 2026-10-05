@@ -18,7 +18,7 @@ export const AmountField = ({ id, label, value, currency, negative = false, onCh
       <label htmlFor={id} className="text-sm font-semibold">
         {label}
       </label>
-      <div className="flex min-w-0 items-baseline gap-2 border-b-[2.5px] border-ink pb-1">
+      <div className="flex min-w-0 items-baseline gap-2 border-b-[2.5px] border-ink pb-1 focus-within:shadow-[0_1.5px_0_var(--ink)]">
         {negative ? (
           <span aria-hidden="true" className="text-[22px] font-bold text-ink-2">
             -

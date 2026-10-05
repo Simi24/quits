@@ -1,5 +1,5 @@
 import { Plus } from "@phosphor-icons/react";
-import { Button, DevicePreferences, EqualMark } from "../../components";
+import { Button, DevicePreferences, EqualMark, Segmented } from "../../components";
 import { useDevice } from "../../device";
 import type { TripSummary } from "../../db";
 import { TripTicket } from "./TripTicket";
@@ -12,11 +12,24 @@ interface LandingProps {
 
 /** The public landing: wordmark, the trips already opened on this device, creation (SPEC.md §7.6 item 1). */
 export const Landing = ({ trips, onOpen, onCreate }: LandingProps) => {
-  const { t } = useDevice();
+  const { t, lang, setLang } = useDevice();
   const ordered = [...trips].sort((a, b) => Number(a.trip.status === "closed") - Number(b.trip.status === "closed"));
   return (
     <main className="h-full overflow-y-auto">
-      <section className="grid gap-[18px] px-5 pt-12 pb-[26px]">
+      <div className="flex justify-end px-4 pt-3">
+        <div className="w-[120px]">
+          <Segmented
+            label={t.settings.lang}
+            value={lang}
+            onChange={setLang}
+            options={[
+              { value: "it", label: "IT" },
+              { value: "en", label: "EN" },
+            ]}
+          />
+        </div>
+      </div>
+      <section className="grid gap-[18px] px-5 pt-6 pb-[26px]">
         <div className="flex items-center gap-4">
           <EqualMark />
           <h1 className="display text-[calc(76px*var(--d-scale))] leading-[.9]">quits</h1>

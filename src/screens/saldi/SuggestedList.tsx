@@ -33,7 +33,7 @@ export const SuggestedList = ({ suggestions, onRecord, onRecordAll, onRecordOthe
                       <span className="block leading-tight font-bold">{t.balances.gives(nameOf(s.fromParticipantId), nameOf(s.toParticipantId))}</span>
                       <b className="display num text-[calc(22px*var(--d-scale))]">{money(s.amount)}</b>
                     </span>
-                    <Button size="sm" variant="ghost" className="shadow-[inset_0_0_0_1.5px_var(--ink-2)]" onClick={() => onRecord(s)}>
+                    <Button size="sm" variant="ghost" className="[--ring:var(--ink-2)]" onClick={() => onRecord(s)}>
                       {t.balances.record}
                     </Button>
                   </div>
