@@ -33,9 +33,15 @@ export const TripShell = ({ onLeave }: TripShellProps) => {
   const [tab, setTab] = useState<Tab>("spese");
   const [choosingWho, setChoosingWho] = useState(false);
   const [detailId, setDetailId] = useState<string | null>(null);
-  const [sheet, setSheet] = useState<Sheet | null>(null);
+  const [sheet, setSheetState] = useState<Sheet | null>(null);
   const [printId, setPrintId] = useState<string | null>(null);
-  const { toast, show } = useToast();
+  const { toast, show, hide } = useToast();
+
+  // A toast never sits on top of a sheet that has just opened.
+  const setSheet = (next: Sheet | null) => {
+    if (next) hide();
+    setSheetState(next);
+  };
 
   if (choosingWho) return <WhoAreYou onDone={() => setChoosingWho(false)} />;
 
