@@ -1,5 +1,5 @@
 import { env, runDurableObjectAlarm } from "cloudflare:test";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { expense, expenseCreated, op } from "../domain/testing.ts";
 import { tripStub } from "./jurisdiction.ts";
 import { api, bearer, newTrip } from "./testing/api.ts";
@@ -68,6 +68,8 @@ describe("deleting a trip", () => {
 });
 
 describe("purging a deleted trip", () => {
+  afterEach(() => vi.useRealTimers());
+
   it("leaves the token leading nowhere once the 30 days are over", async () => {
     const { tripId, token } = await newTrip();
     await deleteTrip(token);
@@ -84,6 +86,16 @@ describe("purging a deleted trip", () => {
     await restoreTrip(token);
     expect(await runDurableObjectAlarm(tripStub(env, tripId))).toBe(false);
     expect((await api("GET", "/api/pull", { auth: bearer(token) })).status).toBe(200);
+  });
+
+  it("refuses a restore once the 30 days are over, even before the purge has run", async () => {
+    const { token } = await newTrip();
+    await deleteTrip(token);
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(Date.now() + 30 * 86_400_000 + 1);
+
+    const late = await restoreTrip(token);
+    expect([late.status, late.body]).toEqual([404, { error: "trip_unavailable" }]);
   });
 
   it("purges the retired tokens of the trip too", async () => {

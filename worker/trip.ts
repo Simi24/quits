@@ -67,9 +67,15 @@ export class Trip extends DurableObject<Env> {
     return result;
   }
 
-  /** Lifts the soft delete. Restoring a trip that is not deleted does nothing. */
-  async restoreTrip(operation: StoredOperation): Promise<{ restored: boolean; seq: number | null }> {
-    if (this.row().deleted_at === null) return { restored: false, seq: null };
+  /**
+   * Lifts the soft delete. Restoring a trip that is not deleted does nothing. Once the 30 days are
+   * over the trip is as good as purged, even if the alarm has not run yet (or is running: it awaits
+   * the Directory, which lets this request in), so a late restore can never be undone by the purge.
+   */
+  async restoreTrip(operation: StoredOperation): Promise<{ restored: boolean; seq: number | null } | "past_deadline"> {
+    const { deleted_at: deletedAt } = this.row();
+    if (deletedAt === null) return { restored: false, seq: null };
+    if (Date.now() >= deletedAt + RESTORE_WINDOW_MS) return "past_deadline";
     const seq = this.ctx.storage.transactionSync(() => {
       this.sql.exec("UPDATE trip SET deleted_at = NULL, deleted_by = NULL");
       return appendOperation(this.sql, operation).seq;

@@ -1,4 +1,4 @@
-import { json } from "../http.ts";
+import { fail, json } from "../http.ts";
 import { openTrip } from "../trip-access.ts";
 import { readServerOperation } from "./server-operation.ts";
 
@@ -10,5 +10,7 @@ export async function restoreTrip(request: Request, env: Env): Promise<Response>
   if ("response" in read) return read.response;
 
   const result = await opened.trip.restoreTrip(read.operation);
+  // Past the 30 days the trip is answered like a purged one (SPEC.md §6.4).
+  if (result === "past_deadline") return fail(404, "trip_unavailable");
   return json({ tripId: opened.tripId, ...result });
 }
