@@ -1,12 +1,12 @@
 import { useState } from "react";
 import type { SuggestedSettlement } from "../../../domain";
-import { Toast } from "../../components";
+import { Toast, useSingleFlight } from "../../components";
 import { useDevice } from "../../device";
 import { todayIso } from "../../format";
 import { useTrip } from "../../trip";
+import type { OperationPayload } from "../../trip";
 import { ExpenseDetail, ExpenseSheet } from "../expense";
-import { SaldiScreen } from "../saldi";
-import { SettlementDetail, SettlementSheet } from "../saldi";
+import { SaldiScreen, SettlementDetail, SettlementSheet } from "../saldi";
 import { SpeseScreen } from "../spese";
 import { ViaggioScreen } from "../viaggio";
 import { WhoAreYou } from "../who";
@@ -17,7 +17,7 @@ import type { Tab } from "./TabBar";
 import { TripBar } from "./TripBar";
 import { useToast } from "./useToast";
 
-type Sheet =
+type OpenSheet =
   | { kind: "expense"; editingId: string | null }
   | { kind: "settle"; prefill: SuggestedSettlement | null }
   | { kind: "settlement"; id: string };
@@ -29,19 +29,35 @@ interface TripShellProps {
 /** The trip: bar, the four tabs, the expense detail over them, sheets and toasts (SPEC.md §7.5). */
 export const TripShell = ({ onLeave }: TripShellProps) => {
   const { t } = useDevice();
-  const { trip, record } = useTrip();
+  const { trip, record, recordMany } = useTrip();
   const [tab, setTab] = useState<Tab>("spese");
   const [choosingWho, setChoosingWho] = useState(false);
   const [detailId, setDetailId] = useState<string | null>(null);
-  const [sheet, setSheetState] = useState<Sheet | null>(null);
+  const [sheet, setSheetState] = useState<OpenSheet | null>(null);
   const [printId, setPrintId] = useState<string | null>(null);
   const { toast, show, hide } = useToast();
 
   // A toast never sits on top of a sheet that has just opened.
-  const setSheet = (next: Sheet | null) => {
+  const setSheet = (next: OpenSheet | null) => {
     if (next) hide();
     setSheetState(next);
   };
+
+  // One transaction for every suggestion, once: a double tap must not pay anyone twice.
+  const settleAll = useSingleFlight(async (suggestions: SuggestedSettlement[]) => {
+    const date = todayIso();
+    await recordMany(
+      suggestions.map((s) => ({
+        type: "SettlementRecorded",
+        settlementId: crypto.randomUUID(),
+        fromParticipantId: s.fromParticipantId,
+        toParticipantId: s.toParticipantId,
+        amount: s.amount,
+        date,
+      })),
+    );
+    show({ text: t.balances.recordedAll });
+  });
 
   if (choosingWho) return <WhoAreYou onDone={() => setChoosingWho(false)} />;
 
@@ -49,13 +65,18 @@ export const TripShell = ({ onLeave }: TripShellProps) => {
   const editing = sheet?.kind === "expense" && sheet.editingId ? trip.expenses.find((e) => e.id === sheet.editingId) : undefined;
   const openedSettlement = sheet?.kind === "settlement" ? trip.settlements.find((s) => s.id === sheet.id && !s.deleted) : undefined;
 
-  const recordAll = async (suggestions: SuggestedSettlement[]) => {
-    const date = todayIso();
-    for (const s of suggestions) {
-      await record({ type: "SettlementRecorded", settlementId: crypto.randomUUID(), fromParticipantId: s.fromParticipantId, toParticipantId: s.toParticipantId, amount: s.amount, date });
-    }
-    show({ text: t.balances.recordedAll });
-  };
+  /** "Annulla" after a delete: the toast goes at the first tap, so the restore is written once. */
+  const offerUndo = (text: string, restore: OperationPayload, restoredText: string) =>
+    show({
+      text,
+      action: {
+        label: t.shell.undo,
+        run: () => {
+          hide();
+          void record(restore).then(() => show({ text: restoredText }));
+        },
+      },
+    });
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-paper">
@@ -64,7 +85,7 @@ export const TripShell = ({ onLeave }: TripShellProps) => {
         {tab === "spese" ? (
           <SpeseScreen printId={printId} onOpenExpense={setDetailId} onOpenSettlement={(id) => setSheet({ kind: "settlement", id })} />
         ) : null}
-        {tab === "saldi" ? <SaldiScreen onRecord={(prefill) => setSheet({ kind: "settle", prefill })} onRecordAll={(s) => void recordAll(s)} /> : null}
+        {tab === "saldi" ? <SaldiScreen onRecord={(prefill) => setSheet({ kind: "settle", prefill })} onRecordAll={(s) => void settleAll.run(s)} /> : null}
         {tab === "grafici" ? <ChartsPlaceholder /> : null}
         {tab === "viaggio" ? <ViaggioScreen onNotMe={() => setChoosingWho(true)} notify={(text) => show({ text })} /> : null}
       </main>
@@ -78,15 +99,7 @@ export const TripShell = ({ onLeave }: TripShellProps) => {
           onEdit={() => setSheet({ kind: "expense", editingId: detail.id })}
           onDeleted={(expenseId) => {
             setDetailId(null);
-            show({
-              text: t.expenses.deleted,
-              action: {
-                label: t.shell.undo,
-                run: () => {
-                  void record({ type: "ExpenseRestored", expenseId }).then(() => show({ text: t.expenses.restoredExp }));
-                },
-              },
-            });
+            offerUndo(t.expenses.deleted, { type: "ExpenseRestored", expenseId }, t.expenses.restoredExp);
           }}
         />
       ) : null}
@@ -118,15 +131,7 @@ export const TripShell = ({ onLeave }: TripShellProps) => {
           onClose={() => setSheet(null)}
           onDeleted={(settlementId) => {
             setSheet(null);
-            show({
-              text: t.balances.setDeleted,
-              action: {
-                label: t.shell.undo,
-                run: () => {
-                  void record({ type: "SettlementRestored", settlementId }).then(() => show({ text: t.balances.setRestored }));
-                },
-              },
-            });
+            offerUndo(t.balances.setDeleted, { type: "SettlementRestored", settlementId }, t.balances.setRestored);
           }}
         />
       ) : null}

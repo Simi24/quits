@@ -1,4 +1,4 @@
-import { OTHER_CATEGORY_ID, splitExpense, validateExpense } from "../../domain";
+import { OTHER_CATEGORY_ID, expenseSnapshotSchema, splitExpense, validateExpense } from "../../domain";
 import type { DefaultSplit, ExpenseIssue, ExpenseSnapshot, Participant, SplitMethod, SplitResult } from "../../domain";
 import { amountToInput, parseAmount } from "../format/money";
 import type { Locale } from "../format/money";
@@ -30,9 +30,12 @@ export interface DraftContext {
   participants: Participant[];
 }
 
+/** What the domain finds wrong with an expense, plus what only a half-filled form can get wrong. */
+export type DraftIssue = ExpenseIssue | { code: "date_missing" };
+
 export interface Evaluation {
   snapshot: ExpenseSnapshot;
-  issues: ExpenseIssue[];
+  issues: DraftIssue[];
   /** Each person's share and who got the leftover cent; null while the amount or the split is not valid. */
   result: SplitResult | null;
 }
@@ -122,7 +125,8 @@ export function evaluateDraft(draft: ExpenseDraft, ctx: DraftContext): Evaluatio
     payers,
     split: splitOf(draft, ctx),
   };
-  const issues = validateExpense(snapshot);
+  const dated = expenseSnapshotSchema.shape.date.safeParse(snapshot.date).success;
+  const issues: DraftIssue[] = [...validateExpense(snapshot), ...(dated ? [] : [{ code: "date_missing" as const }])];
   const splitIsValid = !issues.some((i) => i.code.startsWith("split_") || i.code.startsWith("exact_") || i.code.startsWith("percentage_"));
   const result = amount > 0 && splitIsValid ? splitExpense(snapshot.amount, snapshot.split, ctx.participants.map((p) => p.id)) : null;
   return { snapshot, issues, result };

@@ -47,6 +47,7 @@ export const expenses: Dictionary["expenses"] = {
   savedEdit: "Changes saved",
   vDesc: "Say what you paid for.",
   vAmount: "Enter an amount above zero.",
+  vDate: "Pick a date.",
   vPayMissing: (c) => `Payers are ${c} short.`,
   vPayOver: (c) => `Payers are ${c} over the total.`,
   vNobody: "Pick at least one person.",

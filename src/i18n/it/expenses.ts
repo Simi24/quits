@@ -45,6 +45,7 @@ export const expenses = {
   savedEdit: "Modifiche salvate",
   vDesc: "Scrivi cosa avete pagato.",
   vAmount: "Inserisci un importo maggiore di zero.",
+  vDate: "Scegli una data.",
   vPayMissing: (c: string) => `Ai paganti mancano ${c}.`,
   vPayOver: (c: string) => `I paganti superano il totale di ${c}.`,
   vNobody: "Scegli almeno una persona.",

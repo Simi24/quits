@@ -1,6 +1,7 @@
 import { UserPlus } from "@phosphor-icons/react";
 import { useState } from "react";
-import { Avatar, Button, EqualMark, TextField } from "../../components";
+import { Avatar, Button, EqualMark, TextField, useSingleFlight } from "../../components";
+import { NAME_MAX_LENGTH } from "../../../domain";
 import { useDevice } from "../../device";
 import { avatarIndex, useTrip } from "../../trip";
 
@@ -21,12 +22,12 @@ export const WhoAreYou = ({ onDone }: WhoAreYouProps) => {
     onDone();
   };
 
-  const addMe = async () => {
+  const addMe = useSingleFlight(async () => {
     if (!name.trim() || taken) return;
     const participantId = crypto.randomUUID();
     await record({ type: "ParticipantAdded", participantId, name: name.trim() }, participantId);
     await pick(participantId);
-  };
+  });
 
   return (
     <main className="grid h-full content-start gap-5 overflow-y-auto px-4 pt-9 pb-8">
@@ -58,13 +59,13 @@ export const WhoAreYou = ({ onDone }: WhoAreYouProps) => {
           className="flex items-end gap-2"
           onSubmit={(event) => {
             event.preventDefault();
-            void addMe();
+            void addMe.run();
           }}
         >
           <div className="grow">
-            <TextField id="me-name" label={t.create.yourName} value={name} onChange={(e) => setName(e.target.value)} autoComplete="off" />
+            <TextField id="me-name" label={t.create.yourName} value={name} onChange={(e) => setName(e.target.value)} maxLength={NAME_MAX_LENGTH} autoComplete="off" />
           </div>
-          <Button type="submit" disabled={!name.trim() || taken}>
+          <Button type="submit" disabled={!name.trim() || taken || addMe.busy}>
             {t.create.addMe}
           </Button>
         </form>

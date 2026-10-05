@@ -34,23 +34,34 @@ export async function createTrip(tripId: string, creation: Operation): Promise<v
   await tx.done;
 }
 
-/** Appends one operation to the outbox of its trip, in one transaction with the counter. */
-export async function appendOperation(tripId: string, operation: Operation): Promise<void> {
-  assertValid(operation);
+/**
+ * Appends operations to the outbox of their trip, in order, in one transaction with the counter:
+ * all of them are stored or none is (a settle-all never lands half-way).
+ */
+export async function appendOperations(tripId: string, operations: Operation[]): Promise<void> {
+  operations.forEach(assertValid);
   const db = await openQuitsDb();
   const tx = db.transaction(["trips", "outbox"], "readwrite");
   const meta = await tx.objectStore("trips").get(tripId);
   if (!meta) throw new Error("Unknown trip");
-  const entry: OutboxEntry = { tripId, n: meta.nextOutbox, operation };
-  await tx.objectStore("outbox").put(entry);
-  await tx.objectStore("trips").put({ ...meta, nextOutbox: meta.nextOutbox + 1, lastUsedAt: new Date().toISOString() });
+  for (const [i, operation] of operations.entries()) {
+    const entry: OutboxEntry = { tripId, n: meta.nextOutbox + i, operation };
+    await tx.objectStore("outbox").put(entry);
+  }
+  await tx.objectStore("trips").put({ ...meta, nextOutbox: meta.nextOutbox + operations.length, lastUsedAt: new Date().toISOString() });
   await tx.done;
 }
 
+/**
+ * Remembers who this device is in the trip. Read and write in one transaction, like every change to the
+ * trip record: a separate read could put back a stale `nextOutbox` and let the next operation overwrite one.
+ */
 export async function setMe(tripId: string, meId: string): Promise<void> {
   const db = await openQuitsDb();
-  const meta = await db.get("trips", tripId);
-  if (meta) await db.put("trips", { ...meta, meId });
+  const tx = db.transaction("trips", "readwrite");
+  const meta = await tx.store.get(tripId);
+  if (meta) await tx.store.put({ ...meta, meId });
+  await tx.done;
 }
 
 export interface TripSummary {

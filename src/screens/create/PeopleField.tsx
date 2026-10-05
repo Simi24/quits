@@ -2,6 +2,7 @@ import { UserPlus, X } from "@phosphor-icons/react";
 import { useState } from "react";
 import { Button, ErrorLine, TextField } from "../../components";
 import { useDevice } from "../../device";
+import { NAME_MAX_LENGTH } from "../../../domain";
 
 interface PeopleFieldProps {
   people: string[];
@@ -47,7 +48,7 @@ export const PeopleField = ({ people, onAdd, onRemove }: PeopleFieldProps) => {
         }}
       >
         <div className="grow">
-          <TextField id="new-person" label={label} value={draft} onChange={(e) => setDraft(e.target.value)} autoComplete="off" />
+          <TextField id="new-person" label={label} value={draft} onChange={(e) => setDraft(e.target.value)} maxLength={NAME_MAX_LENGTH} autoComplete="off" />
         </div>
         <Button type="submit" variant="ghost" disabled={!draft.trim() || duplicate}>
           <UserPlus size={20} weight="fill" aria-hidden="true" />

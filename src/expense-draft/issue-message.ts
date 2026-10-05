@@ -1,8 +1,10 @@
-import type { ExpenseIssue, SplitMethod } from "../../domain";
+import type { SplitMethod } from "../../domain";
 import type { Dictionary, Lang } from "../i18n";
+import type { DraftIssue } from "./draft";
 
 /** Issues the sheet reports as you type; the others wait until the first attempt to save. */
-export const isLiveIssue = (issue: ExpenseIssue): boolean =>
+export const isLiveIssue = (issue: DraftIssue): boolean =>
+  issue.code === "date_missing" ||
   issue.code === "split_nobody" ||
   issue.code === "exact_missing" ||
   issue.code === "exact_excess" ||
@@ -11,10 +13,12 @@ export const isLiveIssue = (issue: ExpenseIssue): boolean =>
   issue.code === "payers_over";
 
 /** The IT/EN message for what the domain found wrong (SPEC.md §3.6; the wording is the prototype's). */
-export function issueMessage(issue: ExpenseIssue, method: SplitMethod, t: Dictionary["expenses"], money: (minor: number) => string, lang: Lang): string {
+export function issueMessage(issue: DraftIssue, method: SplitMethod, t: Dictionary["expenses"], money: (minor: number) => string, lang: Lang): string {
   switch (issue.code) {
     case "description_missing":
       return t.vDesc;
+    case "date_missing":
+      return t.vDate;
     case "amount_zero":
     case "amount_not_integer":
       return t.vAmount;

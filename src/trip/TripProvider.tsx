@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { foldWithPending } from "../../domain";
-import { appendOperation, loadTrip, setMe, updateDevice } from "../db";
+import { appendOperations, loadTrip, setMe, updateDevice } from "../db";
 import type { StoredTrip } from "../db";
 import { useDevice } from "../device";
 import { formatMoney } from "../format";
@@ -41,15 +41,16 @@ export const TripProvider = ({ tripId, fallback, children }: TripProviderProps) 
   const trip = useMemo(() => (stored ? foldWithPending([], stored.operations) : null), [stored]);
   const meId = stored?.meta.meId ?? trip?.participants[0]?.id ?? null;
 
-  const record = useCallback(
-    async (payload: OperationPayload, by?: string) => {
+  const recordMany = useCallback(
+    async (payloads: OperationPayload[], by?: string) => {
       if (!stored || !meId) return;
-      const operation = buildOperation({ by: by ?? meId, device: deviceId }, payload);
-      await appendOperation(tripId, operation);
-      setStored((s) => (s ? { ...s, operations: [...s.operations, operation] } : s));
+      const operations = payloads.map((payload) => buildOperation({ by: by ?? meId, device: deviceId }, payload));
+      await appendOperations(tripId, operations);
+      setStored((s) => (s ? { ...s, operations: [...s.operations, ...operations] } : s));
     },
     [stored, meId, deviceId, tripId],
   );
+  const record = useCallback((payload: OperationPayload, by?: string) => recordMany([payload], by), [recordMany]);
 
   const chooseMe = useCallback(
     async (participantId: string) => {
@@ -66,11 +67,12 @@ export const TripProvider = ({ tripId, fallback, children }: TripProviderProps) 
       trip,
       meId,
       record,
+      recordMany,
       chooseMe,
       money: (minor, options) => formatMoney(minor, trip.currency, lang, options),
       nameOf: (id) => trip.roster.find((r) => r.id === id)?.name ?? "?",
     };
-  }, [trip, meId, tripId, record, chooseMe, lang]);
+  }, [trip, meId, tripId, record, recordMany, chooseMe, lang]);
 
   if (stored === undefined) return <>{fallback("loading")}</>;
   if (!value) return <>{fallback("missing")}</>;

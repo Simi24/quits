@@ -36,6 +36,10 @@ describe("a new draft", () => {
 });
 
 describe("evaluating a draft", () => {
+  it("refuses a draft whose date was cleared, as the operation schema would", () => {
+    expect(codes(filled({ date: "" }))).toEqual(["date_missing"]);
+  });
+
   it("builds the expense snapshot: one payer, equal split", () => {
     const { snapshot, issues } = evaluateDraft(filled(), ctx);
     expect(issues).toEqual([]);

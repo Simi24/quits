@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Button, ErrorLine, Segmented, Sheet, TextField } from "../../components";
+import { Button, ErrorLine, Segmented, Sheet, TextField, useSingleFlight } from "../../components";
 import { useDevice } from "../../device";
 import { draftFromSnapshot, evaluateDraft, isLiveIssue, issueMessage, newDraft } from "../../expense-draft";
 import type { ExpenseDraft } from "../../expense-draft";
@@ -36,7 +36,7 @@ export const ExpenseSheet = ({ editing, onClose, onSaved }: ExpenseSheetProps) =
   const paid = evaluation.snapshot.payers.reduce((sum, p) => sum + Math.abs(p.amount), 0);
   const title = editing ? t.expenses.editExpense : t.expenses.newExpense;
 
-  const save = async () => {
+  const saving = useSingleFlight(async () => {
     if (evaluation.issues.length) {
       setTried(true);
       return;
@@ -51,7 +51,7 @@ export const ExpenseSheet = ({ editing, onClose, onSaved }: ExpenseSheetProps) =
     const expenseId = crypto.randomUUID();
     await record({ type: "ExpenseCreated", expenseId, expense: evaluation.snapshot });
     onSaved(expenseId, true);
-  };
+  });
 
   return (
     <Sheet
@@ -64,7 +64,7 @@ export const ExpenseSheet = ({ editing, onClose, onSaved }: ExpenseSheetProps) =
               <ErrorLine key={issue.code}>{issueMessage(issue, draft.method, t.expenses, money, lang)}</ErrorLine>
             ))}
           </div>
-          <Button wide onClick={() => void save()}>
+          <Button wide disabled={saving.busy} onClick={() => void saving.run()}>
             {editing ? t.expenses.saveEdit : t.expenses.save}
           </Button>
         </>
@@ -74,7 +74,7 @@ export const ExpenseSheet = ({ editing, onClose, onSaved }: ExpenseSheetProps) =
         className="grid grid-cols-1 gap-5 px-4 pt-1.5 pb-6"
         onSubmit={(event) => {
           event.preventDefault();
-          void save();
+          void saving.run();
         }}
       >
         <Segmented<ExpenseDraft["kind"]>

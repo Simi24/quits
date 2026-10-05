@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Button, ErrorLine, Notice, SelectField, Sheet, TextField } from "../../components";
+import { Button, ErrorLine, Notice, SelectField, Sheet, TextField, useSingleFlight } from "../../components";
 import { useDevice } from "../../device";
-import { findDuplicateSettlement } from "../../../domain";
+import { expenseSnapshotSchema, findDuplicateSettlement } from "../../../domain";
 import type { SuggestedSettlement } from "../../../domain";
 import { amountToInput, parseAmount, todayIso } from "../../format";
 import { useTrip } from "../../trip";
@@ -27,14 +27,16 @@ export const SettlementSheet = ({ prefill, onClose, onSaved }: SettlementSheetPr
 
   const minor = parseAmount(amount, trip.currency) ?? 0;
   const samePerson = from === to;
+  const undated = !expenseSnapshotSchema.shape.date.safeParse(date).success;
+  const ready = !samePerson && !undated && minor > 0;
   const duplicate = !samePerson && minor > 0 && findDuplicateSettlement(trip, { fromParticipantId: from, toParticipantId: to, amount: minor, date });
 
-  const save = async () => {
-    if (samePerson || minor <= 0) return;
+  const saving = useSingleFlight(async () => {
+    if (!ready) return;
     const settlementId = crypto.randomUUID();
     await record({ type: "SettlementRecorded", settlementId, fromParticipantId: from, toParticipantId: to, amount: minor, date });
     onSaved(settlementId);
-  };
+  });
 
   const options = people.map((p) => (
     <option key={p.id} value={p.id}>
@@ -47,7 +49,7 @@ export const SettlementSheet = ({ prefill, onClose, onSaved }: SettlementSheetPr
       title={t.balances.newSettlement}
       onClose={onClose}
       footer={
-        <Button wide disabled={samePerson || minor <= 0} onClick={() => void save()}>
+        <Button wide disabled={!ready || saving.busy} onClick={() => void saving.run()}>
           {t.balances.record}
         </Button>
       }
@@ -56,7 +58,7 @@ export const SettlementSheet = ({ prefill, onClose, onSaved }: SettlementSheetPr
         className="grid grid-cols-1 gap-[18px] px-4 pt-1.5 pb-6"
         onSubmit={(event) => {
           event.preventDefault();
-          void save();
+          void saving.run();
         }}
       >
         <div className="grid grid-cols-2 gap-2.5">
@@ -75,6 +77,8 @@ export const SettlementSheet = ({ prefill, onClose, onSaved }: SettlementSheetPr
         <div aria-live="polite">
           {samePerson ? (
             <ErrorLine>{t.balances.samePerson}</ErrorLine>
+          ) : undated ? (
+            <ErrorLine>{t.expenses.vDate}</ErrorLine>
           ) : duplicate ? (
             <Notice>
               <p>{t.balances.dupWarn}</p>

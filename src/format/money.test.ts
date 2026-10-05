@@ -26,6 +26,12 @@ describe("parseAmount", () => {
     expect(parseAmount("abc", "EUR")).toBeNull();
   });
 
+  it("is null past the largest whole number of minor units an operation can carry", () => {
+    expect(parseAmount("99999999999999999999", "EUR")).toBeNull();
+    expect(parseAmount("90071992547409,92", "EUR")).toBeNull();
+    expect(parseAmount("90071992547409,91", "EUR")).toBe(Number.MAX_SAFE_INTEGER);
+  });
+
   it("never goes through a float error", () => {
     expect(parseAmount("0,29", "EUR")).toBe(29);
     expect(parseAmount("1.005", "EUR")).toBe(100500);

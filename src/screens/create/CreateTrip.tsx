@@ -1,6 +1,7 @@
 import { CaretLeft } from "@phosphor-icons/react";
 import { useState } from "react";
-import { Button, ErrorLine, IconButton, SelectField, TextField } from "../../components";
+import { Button, ErrorLine, IconButton, SelectField, TextField, useSingleFlight } from "../../components";
+import { NAME_MAX_LENGTH } from "../../../domain";
 import { buildTripCreation, newTripIssues } from "../../create-trip/new-trip";
 import type { NewTripForm } from "../../create-trip/new-trip";
 import { createTrip } from "../../db";
@@ -30,13 +31,13 @@ export const CreateTrip = ({ onBack, onCreated }: CreateTripProps) => {
   const [tried, setTried] = useState(false);
   const issues = newTripIssues(form);
 
-  const submit = async () => {
+  const submit = useSingleFlight(async () => {
     setTried(true);
     if (issues.length) return;
     const { tripId, operation } = buildTripCreation(form, deviceId);
     await createTrip(tripId, operation);
     onCreated(tripId);
-  };
+  });
 
   const messages: Record<(typeof issues)[number], string> = {
     name_missing: t.create.needName,
@@ -60,6 +61,7 @@ export const CreateTrip = ({ onBack, onCreated }: CreateTripProps) => {
             placeholder={t.create.tripNamePh}
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
+            maxLength={NAME_MAX_LENGTH}
             autoComplete="off"
           />
           <SelectField id="trip-currency" label={t.create.currency} value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })}>
@@ -91,7 +93,7 @@ export const CreateTrip = ({ onBack, onCreated }: CreateTripProps) => {
           {tried ? issues.map((issue) => <ErrorLine key={issue}>{messages[issue]}</ErrorLine>) : null}
         </main>
         <div className="border-t-[1.5px] border-line px-4 pt-3 pb-[calc(14px+env(safe-area-inset-bottom,0px))]">
-          <Button wide onClick={() => void submit()}>
+          <Button wide disabled={submit.busy} onClick={() => void submit.run()}>
             {t.create.createIt}
           </Button>
         </div>

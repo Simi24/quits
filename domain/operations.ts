@@ -8,7 +8,9 @@ import { validateExpense } from "./validate.ts";
 /** The schema version operations are written in today (SPEC.md §3.13). Older ones are upcast in the fold. */
 export const CURRENT_VERSION = 2;
 
-const name = z.string().trim().min(1).max(100);
+/** The longest name a trip, a participant or a category can have; the app's fields stop there too. */
+export const NAME_MAX_LENGTH = 100;
+const name = z.string().trim().min(1).max(NAME_MAX_LENGTH);
 const currency = z
   .string()
   .regex(/^[A-Z]{3}$/)

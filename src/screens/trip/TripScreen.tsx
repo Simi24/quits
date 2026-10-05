@@ -13,6 +13,7 @@ export const TripScreen = ({ tripId, onLeave }: TripScreenProps) => {
   const { t } = useDevice();
   return (
     <TripProvider
+      key={tripId}
       tripId={tripId}
       fallback={(state) =>
         state === "loading" ? (

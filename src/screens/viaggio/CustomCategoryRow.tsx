@@ -2,7 +2,7 @@ import { PencilSimple, Trash } from "@phosphor-icons/react";
 import { useState } from "react";
 import { Button, CategoryDot, IconButton, TextField } from "../../components";
 import { useDevice } from "../../device";
-import { categoryColor } from "../../../domain";
+import { NAME_MAX_LENGTH, categoryColor } from "../../../domain";
 import type { CustomCategory } from "../../../domain";
 import { useTrip } from "../../trip";
 
@@ -32,7 +32,7 @@ export const CustomCategoryRow = ({ category, onDeleted }: CustomCategoryRowProp
     return (
       <li className="flex min-h-[52px] items-end gap-2.5 py-1.5">
         <div className="grow">
-          <TextField id={`rename-cat-${category.id}`} label={`${t.settings.rename} ${category.name}`} hideLabel value={name} onChange={(e) => setName(e.target.value)} autoComplete="off" />
+          <TextField id={`rename-cat-${category.id}`} label={`${t.settings.rename} ${category.name}`} hideLabel value={name} onChange={(e) => setName(e.target.value)} maxLength={NAME_MAX_LENGTH} autoComplete="off" />
         </div>
         <Button disabled={!name.trim()} onClick={() => void save()}>
           {t.settings.renameSave}

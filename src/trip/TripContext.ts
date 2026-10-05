@@ -9,6 +9,8 @@ export interface TripValue {
   meId: string;
   /** Writes one operation as the device's participant (or as `by`) and refolds the trip. */
   record: (payload: OperationPayload, by?: string) => Promise<void>;
+  /** Writes several operations at once: all are stored or none is. */
+  recordMany: (payloads: OperationPayload[], by?: string) => Promise<void>;
   chooseMe: (participantId: string) => Promise<void>;
   /** Formats minor units in the trip currency and the interface language. */
   money: (minor: number, options?: { signed?: boolean }) => string;

@@ -1,6 +1,7 @@
 import { UserPlus } from "@phosphor-icons/react";
 import { useState } from "react";
-import { Button, ErrorLine, TextField } from "../../components";
+import { Button, ErrorLine, TextField, useSingleFlight } from "../../components";
+import { NAME_MAX_LENGTH } from "../../../domain";
 import { useDevice } from "../../device";
 import { useTrip } from "../../trip";
 import { ParticipantRow } from "./ParticipantRow";
@@ -12,12 +13,12 @@ export const ParticipantsSection = ({ onAdded }: { onAdded: () => void }) => {
   const [name, setName] = useState("");
   const duplicate = name.trim() !== "" && trip.participants.some((p) => p.name.toLowerCase() === name.trim().toLowerCase());
 
-  const add = async () => {
+  const add = useSingleFlight(async () => {
     if (!name.trim() || duplicate) return;
     await record({ type: "ParticipantAdded", participantId: crypto.randomUUID(), name: name.trim() });
     setName("");
     onAdded();
-  };
+  });
 
   return (
     <Setting title={t.settings.participants}>
@@ -31,13 +32,13 @@ export const ParticipantsSection = ({ onAdded }: { onAdded: () => void }) => {
         className="flex items-end gap-2"
         onSubmit={(event) => {
           event.preventDefault();
-          void add();
+          void add.run();
         }}
       >
         <div className="grow">
-          <TextField id="add-participant" label={t.create.addName} value={name} onChange={(e) => setName(e.target.value)} autoComplete="off" />
+          <TextField id="add-participant" label={t.create.addName} value={name} onChange={(e) => setName(e.target.value)} maxLength={NAME_MAX_LENGTH} autoComplete="off" />
         </div>
-        <Button type="submit" variant="ghost" disabled={!name.trim() || duplicate}>
+        <Button type="submit" variant="ghost" disabled={!name.trim() || duplicate || add.busy}>
           <UserPlus size={20} weight="fill" aria-hidden="true" />
           {t.create.add}
         </Button>

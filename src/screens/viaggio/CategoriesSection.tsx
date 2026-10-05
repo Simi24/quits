@@ -1,8 +1,8 @@
 import { Plus } from "@phosphor-icons/react";
 import { useState } from "react";
-import { Button, TextField } from "../../components";
+import { Button, TextField, useSingleFlight } from "../../components";
 import { useDevice } from "../../device";
-import { STANDARD_CATEGORIES } from "../../../domain";
+import { NAME_MAX_LENGTH, STANDARD_CATEGORIES } from "../../../domain";
 import { useTrip } from "../../trip";
 import { CustomCategoryRow } from "./CustomCategoryRow";
 import { Setting } from "./Setting";
@@ -18,13 +18,13 @@ export const CategoriesSection = ({ notify }: CategoriesSectionProps) => {
   const [emoji, setEmoji] = useState("");
   const [name, setName] = useState("");
 
-  const add = async () => {
+  const add = useSingleFlight(async () => {
     if (!name.trim()) return;
     await record({ type: "CategoryAdded", categoryId: crypto.randomUUID(), name: name.trim(), emoji: emoji.trim() });
     setName("");
     setEmoji("");
     notify(t.settings.catAdded);
-  };
+  });
 
   return (
     <Setting title={t.settings.categories}>
@@ -53,16 +53,16 @@ export const CategoriesSection = ({ notify }: CategoriesSectionProps) => {
         className="flex items-end gap-2"
         onSubmit={(event) => {
           event.preventDefault();
-          void add();
+          void add.run();
         }}
       >
         <div className="w-[76px] flex-none">
           <TextField id="category-emoji" label={t.settings.catEmojiPh} value={emoji} onChange={(e) => setEmoji(e.target.value)} placeholder="🙂" maxLength={8} className="text-center" autoComplete="off" />
         </div>
         <div className="grow">
-          <TextField id="category-name" label={t.settings.catNamePh} value={name} onChange={(e) => setName(e.target.value)} autoComplete="off" />
+          <TextField id="category-name" label={t.settings.catNamePh} value={name} onChange={(e) => setName(e.target.value)} maxLength={NAME_MAX_LENGTH} autoComplete="off" />
         </div>
-        <Button type="submit" variant="ghost" aria-label={t.settings.addCat} disabled={!name.trim()}>
+        <Button type="submit" variant="ghost" aria-label={t.settings.addCat} disabled={!name.trim() || add.busy}>
           <Plus size={20} weight="bold" aria-hidden="true" />
         </Button>
       </form>

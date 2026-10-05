@@ -27,9 +27,12 @@ export function parseAmount(input: string, currency: string): number | null {
   const fraction = decimal ? decimal[2]! : "";
   if (!/^\d*$/.test(whole) || (whole === "" && fraction === "")) return null;
   const digits = minorDigits(currency);
-  if (digits === 0) return Number(whole || "0") + (fraction === "" ? 0 : Math.round(Number(`0.${fraction}`)));
-  const minor = Number(whole || "0") * 10 ** digits + Number(fraction.padEnd(digits, "0").slice(0, digits));
-  return Number.isFinite(minor) ? minor : null;
+  const minor =
+    digits === 0
+      ? Number(whole || "0") + (fraction === "" ? 0 : Math.round(Number(`0.${fraction}`)))
+      : Number(whole || "0") * 10 ** digits + Number(fraction.padEnd(digits, "0").slice(0, digits));
+  // Past the safe integers the operation schema refuses the amount, so it is no amount at all here.
+  return Number.isSafeInteger(minor) ? minor : null;
 }
 
 /** An amount as the field shows it: no currency symbol, the locale's decimal mark. */

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Avatar, Button, IconButton, TextField } from "../../components";
 import { useDevice } from "../../device";
 import { avatarIndex, useTrip } from "../../trip";
+import { NAME_MAX_LENGTH } from "../../../domain";
 
 interface ParticipantRowProps {
   participant: { id: string; name: string };
@@ -27,7 +28,7 @@ export const ParticipantRow = ({ participant }: ParticipantRowProps) => {
     return (
       <li className="flex min-h-[52px] items-end gap-2.5 py-1.5">
         <div className="grow">
-          <TextField id={`rename-${participant.id}`} label={`${t.settings.rename} ${participant.name}`} hideLabel value={name} onChange={(e) => setName(e.target.value)} autoComplete="off" />
+          <TextField id={`rename-${participant.id}`} label={`${t.settings.rename} ${participant.name}`} hideLabel value={name} onChange={(e) => setName(e.target.value)} maxLength={NAME_MAX_LENGTH} autoComplete="off" />
         </div>
         <Button disabled={!name.trim() || clash} onClick={() => void save()}>
           {t.settings.renameSave}

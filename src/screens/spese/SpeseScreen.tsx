@@ -24,13 +24,14 @@ export const SpeseScreen = ({ printId, onOpenExpense, onOpenSettlement }: SpeseS
     () => rollDays(trip, { query, categoryNameOf: (id) => categoryName(resolveCategory(trip, id), lang) }),
     [trip, query, lang],
   );
-  const hasExpenses = trip.expenses.some((e) => !e.deleted);
+  // A payment recorded before any expense still belongs on the roll: it is the only place to open it.
+  const emptyRoll = !trip.expenses.some((e) => !e.deleted) && !trip.settlements.some((s) => !s.deleted);
 
   return (
     <div className="grid gap-3.5 px-4 pt-1.5 pb-24">
       <SummaryReceipt />
       <SearchField value={query} onChange={setQuery} />
-      {!hasExpenses ? (
+      {emptyRoll ? (
         <div className="grid justify-items-center gap-2.5 px-5 py-8 text-center">
           <Receipt className="grid h-[90px] w-[120px] place-items-center">
             <ReceiptIcon size={34} weight="fill" aria-hidden="true" />
