@@ -1,4 +1,4 @@
-import { foldWithPending, parseOperation } from "../../domain";
+import { foldWithPending, parseOperation, upcastOperation } from "../../domain";
 import type { Operation, SequencedOperation, Trip } from "../../domain";
 import type { RejectedItem } from "../sync/types";
 import { openQuitsDb } from "./open";
@@ -40,6 +40,15 @@ export async function loadTrip(tripId: string): Promise<StoredTrip | undefined> 
 
 /** Rebase: the confirmed log with the device's own pending operations folded on top (SPEC.md §5.1). */
 export const foldStored = (stored: Pick<StoredTrip, "confirmed" | "pending">): Trip => foldWithPending(stored.confirmed, stored.pending);
+
+/**
+ * The trip's log as this device has it, in the current shape: the server's operations by sequence, then
+ * the ones still waiting that the server has not confirmed. What an export carries and a merge summary reads.
+ */
+export const logOperations = ({ confirmed, pending }: Pick<StoredTrip, "confirmed" | "pending">): Operation[] => {
+  const known = new Set(confirmed.map((c) => c.operation.id));
+  return [...confirmed.map((c) => c.operation), ...pending.filter((o) => !known.has(o.id))].map(upcastOperation);
+};
 
 const newMeta = (tripId: string, token: string | null, meId: string | null): TripMeta => ({
   tripId,

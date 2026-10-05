@@ -287,13 +287,13 @@ test("the language and theme are per device and survive a reload", async ({ page
   await tab(page, "Viaggio").click();
   await page.getByRole("button", { name: "English" }).click();
   await page.getByRole("button", { name: "Dark" }).click();
-  await expect(page.getByRole("button", { name: "Expenses" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Expenses", exact: true })).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await expect.poll(() => storedDevice(page)).toMatchObject({ lang: "en", theme: "dark" });
 
   await page.reload();
 
-  await expect(page.getByRole("button", { name: "Expenses" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Expenses", exact: true })).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
 });

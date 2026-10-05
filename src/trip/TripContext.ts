@@ -1,7 +1,6 @@
 import { createContext, useContext } from "react";
-import type { Trip } from "../../domain";
-import type { ActionResult } from "../sync";
-import type { Access, Deletion, RejectedItem } from "../sync";
+import type { Operation, Trip } from "../../domain";
+import type { ActionResult, Access, Deletion, RejectedItem } from "../sync";
 import type { OperationPayload } from "./build-operation";
 
 /** What the sync line under the trip bar says (SPEC.md §5.3). */
@@ -21,6 +20,10 @@ export interface TripValue {
   /** Writes several operations at once: all are stored or none is. */
   recordMany: (payloads: OperationPayload[], by?: string) => Promise<void>;
   chooseMe: (participantId: string) => Promise<void>;
+  /** The trip's log as this device has it, in order: the server's, then what is still waiting to be sent. What an export carries. */
+  operations: Operation[];
+  /** Set while this device's stored "chi sei?" is a participant that was merged away: the notice is owed (SPEC.md §3.3). */
+  mergedAway: { fromId: string; intoId: string } | null;
   /** Formats minor units in the trip currency and the interface language. */
   money: (minor: number, options?: { signed?: boolean }) => string;
   nameOf: (participantId: string) => string;

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { appendOperations, foldStored, loadTrip, setMe, dismissConflict, updateDevice } from "../db";
+import { appendOperations, foldStored, loadTrip, logOperations, setMe, dismissConflict, updateDevice } from "../db";
 import type { StoredTrip } from "../db";
 import { useDevice } from "../device";
 import { formatMoney } from "../format";
@@ -48,7 +48,11 @@ export const TripProvider = ({ tripId, fallback, children }: TripProviderProps) 
   const { syncNow, status, announce } = useTripSync({ tripId, hasToken: token !== null && stored !== null, reload });
 
   const trip = useMemo(() => (stored ? foldStored(stored) : null), [stored]);
-  const meId = stored?.meta.meId ?? "";
+  // A device that was X is Y once X is merged into Y; undoing the merge brings X back, as nothing is written until the notice is read.
+  const storedMe = stored?.meta.meId ?? null;
+  const meId = storedMe && trip ? (trip.mergedInto[storedMe] ?? storedMe) : (storedMe ?? "");
+  const mergedAway = storedMe && meId && storedMe !== meId ? { fromId: storedMe, intoId: meId } : null;
+  const operations = useMemo(() => (stored ? logOperations(stored) : []), [stored]);
   const pending = stored?.pending.length ?? 0;
 
   const changed = useCallback(async () => {
@@ -108,6 +112,8 @@ export const TripProvider = ({ tripId, fallback, children }: TripProviderProps) 
       record,
       recordMany,
       chooseMe,
+      operations,
+      mergedAway,
       money: (minor, options) => formatMoney(minor, trip.currency, lang, options),
       nameOf: (id) => trip.roster.find((r) => r.id === id)?.name ?? "?",
       sync: { status: effectiveStatus, pending },
@@ -121,7 +127,7 @@ export const TripProvider = ({ tripId, fallback, children }: TripProviderProps) 
       restoreTrip: () => serverAction({ type: "TripRestored" }, (t, operation) => restoreTrip({ api, store }, tripId, t, operation)),
       token,
     } as TripValue;
-  }, [stored, trip, tripId, meId, status, pending, record, recordMany, chooseMe, dismiss, serverAction, token, lang]);
+  }, [stored, trip, tripId, meId, mergedAway?.fromId, operations, status, pending, record, recordMany, chooseMe, dismiss, serverAction, token, lang]);
 
   if (stored === undefined) return <>{fallback("loading")}</>;
   if (!value) return <>{fallback("missing")}</>;

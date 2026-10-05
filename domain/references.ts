@@ -27,3 +27,6 @@ function isUsed(trip: Trip, id: ParticipantId): boolean {
 /** A participant can be removed only if they appear in no expense and no settlement (SPEC.md §3.3). */
 export const canRemoveParticipant = (trip: Trip, id: ParticipantId): boolean =>
   trip.participants.some((p) => p.id === id) && !isUsed(trip, id);
+
+/** The currency can change only while the trip has no expenses; deleted ones count (SPEC.md §3.2). */
+export const canChangeCurrency = (trip: Trip): boolean => trip.expenses.length === 0;
