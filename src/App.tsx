@@ -1,22 +1,18 @@
 import { useEffect, useState } from "react";
-import { listTrips, readDevice } from "./db";
-import type { DeviceRecord, TripSummary } from "./db";
+import { bootApp, mirrorBridge } from "./boot";
+import type { Booted } from "./boot";
 import { DeviceProvider } from "./device";
 import { AppScreens } from "./screens/AppScreens";
 import { isPrivacyPath, PrivacyScreen } from "./screens/privacy";
 
-interface Boot {
-  device: DeviceRecord;
-  trips: TripSummary[];
-}
-
-/** Reads the device record and the trips on this device from IndexedDB, then hands over to the screens. */
+/** Boots from the link, IndexedDB or the cookie bridge (SPEC.md §5.5), then hands over to the screens. */
 export const App = () => {
-  const [boot, setBoot] = useState<Boot | null>(null);
+  const [boot, setBoot] = useState<Booted | null>(null);
 
   useEffect(() => {
-    void Promise.all([readDevice(), listTrips()]).then(([device, trips]) => setBoot({ device, trips }));
+    void bootApp().then(setBoot);
   }, []);
+  useEffect(() => (boot ? mirrorBridge() : undefined), [boot]);
 
   return (
     <div className="app-col relative mx-auto h-full max-w-[30rem] overflow-hidden border-line bg-paper md:border-x-[1.5px]">
@@ -25,7 +21,7 @@ export const App = () => {
           {isPrivacyPath(window.location.pathname) ? (
             <PrivacyScreen />
           ) : (
-            <AppScreens initialTrips={boot.trips} lastTripId={boot.device.lastTripId} />
+            <AppScreens initialTrips={boot.trips} start={boot.open} />
           )}
         </DeviceProvider>
       ) : null}

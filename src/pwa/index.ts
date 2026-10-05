@@ -1,0 +1,1 @@
+export { requestPersist } from "./persist";

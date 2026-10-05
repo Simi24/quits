@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { LoadingLine } from "../components";
+import type { BootOpen } from "../boot";
 import { listTrips, updateDevice } from "../db";
 import type { TripSummary } from "../db";
 import { useDevice } from "../device";
+import { requestPersist } from "../pwa";
 import { openLink, restoreTrip } from "../sync";
 import { api, store } from "../sync/client";
 import { buildOperation } from "../trip";
@@ -23,8 +25,8 @@ type Screen =
 
 interface AppScreensProps {
   initialTrips: TripSummary[];
-  /** The trip the app was left on: reloading comes back to it (SPEC.md §5.5). */
-  lastTripId: string | null;
+  /** What the start decided to open: the link, the trip the app was left on, or the landing (SPEC.md §5.5). */
+  start: BootOpen;
 }
 
 /** The trip link is `/v/#<token>`; the fragment never reaches the server (SPEC.md §4). */
@@ -33,13 +35,12 @@ const linkToken = (): string => (window.location.pathname.startsWith("/v") ? win
 const leaveLink = () => window.history.replaceState(null, "", "/");
 
 /** Which screen is showing, and what a link in the address bar does. */
-export const AppScreens = ({ initialTrips, lastTripId }: AppScreensProps) => {
+export const AppScreens = ({ initialTrips, start }: AppScreensProps) => {
   const { deviceId } = useDevice();
   const [trips, setTrips] = useState(initialTrips);
-  const [screen, setScreen] = useState<Screen>(() => {
-    if (linkToken()) return { name: "opening" };
-    return lastTripId && initialTrips.some((t) => t.tripId === lastTripId) ? { name: "trip", tripId: lastTripId } : { name: "landing" };
-  });
+  const [screen, setScreen] = useState<Screen>(() =>
+    start.kind === "link" ? { name: "opening" } : start.kind === "trip" ? { name: "trip", tripId: start.tripId } : { name: "landing" },
+  );
 
   const goLanding = useCallback(async () => {
     leaveLink();
@@ -54,8 +55,7 @@ export const AppScreens = ({ initialTrips, lastTripId }: AppScreensProps) => {
     const problem = (problem: LinkProblem) => setScreen({ name: "problem", problem, token });
     switch (outcome.status) {
       case "opened":
-        // Best effort, never relied on (SPEC.md §5.2).
-        if (outcome.isNew) void navigator.storage?.persist?.();
+        if (outcome.isNew) requestPersist();
         setScreen({ name: "trip", tripId: outcome.tripId });
         break;
       case "deleted":
@@ -100,7 +100,10 @@ export const AppScreens = ({ initialTrips, lastTripId }: AppScreensProps) => {
 
   switch (screen.name) {
     case "create":
-      return <CreateTrip onBack={() => setScreen({ name: "landing" })} onCreated={(tripId, token) => setScreen({ name: "ready", tripId, token })} />;
+      return <CreateTrip onBack={() => setScreen({ name: "landing" })} onCreated={(tripId, token) => {
+        requestPersist();
+        setScreen({ name: "ready", tripId, token });
+      }} />;
     case "ready":
       return <ReadyScreen token={screen.token} onOpen={() => setScreen({ name: "trip", tripId: screen.tripId })} />;
     case "trip":

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { appendOperations, foldStored, loadTrip, logOperations, setMe, dismissConflict, updateDevice } from "../db";
+import { appendOperations, foldStored, loadTrip, logOperations, markTripUsed, setMe, dismissConflict, updateDevice } from "../db";
 import type { StoredTrip } from "../db";
 import { useDevice } from "../device";
 import { formatMoney } from "../format";
@@ -37,7 +37,10 @@ export const TripProvider = ({ tripId, fallback, children }: TripProviderProps) 
     void loadTrip(tripId).then(async (loaded) => {
       if (!current) return;
       setStored(loaded ?? null);
-      if (loaded) await updateDevice({ lastTripId: tripId });
+      if (loaded) {
+        await updateDevice({ lastTripId: tripId });
+        await markTripUsed(tripId);
+      }
     });
     return () => {
       current = false;
