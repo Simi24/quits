@@ -1,7 +1,7 @@
 import { expenseShares } from "./balances.ts";
 import { resolveCategory } from "./categories.ts";
 import type { ParticipantId } from "./ids.ts";
-import { effectiveExpense, mergeDefaultSplit } from "./merge.ts";
+import { effectiveExpense } from "./merge.ts";
 import type { Trip } from "./trip.ts";
 
 export type Totals = {
@@ -37,7 +37,7 @@ export function tripTotals(trip: Trip): Totals {
   const first = trip.from ?? dates[0];
   const last = trip.to ?? dates.at(-1) ?? first;
   const days = first !== undefined && last !== undefined ? inclusiveDays(first, last) : 1;
-  const split = mergeDefaultSplit(trip, trip.defaultSplit);
+  const split = trip.defaultSplit;
   const shareHeads = split.method === "shares" ? Object.values(split.shares).reduce((a, b) => a + b, 0) : 0;
   const heads = shareHeads > 0 ? shareHeads : Math.max(1, trip.participants.length);
   const base = total - preTripTotal;

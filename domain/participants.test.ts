@@ -135,6 +135,14 @@ describe("merge", () => {
     expect(trip.mergedInto).toEqual({ p3: "p1", p2: "p1" });
   });
 
+  it("adds X's shares to Y's in the default split the trip suggests, and splits them again on undo", () => {
+    const byShares = op({ type: "DefaultSplitChanged", defaultSplit: { method: "shares", shares: { p1: 1, p2: 1, p3: 2 } } });
+    const merged = fold(byShares, merge("p3", "p1", "m1"));
+    expect(merged.defaultSplit).toEqual({ method: "shares", shares: { p1: 3, p2: 1 } });
+    const undone = fold(byShares, merge("p3", "p1", "m1"), op({ type: "MergeUndone", mergeOpId: "m1" }));
+    expect(undone.defaultSplit).toEqual({ method: "shares", shares: { p1: 1, p2: 1, p3: 2 } });
+  });
+
   it("is reversible: MergeUndone makes the fold skip that merge", () => {
     const before = fold(expenseCreated("e1", paidBy("p3", 9000, { method: "equal", among: ["p1", "p2", "p3"] })));
     const trip = fold(expenseCreated("e1", paidBy("p3", 9000, { method: "equal", among: ["p1", "p2", "p3"] })), merge("p3", "p1", "m1"), op({ type: "MergeUndone", mergeOpId: "m1" }));

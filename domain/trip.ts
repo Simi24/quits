@@ -87,6 +87,7 @@ export type Trip = {
   currency: string;
   from: string | null;
   to: string | null;
+  /** Merges applied: a merged-away participant's shares are the survivor's (SPEC.md §3.3). */
   defaultSplit: DefaultSplit;
   status: "open" | "closed";
   /** Operations sequenced after the close, in the current closed period. */

@@ -4,6 +4,7 @@ import type { Ctx, FoldEntry, Handlers } from "./handlers/context.ts";
 import { participantHandlers } from "./handlers/participants.ts";
 import { settlementHandlers } from "./handlers/settlements.ts";
 import { tripHandlers } from "./handlers/trip.ts";
+import { mergeDefaultSplit } from "./merge.ts";
 import { upcastOperation } from "./operations.ts";
 import type { Operation, SequencedOperation, StoredOperation } from "./operations.ts";
 import type { IgnoredReason, Trip } from "./trip.ts";
@@ -70,7 +71,8 @@ export function foldEntries(entries: FoldEntry[]): Trip {
     });
     trip.lastSeq = Math.max(trip.lastSeq, entry.seq);
   }
-  return trip;
+  // Handlers keep the default split as written, so an undone merge can split it again; callers see it merged.
+  return { ...trip, defaultSplit: mergeDefaultSplit(trip, trip.defaultSplit) };
 }
 
 /** The trip a log of sequenced operations adds up to. The same log gives the same trip on every device. */
