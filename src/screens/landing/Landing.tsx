@@ -34,7 +34,7 @@ export const Landing = ({ trips, onOpen, onCreate, onOpenToken, onRestore }: Lan
     <main className="h-full overflow-y-auto">
       <section className="relative grid gap-[18px] px-5 pt-6 pb-[26px]">
         <div className="absolute top-2 right-4 flex items-center gap-1.5">
-          <div className="w-[84px]">
+          <div className="w-[97px]">
             <Segmented
               compact
               label={t.settings.lang}

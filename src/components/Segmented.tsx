@@ -17,7 +17,7 @@ export function Segmented<V extends string>({ options, value, onChange, label, c
           aria-pressed={value === option.value}
           onClick={() => onChange(option.value)}
           className={`relative flex-1 whitespace-nowrap rounded-full font-semibold ${
-            compact ? "min-h-8 px-3 text-[13px] before:absolute before:-inset-x-0.5 before:-inset-y-1.5 before:content-['']" : "min-h-11 px-2.5 text-sm"
+            compact ? "min-h-8 min-w-11 px-3 text-[13px] before:absolute before:inset-x-0 before:-inset-y-1.5 before:content-['']" : "min-h-11 px-2.5 text-sm"
           } ${
             value === option.value ? "bg-receipt text-ink shadow-[0_1px_0_var(--line)]" : "text-ink-2"
           }`}

@@ -17,12 +17,12 @@ const VARIANT: Record<Variant, string> = {
   danger: "bg-neg text-receipt",
 };
 
-/** Controls are pills (SPEC.md §7.4). Primary buttons carry the 3 px press shadow. */
+/** Controls are pills (SPEC.md §7.4). Primary buttons carry the 3 px press shadow; the small size reaches 44 px through an invisible margin (§7.8). */
 export const Button = ({ variant = "primary", size = "md", wide = false, className = "", type = "button", ...rest }: ButtonProps) => (
   <button
     type={type}
     className={`inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full font-bold transition-[transform,box-shadow] duration-200 ease-[cubic-bezier(.3,.7,.4,1.4)] disabled:cursor-not-allowed disabled:opacity-45 ${
-      size === "md" ? "min-h-12 px-[22px] text-base" : "min-h-[38px] px-[15px] text-sm"
+      size === "md" ? "min-h-12 px-[22px] text-base" : "relative min-h-[38px] px-[15px] text-sm before:absolute before:inset-x-0 before:-inset-y-[3px] before:content-['']"
     } ${wide ? "w-full" : ""} ${VARIANT[variant]} ${className}`}
     {...rest}
   />
