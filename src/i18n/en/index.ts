@@ -4,8 +4,9 @@ import { charts } from "./charts";
 import { create } from "./create";
 import { expenses } from "./expenses";
 import { manage } from "./manage";
+import { privacy } from "./privacy";
 import { settings } from "./settings";
 import { shell } from "./shell";
 import { totals } from "./totals";
 
-export const en: Dictionary = { shell, create, expenses, balances, charts, settings, manage, totals };
+export const en: Dictionary = { shell, create, expenses, balances, charts, settings, manage, totals, privacy };
