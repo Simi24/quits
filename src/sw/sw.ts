@@ -36,7 +36,8 @@ self.addEventListener("message", (event) => {
 });
 
 // Navigations are answered with the shell (the app routes itself); built files come from the cache. The API
-// is never touched: it needs the network, and its answers say so (SPEC.md §6.4).
+// is never touched: it needs the network, and its answers say so (SPEC.md §6.4). Cross-origin requests, the
+// Web Analytics beacon among them, are never answered or cached (SPEC.md §10.1).
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
