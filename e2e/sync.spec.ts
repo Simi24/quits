@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 import { editExpense, eventually, goOnline, newDevice, settled } from "./devices";
-import { addExpense, createTrip, joinTrip, syncNow, tab } from "./trip-flow";
+import { addExpense, createTrip, fillTripForm, joinTrip, syncNow, tab } from "./trip-flow";
 
 // SPEC.md §15 S3 and S4: two devices, one trip, offline in between.
 
@@ -48,6 +48,35 @@ test("the token never appears in a request URL", async ({ page }) => {
 
   expect(urls.filter((url) => url.includes("/api/"))).not.toHaveLength(0);
   expect(urls.filter((url) => url.includes(token))).toEqual([]);
+});
+
+test("a code revoked after this device remembered it is forgotten at the first refusal, so another can be entered", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByLabel("Hai un codice da creatore?")).toBeVisible();
+  // The device remembers a code that worked once and has since been revoked (SPEC.md §4).
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        const open = indexedDB.open("quits");
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+          const store = open.result.transaction("device", "readwrite").objectStore("device");
+          const read = store.get("device");
+          read.onsuccess = () => {
+            store.put({ ...read.result, creatorCode: "q-0000000000000000000A" });
+            store.transaction.oncomplete = () => resolve();
+          };
+        };
+      }),
+  );
+  await page.reload();
+  await page.getByRole("button", { name: "Crea un viaggio" }).click();
+  await fillTripForm(page, "Revocato", ["Simone", "Sara"]);
+
+  await expect(page.getByText("Questo codice non funziona più. Torna all'inizio e inseriscine un altro.")).toBeVisible();
+  await page.getByRole("button", { name: "Indietro" }).click();
+  await expect(page.getByLabel("Hai un codice da creatore?")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Crea un viaggio" })).toHaveCount(0);
 });
 
 test("a wrong creator code gets the error message and cannot create", async ({ page }) => {

@@ -18,7 +18,7 @@ interface CreateTripProps {
 
 /** Creates a trip on the server with the device's creator code. Online only (SPEC.md §6.2). */
 export const CreateTrip = ({ onBack, onCreated }: CreateTripProps) => {
-  const { t, deviceId, creatorCode } = useDevice();
+  const { t, deviceId, creatorCode, setCreatorCode } = useDevice();
   const [form, setForm] = useState<NewTripForm>({
     name: "",
     currency: "EUR",
@@ -39,8 +39,10 @@ export const CreateTrip = ({ onBack, onCreated }: CreateTripProps) => {
     setFailure(null);
     const { operation } = buildTripCreation(form, deviceId);
     const result = await createTripOnServer({ api, store }, creatorCode, operation);
-    if (result.status === "ok") onCreated(result.tripId, result.token);
-    else setFailure(result.status === "offline" ? "offline" : result.status === "forbidden" ? "refused" : "failed");
+    if (result.status === "ok") return onCreated(result.tripId, result.token);
+    // A refused code was revoked: forgetting it brings the code field back on the landing (SPEC.md §4).
+    if (result.status === "forbidden") setCreatorCode(null);
+    setFailure(result.status === "offline" ? "offline" : result.status === "forbidden" ? "refused" : "failed");
   });
 
   const messages: Record<(typeof issues)[number], string> = {
