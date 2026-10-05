@@ -55,6 +55,17 @@ describe("conflicts", () => {
     expect(record(trip).conflict).toEqual({ baseOpId: "create-e1", winnerOpId: "c", loserOpIds: ["a", "b"] });
   });
 
+  it("names as winner the version the expense now shows, when an edit builds on a loser", () => {
+    const trip = fold(edit("a", "create-e1"), edit("b", "create-e1"), edit("d", "a", mine));
+    expect(record(trip).snapshot).toEqual(mine);
+    expect(record(trip).conflict).toEqual({ baseOpId: "a", winnerOpId: "d", loserOpIds: ["b"] });
+  });
+
+  it("names every version the winner never saw, not only the ones sharing its base", () => {
+    const trip = fold(edit("a", "create-e1"), edit("b", "a"), edit("c", "create-e1", mine));
+    expect(record(trip).conflict).toEqual({ baseOpId: "create-e1", winnerOpId: "c", loserOpIds: ["a", "b"] });
+  });
+
   it("is settled once someone edits on top of the winner", () => {
     const trip = fold(edit("a", "create-e1"), edit("b", "create-e1"), edit("c", "b"));
     expect(record(trip).conflict).toBeNull();
