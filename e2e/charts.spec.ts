@@ -79,7 +79,7 @@ test("the keyboard alone reads every chart", async ({ page }) => {
     expect(home).not.toBe(next);
     expect(first.length).toBeGreaterThan(0);
   }
-  await expect(readout(page, "day")).toContainText("Giorno");
+  await expect(readout(page, "day")).toContainText("giugno");
 });
 
 test("the keyboard reads the two chart overlays too", async ({ page }) => {
