@@ -1,3 +1,4 @@
+import { categoryHandlers } from "./handlers/categories.ts";
 import { expenseHandlers } from "./handlers/expenses.ts";
 import type { Ctx, FoldEntry, Handlers } from "./handlers/context.ts";
 import { participantHandlers } from "./handlers/participants.ts";
@@ -7,7 +8,7 @@ import { upcastOperation } from "./operations.ts";
 import type { Operation, SequencedOperation } from "./operations.ts";
 import type { IgnoredReason, Trip } from "./trip.ts";
 
-const handlers: Handlers = { ...tripHandlers, ...expenseHandlers, ...settlementHandlers, ...participantHandlers };
+const handlers: Handlers = { ...tripHandlers, ...expenseHandlers, ...settlementHandlers, ...participantHandlers, ...categoryHandlers };
 
 /** Server actions and the close itself are not "changes that arrived after closing". */
 const notAChange = new Set<Operation["type"]>([
