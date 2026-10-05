@@ -7,6 +7,9 @@ export interface DeviceValue {
   lang: Lang;
   t: Dictionary;
   theme: ThemeChoice;
+  /** The creator code that worked on this device, so it is asked once (SPEC.md §4). */
+  creatorCode: string | null;
+  setCreatorCode: (code: string) => void;
   setLang: (lang: Lang) => void;
   setTheme: (theme: ThemeChoice) => void;
 }

@@ -31,7 +31,7 @@ interface TripShellProps {
 /** The trip: bar, the four tabs, the expense detail over them, sheets and toasts (SPEC.md §7.5). */
 export const TripShell = ({ onLeave }: TripShellProps) => {
   const { t } = useDevice();
-  const { trip, record, recordMany } = useTrip();
+  const { trip, record, recordMany, readOnly } = useTrip();
   const [tab, setTab] = useState<Tab>("spese");
   const [choosingWho, setChoosingWho] = useState(false);
   const [detailId, setDetailId] = useState<string | null>(null);
@@ -95,7 +95,7 @@ export const TripShell = ({ onLeave }: TripShellProps) => {
         ) : null}
         {tab === "viaggio" ? <ViaggioScreen onNotMe={() => setChoosingWho(true)} notify={(text) => show({ text })} /> : null}
       </main>
-      {tab === "spese" ? <Fab label={t.expenses.newExpense} onClick={() => setSheet({ kind: "expense", editingId: null })} /> : null}
+      {tab === "spese" && !readOnly ? <Fab label={t.expenses.newExpense} onClick={() => setSheet({ kind: "expense", editingId: null })} /> : null}
       <TabBar
         tab={tab}
         onChange={(next) => {

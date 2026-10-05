@@ -36,7 +36,7 @@ export const DefaultSplitSection = ({ onSaved }: DefaultSplitSectionProps) => {
   };
 
   return (
-    <Setting title={t.settings.defSplit}>
+    <Setting title={t.settings.defSplit} edits>
       <p className="text-sm" data-testid="default-split-summary">
         {summary}
       </p>

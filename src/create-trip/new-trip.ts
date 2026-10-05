@@ -23,8 +23,8 @@ export function newTripIssues(form: NewTripForm): NewTripIssue[] {
   return issues;
 }
 
-/** The first operation of a trip created on this device, with the ids it will be known by. */
-export function buildTripCreation(form: NewTripForm, deviceId: string): { tripId: string; operation: Operation } {
+/** The first operation of a trip, as the creator sends it: the server gives the trip its `tripId` and token (SPEC.md §6.2). */
+export function buildTripCreation(form: NewTripForm, deviceId: string): { operation: Operation } {
   const participants = form.people.map((name) => ({ id: crypto.randomUUID(), name: name.trim() }));
   const creator = participants[0]!;
   const operation = buildOperation(
@@ -42,5 +42,5 @@ export function buildTripCreation(form: NewTripForm, deviceId: string): { tripId
           : { method: "equal" },
     },
   );
-  return { tripId: crypto.randomUUID(), operation };
+  return { operation };
 }
