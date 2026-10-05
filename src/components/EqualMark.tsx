@@ -11,7 +11,7 @@ const BAR = "block rounded-full transition-transform duration-500 ease-[cubic-be
 
 /** The "=" brand mark: two equal bars, sun yellow over coral (SPEC.md §7.1). */
 export const EqualMark = ({ width = 74, barHeight = 15, open = false, mono = false }: EqualMarkProps) => (
-  <span aria-hidden="true" className="inline-grid flex-none" style={{ width, gap: barHeight * 0.9 }}>
+  <span aria-hidden="true" data-open={open} className="inline-grid flex-none" style={{ width, gap: barHeight * 0.9 }}>
     <i className={`${BAR} ${mono ? "bg-current" : "bg-hi"} ${open ? "translate-x-[30%] -rotate-9" : ""}`} style={{ height: barHeight }} />
     <i className={`${BAR} ${mono ? "bg-current" : "bg-lead"} ${open ? "-translate-x-[22%] rotate-7" : ""}`} style={{ height: barHeight }} />
   </span>

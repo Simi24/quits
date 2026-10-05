@@ -23,3 +23,4 @@ export { AmountField } from "./AmountField";
 export { AddNameForm } from "./AddNameForm";
 export { LoadingLine } from "./LoadingLine";
 export { UpdateBanner } from "./UpdateBanner";
+export { useModalFocus } from "./useModalFocus";

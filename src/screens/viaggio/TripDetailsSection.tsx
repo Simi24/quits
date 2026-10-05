@@ -33,7 +33,7 @@ export const TripDetailsSection = ({ onSaved }: TripDetailsSectionProps) => {
   });
 
   return (
-    <Setting title={t.manage.tripSection}>
+    <Setting title={t.manage.tripSection} edits>
       <form
         className="grid gap-3"
         onSubmit={(event) => {

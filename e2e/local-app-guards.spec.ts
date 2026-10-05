@@ -11,6 +11,7 @@ test("a double tap on Registra tutti records the suggested payments once", async
   await tab(page, "Saldi").click();
   await page.getByRole("button", { name: "Registra tutti i pagamenti suggeriti" }).dblclick();
 
+  await page.getByRole("dialog", { name: "Tutti pari!" }).getByRole("button", { name: "Bello" }).click();
   await expect(page.getByTestId("balance-hero")).toHaveText("Sei pari");
   await tab(page, "Spese").click();
   await expect(page.getByTestId("settlement-ticket")).toHaveCount(2);

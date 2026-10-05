@@ -6,6 +6,7 @@ import { CategoriesSection } from "./CategoriesSection";
 import { CurrencySection } from "./CurrencySection";
 import { DefaultSplitSection } from "./DefaultSplitSection";
 import { ExportSection } from "./ExportSection";
+import { HistorySection } from "./HistorySection";
 import { IdentitySection } from "./IdentitySection";
 import { ParticipantsSection } from "./ParticipantsSection";
 import { CloseSection } from "./CloseSection";
@@ -18,10 +19,11 @@ import { TripLinkSection } from "./TripLinkSection";
 interface ViaggioScreenProps {
   onNotMe: () => void;
   notify: (text: string) => void;
+  onOpenHistory: () => void;
 }
 
 /** Viaggio: identity, the trip's name and dates, participants, default split, categories, currency, export, this device, the footer (SPEC.md §7.6 item 12). */
-export const ViaggioScreen = ({ onNotMe, notify }: ViaggioScreenProps) => {
+export const ViaggioScreen = ({ onNotMe, notify, onOpenHistory }: ViaggioScreenProps) => {
   const { t } = useDevice();
   const { trip } = useTrip();
   return (
@@ -39,6 +41,7 @@ export const ViaggioScreen = ({ onNotMe, notify }: ViaggioScreenProps) => {
       <Setting title={t.settings.device}>
         <DevicePreferences />
       </Setting>
+      <HistorySection onOpen={onOpenHistory} />
       <CloseSection notify={notify} />
       <DeleteSection />
       <TripFooter />
