@@ -53,7 +53,7 @@ export const SettlementSheet = ({ prefill, onClose, onSaved }: SettlementSheetPr
       }
     >
       <form
-        className="grid gap-[18px] px-4 pt-1.5 pb-6"
+        className="grid grid-cols-1 gap-[18px] px-4 pt-1.5 pb-6"
         onSubmit={(event) => {
           event.preventDefault();
           void save();

@@ -52,14 +52,8 @@ export const CreateTrip = ({ onBack, onCreated }: CreateTripProps) => {
         </IconButton>
         <h1 className="display text-[calc(23px*var(--d-scale))]">{t.create.newTrip}</h1>
       </header>
-      <form
-        className="flex min-h-0 flex-1 flex-col"
-        onSubmit={(event) => {
-          event.preventDefault();
-          void submit();
-        }}
-      >
-        <div className="grid min-h-0 flex-1 content-start gap-5 overflow-y-auto px-4 pt-5 pb-7">
+      <div className="flex min-h-0 flex-1 flex-col">
+        <main className="grid min-h-0 flex-1 content-start gap-5 overflow-y-auto px-4 pt-5 pb-7">
           <TextField
             id="trip-name"
             label={t.create.tripName}
@@ -95,13 +89,13 @@ export const CreateTrip = ({ onBack, onCreated }: CreateTripProps) => {
             onShares={(i, v) => setForm({ ...form, shares: form.shares.map((s, j) => (j === i ? v : s)) })}
           />
           {tried ? issues.map((issue) => <ErrorLine key={issue}>{messages[issue]}</ErrorLine>) : null}
-        </div>
+        </main>
         <div className="border-t-[1.5px] border-line px-4 pt-3 pb-[calc(14px+env(safe-area-inset-bottom,0px))]">
-          <Button type="submit" wide>
+          <Button wide onClick={() => void submit()}>
             {t.create.createIt}
           </Button>
         </div>
-      </form>
+      </div>
     </div>
   );
 };

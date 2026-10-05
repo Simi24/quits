@@ -14,11 +14,11 @@ interface AmountFieldProps {
 export const AmountField = ({ id, label, value, currency, negative = false, onChange }: AmountFieldProps) => {
   const { lang } = useDevice();
   return (
-    <div className="grid gap-1.5">
+    <div className="grid grid-cols-1 gap-1.5">
       <label htmlFor={id} className="text-sm font-semibold">
         {label}
       </label>
-      <div className="flex items-baseline gap-2 border-b-[2.5px] border-ink pb-1">
+      <div className="flex min-w-0 items-baseline gap-2 border-b-[2.5px] border-ink pb-1">
         {negative ? (
           <span aria-hidden="true" className="text-[22px] font-bold text-ink-2">
             -

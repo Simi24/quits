@@ -23,7 +23,7 @@ export const DayGroup = ({ day, printId, onOpenExpense, onOpenSettlement }: DayG
   return (
     <section className="grid gap-2">
       <div className="flex items-baseline justify-between gap-3 px-1 pt-[18px]">
-        <h3 className="display text-[calc(19px*var(--d-scale))]">{dayLabel(day.date, lang)}</h3>
+        <h2 className="display text-[calc(19px*var(--d-scale))]">{dayLabel(day.date, lang)}</h2>
         {day.expenses.length ? <span className="num text-sm text-ink-2">{money(day.total)}</span> : null}
       </div>
       {day.expenses.length ? (

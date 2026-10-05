@@ -87,7 +87,7 @@ export const ExpenseDetail = ({ expense, onClose, onEdit, onDeleted }: ExpenseDe
                     <>
                       {money(shares[p.id] ?? 0)}
                       {leftover.includes(p.id) ? (
-                        <span className="ml-1.5 inline-block rounded-full bg-[color-mix(in_srgb,var(--pos)_18%,var(--receipt))] px-1.5 text-xs font-bold text-pos">
+                        <span className="ml-1.5 inline-block rounded-full bg-[color-mix(in_srgb,var(--pos)_18%,var(--receipt))] px-1.5 text-xs font-bold text-ink">
                           {`${refund ? "-" : "+"}${money(1)}`}
                         </span>
                       ) : null}

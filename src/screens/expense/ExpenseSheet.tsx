@@ -71,7 +71,7 @@ export const ExpenseSheet = ({ editing, onClose, onSaved }: ExpenseSheetProps) =
       }
     >
       <form
-        className="grid gap-5 px-4 pt-1.5 pb-6"
+        className="grid grid-cols-1 gap-5 px-4 pt-1.5 pb-6"
         onSubmit={(event) => {
           event.preventDefault();
           void save();
