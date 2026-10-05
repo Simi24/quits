@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
+import { readStore } from "./idb.ts";
 import { blockExternalRequests } from "./offline-guard.ts";
 import { applyTheme, THEMES } from "./themes.ts";
 import { createTrip, tab } from "./trip-flow.ts";
@@ -45,6 +46,8 @@ test("the language selector on the page switches it and the choice stays", async
   await page.goto("/privacy");
   await page.getByRole("button", { name: "EN" }).click();
   await expect(page.getByRole("heading", { level: 2, name: "What is stored" })).toBeVisible();
+  // The choice is written to IndexedDB after the click: a reload that races the write would abort it.
+  await expect.poll(async () => (await readStore<{ lang: string | null }>(page, "device"))[0]?.lang).toBe("en");
 
   await page.reload();
 
