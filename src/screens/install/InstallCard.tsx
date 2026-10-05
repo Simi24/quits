@@ -9,7 +9,7 @@ import { IosInstallSheet } from "./IosInstallSheet";
 export const InstallCard = () => {
   const { t, setInstallFlag } = useDevice();
   const { sync } = useTrip();
-  const offer = useInstallOffer(sync.pending === 0);
+  const offer = useInstallOffer(sync.pending);
   const [steps, setSteps] = useState(false);
   if (offer === "none") return null;
 

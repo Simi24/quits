@@ -11,7 +11,7 @@ const SHOWN_MS = 8000;
 export const InstallHint = () => {
   const { t, deviceId, installHintShown, setInstallFlag } = useDevice();
   const { operations, sync } = useTrip();
-  const offer = useInstallOffer(sync.pending === 0);
+  const offer = useInstallOffer(sync.pending);
   const [visible, setVisible] = useState(false);
   const [steps, setSteps] = useState(false);
 

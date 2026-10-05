@@ -316,6 +316,23 @@ test.describe("on an iPhone in Safari", () => {
     await expect(card.getByRole("button", { name: "Come si fa" })).toBeVisible();
   });
 
+  test("with changes waiting in another trip on the device, the card asks to wait too", async ({ page, context }) => {
+    await createTrip(page, "Sardegna 2026", ["Simone", "Sara"]);
+    await toLanding(page);
+    await createTrip(page, "Toscana", ["Simone", "Anna"]);
+    await toLanding(page);
+    await page.getByRole("button", { name: /Sardegna 2026/ }).click();
+    await context.setOffline(true);
+    await addExpense(page, { description: "Cena", amount: "60,00" });
+
+    await toLanding(page);
+    await page.getByRole("button", { name: /Toscana/ }).click();
+    await tab(page, "Viaggio").click();
+    const card = page.getByRole("region", { name: "Tieni Quits sulla schermata Home" });
+    await expect(card).toContainText("aspetta che le modifiche in attesa siano inviate");
+    await expect(card.getByRole("button", { name: "Come si fa" })).toHaveCount(0);
+  });
+
   test("the one-time hint comes after the third expense, once", async ({ page }) => {
     await createTrip(page);
     const hint = page.getByText("Puoi tenere Quits sulla schermata Home.");
