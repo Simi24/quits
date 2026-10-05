@@ -1,2 +1,8 @@
 /*
   Referrer-Policy: no-referrer
+
+# A trip link is private: its pages are never indexed (SPEC.md G-B10). The landing and /privacy are.
+/v
+  X-Robots-Tag: noindex
+/v/*
+  X-Robots-Tag: noindex
