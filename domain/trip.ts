@@ -48,6 +48,9 @@ export type SettlementRecord = {
   afterClose: boolean;
 };
 
+/** Everyone who ever entered the trip, in order of entry. `removed` ones are out of the trip until something uses them again. */
+export type RosterEntry = { id: ParticipantId; name: string; removed: boolean };
+
 export type CustomCategory = { id: string; name: string; emoji: string };
 
 export type Merge = {
@@ -89,6 +92,7 @@ export type Trip = {
   /** Operations sequenced after the close, in the current closed period. */
   changesAfterClose: number;
   deleted: boolean;
+  roster: RosterEntry[];
   /** Active participants, in order of entry (removed and merged-away ones left out). */
   participants: Participant[];
   /** For each merged-away participant, the one they were folded into. */

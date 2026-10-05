@@ -1,3 +1,4 @@
+import { refreshParticipants } from "../merge.ts";
 import type { Handlers } from "./context.ts";
 
 export const tripHandlers: Handlers = {
@@ -7,7 +8,8 @@ export const tripHandlers: Handlers = {
     trip.from = op.from;
     trip.to = op.to;
     trip.defaultSplit = op.defaultSplit;
-    trip.participants = op.participants.map((p) => ({ ...p }));
+    trip.roster = op.participants.map((p) => ({ ...p, removed: false }));
+    refreshParticipants(trip);
   },
   TripRenamed({ trip }, op) {
     trip.name = op.name;

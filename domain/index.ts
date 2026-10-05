@@ -22,3 +22,4 @@ export type { Balances, SuggestedSettlement } from "./balances.ts";
 export type * from "./trip.ts";
 export { findDuplicateSettlement } from "./duplicates.ts";
 export type { SettlementDraft } from "./duplicates.ts";
+export { canRemoveParticipant } from "./references.ts";

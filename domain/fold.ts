@@ -1,12 +1,13 @@
 import { expenseHandlers } from "./handlers/expenses.ts";
 import type { Ctx, FoldEntry, Handlers } from "./handlers/context.ts";
+import { participantHandlers } from "./handlers/participants.ts";
 import { settlementHandlers } from "./handlers/settlements.ts";
 import { tripHandlers } from "./handlers/trip.ts";
 import { upcastOperation } from "./operations.ts";
 import type { Operation, SequencedOperation } from "./operations.ts";
 import type { IgnoredReason, Trip } from "./trip.ts";
 
-const handlers: Handlers = { ...tripHandlers, ...expenseHandlers, ...settlementHandlers };
+const handlers: Handlers = { ...tripHandlers, ...expenseHandlers, ...settlementHandlers, ...participantHandlers };
 
 /** Server actions and the close itself are not "changes that arrived after closing". */
 const notAChange = new Set<Operation["type"]>([
@@ -26,6 +27,7 @@ const emptyTrip = (): Trip => ({
   status: "open",
   changesAfterClose: 0,
   deleted: false,
+  roster: [],
   participants: [],
   mergedInto: {},
   merges: [],

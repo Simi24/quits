@@ -1,8 +1,12 @@
 import type { Handlers } from "./context.ts";
+import { participantsOf } from "../references.ts";
+import { allKnownIn, reviveParticipants } from "./references.ts";
 
 export const expenseHandlers: Handlers = {
-  ExpenseCreated({ trip, entry, afterClose }, op) {
+  ExpenseCreated({ trip, entry, afterClose, ignore }, op) {
     if (trip.expenses.some((e) => e.id === op.expenseId)) return;
+    if (!allKnownIn(trip, op.expense)) return ignore("unknown_participant");
+    reviveParticipants(trip, participantsOf(op.expense));
     trip.expenses.push({
       id: op.expenseId,
       deleted: false,
@@ -25,6 +29,8 @@ export const expenseHandlers: Handlers = {
   ExpenseEdited({ trip, entry, afterClose, ignore }, op) {
     const record = trip.expenses.find((e) => e.id === op.expenseId);
     if (!record) return ignore("unknown_target");
+    if (!allKnownIn(trip, op.expense)) return ignore("unknown_participant");
+    if (!record.deleted) reviveParticipants(trip, participantsOf(op.expense));
     // Two edits with the same base never saw each other: a conflict. The last one sequenced wins whole.
     if (record.conflict?.winnerOpId === op.baseOpId) record.conflict = null;
     const concurrent = record.versions.filter((v) => v.kind === "edited" && v.baseOpId === op.baseOpId);
@@ -55,5 +61,6 @@ export const expenseHandlers: Handlers = {
     const record = trip.expenses.find((e) => e.id === op.expenseId);
     if (!record) return ignore("unknown_target");
     record.deleted = false;
+    reviveParticipants(trip, participantsOf(record.snapshot));
   },
 };

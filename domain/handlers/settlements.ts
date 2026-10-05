@@ -1,8 +1,12 @@
 import type { Handlers } from "./context.ts";
+import { allKnown, reviveParticipants } from "./references.ts";
 
 export const settlementHandlers: Handlers = {
-  SettlementRecorded({ trip, afterClose }, op) {
+  SettlementRecorded({ trip, afterClose, ignore }, op) {
     if (trip.settlements.some((s) => s.id === op.settlementId)) return;
+    const parties = [op.fromParticipantId, op.toParticipantId];
+    if (!allKnown(trip, parties)) return ignore("unknown_participant");
+    reviveParticipants(trip, parties);
     trip.settlements.push({
       id: op.settlementId,
       opId: op.id,
@@ -24,5 +28,6 @@ export const settlementHandlers: Handlers = {
     const record = trip.settlements.find((s) => s.id === op.settlementId);
     if (!record) return ignore("unknown_target");
     record.deleted = false;
+    reviveParticipants(trip, [record.fromParticipantId, record.toParticipantId]);
   },
 };

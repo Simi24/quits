@@ -1,4 +1,5 @@
 import type { ParticipantId } from "./ids.ts";
+import { effectiveExpense, resolveParticipant } from "./merge.ts";
 import { splitExpense } from "./shares.ts";
 import type { SplitResult } from "./shares.ts";
 import type { ExpenseRecord, Trip } from "./trip.ts";
@@ -13,7 +14,7 @@ export type SuggestedSettlement = {
 /** What each participant owes for an expense, and who got the leftover cent. */
 export function expenseShares(trip: Trip, expense: ExpenseRecord): SplitResult {
   const order = trip.participants.map((p) => p.id);
-  return splitExpense(expense.snapshot.amount, expense.snapshot.split, order);
+  return splitExpense(expense.snapshot.amount, effectiveExpense(trip, expense.snapshot).split, order);
 }
 
 /** Paid minus owed, plus settlements given minus received. Positive: the trip owes them. Sums to zero. */
@@ -24,13 +25,13 @@ export function balances(trip: Trip): Balances {
   };
   for (const expense of trip.expenses) {
     if (expense.deleted) continue;
-    for (const payer of expense.snapshot.payers) add(payer.participantId, payer.amount);
+    for (const payer of effectiveExpense(trip, expense.snapshot).payers) add(payer.participantId, payer.amount);
     for (const [id, share] of Object.entries(expenseShares(trip, expense).shares)) add(id, -share);
   }
   for (const s of trip.settlements) {
     if (s.deleted) continue;
-    add(s.fromParticipantId, s.amount);
-    add(s.toParticipantId, -s.amount);
+    add(resolveParticipant(trip, s.fromParticipantId), s.amount);
+    add(resolveParticipant(trip, s.toParticipantId), -s.amount);
   }
   return result;
 }
