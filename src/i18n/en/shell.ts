@@ -22,8 +22,6 @@ export const shell: Dictionary["shell"] = {
   cancel: "Cancel",
   undo: "Undo",
   you: "you",
-  chartsSoon: "Charts are coming soon.",
-  chartsSoonHelp: "They are computed from the expenses, offline too.",
   loading: "Loading the trip.",
   tripMissing: "This trip isn't on this device.",
 };

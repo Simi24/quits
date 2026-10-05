@@ -20,8 +20,6 @@ export const shell = {
   cancel: "Annulla",
   undo: "Annulla",
   you: "tu",
-  chartsSoon: "I grafici arrivano presto.",
-  chartsSoonHelp: "Si calcolano dalle spese, anche senza rete.",
   loading: "Carico il viaggio.",
   tripMissing: "Questo viaggio non è su questo dispositivo.",
 };
