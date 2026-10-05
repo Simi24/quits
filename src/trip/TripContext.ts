@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import type { Trip } from "../../domain";
+import type { Operation, Trip } from "../../domain";
 import type { OperationPayload } from "./build-operation";
 
 export interface TripValue {
@@ -12,6 +12,10 @@ export interface TripValue {
   /** Writes several operations at once: all are stored or none is. */
   recordMany: (payloads: OperationPayload[], by?: string) => Promise<void>;
   chooseMe: (participantId: string) => Promise<void>;
+  /** The operations of the trip as stored on this device, in order: what an export carries. */
+  operations: Operation[];
+  /** Set while this device's stored "chi sei?" is a participant that was merged away: the notice is owed (SPEC.md §3.3). */
+  mergedAway: { fromId: string; intoId: string } | null;
   /** Formats minor units in the trip currency and the interface language. */
   money: (minor: number, options?: { signed?: boolean }) => string;
   nameOf: (participantId: string) => string;

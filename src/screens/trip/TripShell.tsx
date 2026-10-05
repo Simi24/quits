@@ -11,6 +11,7 @@ import { SpeseScreen } from "../spese";
 import { ViaggioScreen } from "../viaggio";
 import { WhoAreYou } from "../who";
 import { Fab } from "./Fab";
+import { MergedNotice } from "./MergedNotice";
 import { TabBar } from "./TabBar";
 import type { Tab } from "./TabBar";
 import { TripBar } from "./TripBar";
@@ -83,6 +84,7 @@ export const TripShell = ({ onLeave }: TripShellProps) => {
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-paper">
       <TripBar onLeave={onLeave} onWho={() => setChoosingWho(true)} />
+      <MergedNotice />
       <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         {tab === "spese" ? (
           <SpeseScreen printId={printId} onOpenExpense={setDetailId} onOpenSettlement={(id) => setSheet({ kind: "settlement", id })} />

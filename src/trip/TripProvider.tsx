@@ -39,7 +39,10 @@ export const TripProvider = ({ tripId, fallback, children }: TripProviderProps) 
   }, [tripId]);
 
   const trip = useMemo(() => (stored ? foldWithPending([], stored.operations) : null), [stored]);
-  const meId = stored?.meta.meId ?? trip?.participants[0]?.id ?? null;
+  // A device that was X is Y once X is merged into Y; undoing the merge brings X back, as nothing is written until the notice is read.
+  const storedMe = stored?.meta.meId ?? trip?.participants[0]?.id ?? null;
+  const meId = storedMe && trip ? (trip.mergedInto[storedMe] ?? storedMe) : storedMe;
+  const mergedAway = storedMe && meId && storedMe !== meId ? { fromId: storedMe, intoId: meId } : null;
 
   const recordMany = useCallback(
     async (payloads: OperationPayload[], by?: string) => {
@@ -69,10 +72,12 @@ export const TripProvider = ({ tripId, fallback, children }: TripProviderProps) 
       record,
       recordMany,
       chooseMe,
+      operations: stored?.operations ?? [],
+      mergedAway,
       money: (minor, options) => formatMoney(minor, trip.currency, lang, options),
       nameOf: (id) => trip.roster.find((r) => r.id === id)?.name ?? "?",
     };
-  }, [trip, meId, tripId, record, recordMany, chooseMe, lang]);
+  }, [trip, meId, mergedAway?.fromId, stored?.operations, tripId, record, recordMany, chooseMe, lang]);
 
   if (stored === undefined) return <>{fallback("loading")}</>;
   if (!value) return <>{fallback("missing")}</>;
