@@ -8,6 +8,15 @@ import type { IgnoredReason, Trip } from "./trip.ts";
 
 const handlers: Handlers = { ...tripHandlers, ...expenseHandlers, ...settlementHandlers };
 
+/** Server actions and the close itself are not "changes that arrived after closing". */
+const notAChange = new Set<Operation["type"]>([
+  "TripClosed",
+  "TripReopened",
+  "TripDeleted",
+  "TripRestored",
+  "LinkRegenerated",
+]);
+
 const emptyTrip = (): Trip => ({
   name: "",
   currency: "EUR",
@@ -39,19 +48,20 @@ export function foldEntries(entries: FoldEntry[]): Trip {
     const ctx: Ctx = {
       trip,
       entry,
-      afterClose: trip.status === "closed",
+      afterClose: trip.status === "closed" && !notAChange.has(operation.type),
       ignore: (reason) => {
         ignored = reason;
       },
     };
     (handlers[operation.type] as ((c: Ctx, o: Operation) => void) | undefined)?.(ctx, operation);
+    if (ctx.afterClose) trip.changesAfterClose += 1;
     trip.history.push({
       seq: entry.seq,
       opId: operation.id,
       type: operation.type,
       by: operation.by,
       at: operation.at,
-      afterClose: false,
+      afterClose: ctx.afterClose,
       pending: entry.pending,
       ignored,
     });
