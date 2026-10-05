@@ -418,3 +418,21 @@ test("a newer version of the database is never blocked by a tab that has the app
 
   expect(outcome).toBe("upgraded");
 });
+
+test("the service worker answers navigations with the app but never answers for /api/", async ({ page, context }) => {
+  await page.goto("/");
+  await expect(page.getByRole("heading", { level: 1, name: "quits" })).toBeVisible();
+  await swReady(page);
+  await expect.poll(() => page.evaluate(() => navigator.serviceWorker.controller !== null)).toBe(true);
+
+  // Even a navigation to the API reaches the Worker: the app's shell is never its answer.
+  const api = await page.goto("/api/pull?after=0");
+  expect(api?.headers()["content-type"]).toContain("application/json");
+  await page.goto("/");
+
+  await context.setOffline(true);
+  const pull = await page.evaluate(() => fetch("/api/pull?after=0").then(() => "answered", () => "network error"));
+  expect(pull).toBe("network error");
+  await page.goto("/v/");
+  await expect(page.getByRole("heading", { level: 1, name: "quits" })).toBeVisible();
+});
