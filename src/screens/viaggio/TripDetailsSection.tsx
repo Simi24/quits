@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, ErrorLine, TextField, useSingleFlight } from "../../components";
+import { Button, DateRangeField, ErrorLine, TextField, useSingleFlight } from "../../components";
 import { NAME_MAX_LENGTH } from "../../../domain";
 import type { OperationPayload } from "../../trip";
 import { useDevice } from "../../device";
@@ -42,14 +42,10 @@ export const TripDetailsSection = ({ onSaved }: TripDetailsSectionProps) => {
         }}
       >
         <TextField id="edit-trip-name" label={t.manage.tripName} value={name} onChange={(e) => setName(e.target.value)} maxLength={NAME_MAX_LENGTH} autoComplete="off" />
-        <fieldset className="grid gap-2.5">
-          <legend className="mb-2.5 text-sm font-semibold">{t.create.dates}</legend>
-          <div className="grid grid-cols-2 gap-2.5">
-            <TextField id="edit-trip-from" type="date" label={t.create.from} value={from} onChange={(e) => setFrom(e.target.value)} />
-            <TextField id="edit-trip-to" type="date" label={t.create.to} value={to} onChange={(e) => setTo(e.target.value)} />
-          </div>
+        <div className="grid gap-2.5">
+          <DateRangeField idPrefix="edit-trip" from={from} to={to} onFrom={setFrom} onTo={setTo} />
           <p className="text-[13.5px] text-ink-2">{t.manage.datesHelp}</p>
-        </fieldset>
+        </div>
         {backwards ? <ErrorLine>{t.create.datesOrder}</ErrorLine> : null}
         <div>
           <Button type="submit" disabled={!canSave || save.busy}>

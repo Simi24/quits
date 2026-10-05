@@ -28,7 +28,7 @@ export const Sheet = ({ title, onClose, children, footer }: SheetProps) => {
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="anim-rise flex max-h-[calc(100%-28px)] flex-col overflow-hidden rounded-t-[28px] bg-paper"
+        className="anim-rise flex max-h-[calc(100%-28px)] flex-col overflow-hidden overflow-x-clip rounded-t-[28px] bg-paper"
       >
         <div className="mx-auto mt-2 h-[5px] w-10 rounded-full bg-line" aria-hidden="true" />
         <div className="flex items-center gap-2 pt-2.5 pr-2 pb-1.5 pl-[18px]">
@@ -37,7 +37,7 @@ export const Sheet = ({ title, onClose, children, footer }: SheetProps) => {
             <X size={22} weight="bold" />
           </IconButton>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{children}</div>
+        <div className="min-h-0 flex-1 overflow-x-clip overflow-y-auto overscroll-contain">{children}</div>
         {footer ? <div className="grid gap-2 border-t-[1.5px] border-line bg-paper px-4 pt-3 pb-[calc(14px+env(safe-area-inset-bottom,0px))]">{footer}</div> : null}
       </div>
     </div>
