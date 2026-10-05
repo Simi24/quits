@@ -1,8 +1,10 @@
-// The Worker entry. Static assets are served by the assets binding before this
-// runs; the API arrives in S3 (SPEC.md §6). Until then every request that reaches
-// the Worker is unknown.
+// The Worker entry (SPEC.md §6.1). Static assets are served by the assets binding; only `/api/*`
+// reaches this code (wrangler.jsonc `run_worker_first`).
+import { route } from "./router.ts";
+
+export { Directory } from "./directory.ts";
+export { Trip } from "./trip.ts";
+
 export default {
-  fetch(_request: Request): Response {
-    return Response.json({ error: "not_found" }, { status: 404 });
-  },
-} satisfies ExportedHandler;
+  fetch: (request, env) => route(request, env),
+} satisfies ExportedHandler<Env>;
