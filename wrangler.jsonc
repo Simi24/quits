@@ -1,11 +1,24 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "quits",
+  "main": "worker/index.ts",
   "compatibility_date": "2026-08-22",
-  // Assets only for now (S0). The Worker entry, the Durable Objects and the
-  // Custom Domain land in S3 to S5 (SPEC.md §11.2).
+  // The Custom Domain lands with the first production deploy (S5, SPEC.md §11.2).
+  // The API runs the Worker first; every other path is a static asset.
   "assets": {
     "directory": "./dist",
-    "not_found_handling": "single-page-application"
-  }
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  // "eu" puts every Durable Object in the EU jurisdiction (SPEC.md §11.3). workerd, locally and in
+  // tests, does not implement jurisdictions, so those runs set "none" (the only other value).
+  "vars": { "JURISDICTION": "eu" },
+  "durable_objects": {
+    "bindings": [
+      { "name": "TRIP", "class_name": "Trip" },
+      { "name": "DIRECTORY", "class_name": "Directory" }
+    ]
+  },
+  // Never edit a shipped migration: add a new tag (a bad migration can lose trips).
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Trip", "Directory"] }]
 }

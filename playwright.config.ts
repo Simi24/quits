@@ -16,7 +16,7 @@ export default defineConfig({
   // The built app served by the same runtime as production, locally and with no
   // network (SPEC.md G-B11). `npm run build` must have run first.
   webServer: {
-    command: `wrangler dev --local --port ${PORT} --show-interactive-dev-session=false`,
+    command: `wrangler dev --local --port ${PORT} --var JURISDICTION:none --show-interactive-dev-session=false`,
     url: `http://localhost:${PORT}`,
     reuseExistingServer: !process.env.CI,
     env: { WRANGLER_SEND_METRICS: "false", CLOUDFLARE_API_TOKEN: "", NO_COLOR: "1" },
