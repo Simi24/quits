@@ -1,19 +1,32 @@
-import { Plus } from "@phosphor-icons/react";
-import { Button, DevicePreferences, EqualMark, Segmented } from "../../components";
+import { useState } from "react";
+import { DevicePreferences, EqualMark, Segmented } from "../../components";
 import { useDevice } from "../../device";
 import type { TripSummary } from "../../db";
+import { CreatorCode } from "./CreatorCode";
+import { DeletedTicket } from "./DeletedTicket";
 import { TripTicket } from "./TripTicket";
 
 interface LandingProps {
   trips: TripSummary[];
   onOpen: (tripId: string) => void;
   onCreate: () => void;
+  onRestore: (tripId: string) => Promise<boolean>;
 }
 
 /** The public landing: wordmark, the trips already opened on this device, creation (SPEC.md §7.6 item 1). */
-export const Landing = ({ trips, onOpen, onCreate }: LandingProps) => {
+export const Landing = ({ trips, onOpen, onCreate, onRestore }: LandingProps) => {
   const { t, lang, setLang } = useDevice();
-  const ordered = [...trips].sort((a, b) => Number(a.trip.status === "closed") - Number(b.trip.status === "closed"));
+  const [restoring, setRestoring] = useState<{ tripId: string; failed: boolean } | null>(null);
+  const live = trips.filter((s) => s.meta.access !== "deleted" && s.meta.access !== "unavailable");
+  const now = Date.now();
+  const deleted = trips.filter((s) => s.meta.access === "deleted" && s.meta.deletion && Date.parse(s.meta.deletion.restoreUntil) > now);
+  const ordered = [...live].sort((a, b) => Number(a.trip.status === "closed") - Number(b.trip.status === "closed"));
+
+  const restore = async (tripId: string) => {
+    setRestoring({ tripId, failed: false });
+    const ok = await onRestore(tripId);
+    setRestoring(ok ? null : { tripId, failed: true });
+  };
   return (
     <main className="h-full overflow-y-auto">
       <div className="flex justify-end px-4 pt-3">
@@ -49,12 +62,23 @@ export const Landing = ({ trips, onOpen, onCreate }: LandingProps) => {
         )}
         <p className="text-[13.5px] text-ink-2">{t.shell.needLink}</p>
       </section>
-      <section className="grid gap-3.5 border-t-2 border-dashed border-line px-4 py-7">
-        <Button wide onClick={onCreate}>
-          <Plus size={20} weight="bold" aria-hidden="true" />
-          {t.shell.createTrip}
-        </Button>
-      </section>
+      {deleted.length ? (
+        <section className="grid gap-3.5 px-4 pb-7">
+          <h2 className="display text-[calc(20px*var(--d-scale))]">{t.sync.deletedTrips}</h2>
+          <div className="grid gap-2.5">
+            {deleted.map((summary) => (
+              <DeletedTicket
+                key={summary.tripId}
+                summary={summary}
+                busy={restoring?.tripId === summary.tripId && !restoring.failed}
+                failed={restoring?.tripId === summary.tripId && restoring.failed}
+                onRestore={() => void restore(summary.tripId)}
+              />
+            ))}
+          </div>
+        </section>
+      ) : null}
+      <CreatorCode onCreate={onCreate} />
       <footer className="border-t-2 border-dashed border-line px-4 py-7">
         <DevicePreferences />
       </footer>

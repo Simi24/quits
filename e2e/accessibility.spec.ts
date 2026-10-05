@@ -2,7 +2,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 import { applyTheme, THEMES } from "./themes.ts";
-import { addExpense, createTrip, sheet, tab } from "./trip-flow.ts";
+import { addExpense, createTrip, openCreateForm, sheet, tab } from "./trip-flow.ts";
 
 // SPEC.md §12.1: axe runs on the main screens in both themes and blocks on any violation.
 const SCREENS: { name: string; open: (page: Page) => Promise<void> }[] = [
@@ -10,8 +10,7 @@ const SCREENS: { name: string; open: (page: Page) => Promise<void> }[] = [
   {
     name: "create trip",
     open: async (page) => {
-      await page.goto("/");
-      await page.getByRole("button", { name: "Crea un viaggio" }).click();
+      await openCreateForm(page);
     },
   },
   {

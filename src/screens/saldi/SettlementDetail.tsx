@@ -14,7 +14,7 @@ interface SettlementDetailProps {
 /** The ticket of one settlement, and "Elimina il pagamento" (SPEC.md §7.6 item 9). */
 export const SettlementDetail = ({ settlement, onClose, onDeleted }: SettlementDetailProps) => {
   const { t, lang } = useDevice();
-  const { money, nameOf, record } = useTrip();
+  const { money, nameOf, record, readOnly } = useTrip();
   const remove = async () => {
     await record({ type: "SettlementDeleted", settlementId: settlement.id });
     onDeleted(settlement.id);
@@ -34,10 +34,10 @@ export const SettlementDetail = ({ settlement, onClose, onDeleted }: SettlementD
             <b className="num">{money(settlement.amount)}</b>
           </div>
         </Ticket>
-        <Button wide variant="ghost" className="text-neg" onClick={() => void remove()}>
+        {readOnly ? null : <Button wide variant="ghost" className="text-neg" onClick={() => void remove()}>
           <Trash size={20} weight="fill" aria-hidden="true" />
           {t.balances.delSettlement}
-        </Button>
+        </Button>}
       </div>
     </Sheet>
   );

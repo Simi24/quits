@@ -14,7 +14,7 @@ interface SuggestedListProps {
 /** "Pagamenti suggeriti": one ticket per suggestion, "Registra tutti", or the all-even notice (SPEC.md §7.6 item 8). */
 export const SuggestedList = ({ suggestions, onRecord, onRecordAll, onRecordOther }: SuggestedListProps) => {
   const { t } = useDevice();
-  const { money, nameOf } = useTrip();
+  const { money, nameOf, readOnly } = useTrip();
   return (
     <>
       <h2 className="display mt-3.5 text-[calc(20px*var(--d-scale))]">{t.balances.suggested}</h2>
@@ -33,17 +33,23 @@ export const SuggestedList = ({ suggestions, onRecord, onRecordAll, onRecordOthe
                       <span className="block leading-tight font-bold">{t.balances.gives(nameOf(s.fromParticipantId), nameOf(s.toParticipantId))}</span>
                       <b className="display num text-[calc(22px*var(--d-scale))]">{money(s.amount)}</b>
                     </span>
-                    <Button size="sm" variant="ghost" className="[--ring:var(--ink-2)]" onClick={() => onRecord(s)}>
-                      {t.balances.record}
-                    </Button>
+                    {readOnly ? (
+                      <span />
+                    ) : (
+                      <Button size="sm" variant="ghost" className="[--ring:var(--ink-2)]" onClick={() => onRecord(s)}>
+                        {t.balances.record}
+                      </Button>
+                    )}
                   </div>
                 </Ticket>
               </li>
             ))}
           </ul>
-          <Button wide onClick={onRecordAll}>
-            {t.balances.recordAll}
-          </Button>
+          {readOnly ? null : (
+            <Button wide onClick={onRecordAll}>
+              {t.balances.recordAll}
+            </Button>
+          )}
         </>
       ) : (
         <div className="grid grid-cols-[auto_1fr] gap-2.5 rounded-[14px] bg-[color-mix(in_srgb,var(--sun)_34%,var(--paper))] p-3.5 text-[14.5px]">
@@ -54,10 +60,12 @@ export const SuggestedList = ({ suggestions, onRecord, onRecordAll, onRecordOthe
           </div>
         </div>
       )}
-      <Button wide variant="ghost" onClick={onRecordOther}>
-        <HandCoins size={20} weight="fill" aria-hidden="true" />
-        {t.balances.recordOther}
-      </Button>
+      {readOnly ? null : (
+        <Button wide variant="ghost" onClick={onRecordOther}>
+          <HandCoins size={20} weight="fill" aria-hidden="true" />
+          {t.balances.recordOther}
+        </Button>
+      )}
     </>
   );
 };

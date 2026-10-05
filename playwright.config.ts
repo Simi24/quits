@@ -1,6 +1,15 @@
+import { createHash } from "node:crypto";
+import { writeFileSync } from "node:fs";
 import { defineConfig, devices } from "@playwright/test";
+import { E2E_CREATOR_CODE } from "./e2e/creator-code.ts";
 
 const PORT = 8787;
+
+// The Worker reads its creator codes from `.dev.vars` under `wrangler dev` (gitignored). The e2e code is
+// a made-up one, hashed here every run as SPEC.md §4 says the server keeps it: SHA-256 of the trimmed,
+// upper-cased code. A real code never goes through this file.
+const hash = createHash("sha256").update(E2E_CREATOR_CODE.trim().toUpperCase()).digest("hex");
+writeFileSync(new URL(".dev.vars", import.meta.url), `CREATOR_CODES='${JSON.stringify([{ label: "e2e", hash }])}'\n`);
 
 export default defineConfig({
   testDir: "./e2e",
