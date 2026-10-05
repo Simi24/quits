@@ -10,6 +10,8 @@ export default defineConfig({
   reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
   use: {
     baseURL: `http://localhost:${PORT}`,
+    // The interface is Italian first; one test switches to English.
+    locale: "it-IT",
     trace: "retain-on-failure",
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
