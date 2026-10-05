@@ -13,11 +13,12 @@ export interface NewTripForm {
   shares: number[];
 }
 
-export type NewTripIssue = "name_missing" | "people_missing" | "dates_reversed";
+export type NewTripIssue = "name_missing" | "you_missing" | "people_missing" | "dates_reversed";
 
 export function newTripIssues(form: NewTripForm): NewTripIssue[] {
   const issues: NewTripIssue[] = [];
   if (form.name.trim() === "") issues.push("name_missing");
+  if (form.people.length < 1) issues.push("you_missing");
   if (form.people.length < 2) issues.push("people_missing");
   if (form.from && form.to && form.to < form.from) issues.push("dates_reversed");
   return issues;
