@@ -1,6 +1,7 @@
 import { DevicePreferences } from "../../components";
 import { useDevice } from "../../device";
 import { useTrip } from "../../trip";
+import { InstallCard } from "../install";
 import { CategoriesSection } from "./CategoriesSection";
 import { CurrencySection } from "./CurrencySection";
 import { DefaultSplitSection } from "./DefaultSplitSection";
@@ -26,6 +27,7 @@ export const ViaggioScreen = ({ onNotMe, notify }: ViaggioScreenProps) => {
   return (
     <div className="px-4 pt-0.5 pb-8">
       <IdentitySection onNotMe={onNotMe} />
+      <InstallCard />
       {/* Keyed by what they show, so a change that arrives from elsewhere (a rename, a merge) resets the form. */}
       <TripDetailsSection key={`${trip.name}|${trip.from}|${trip.to}`} onSaved={() => notify(t.manage.tripSaved)} />
       <TripLinkSection notify={notify} />

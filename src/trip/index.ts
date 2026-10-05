@@ -7,3 +7,4 @@ export { avatarIndex, categoryName } from "./labels";
 export { isUnseenConflict } from "./conflicts";
 export { tripLinkOf } from "./trip-link";
 export { useMergeUndo } from "./useMergeUndo";
+export { tokenFromInput } from "./parse-link";

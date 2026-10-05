@@ -6,6 +6,7 @@ import { todayIso } from "../../format";
 import { useTrip } from "../../trip";
 import type { OperationPayload } from "../../trip";
 import { ExpenseDetail, ExpenseSheet } from "../expense";
+import { InAppBanner, InstallHint } from "../install";
 import { SaldiScreen, SettlementDetail, SettlementSheet } from "../saldi";
 import { SpeseScreen } from "../spese";
 import { ViaggioScreen } from "../viaggio";
@@ -85,6 +86,7 @@ export const TripShell = ({ onLeave }: TripShellProps) => {
     <div className="relative flex h-full flex-col overflow-hidden bg-paper">
       <TripBar onLeave={onLeave} onWho={() => setChoosingWho(true)} />
       <MergedNotice />
+      <InAppBanner />
       <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         {tab === "spese" ? (
           <SpeseScreen printId={printId} onOpenExpense={setDetailId} onOpenSettlement={(id) => setSheet({ kind: "settlement", id })} />
@@ -150,6 +152,7 @@ export const TripShell = ({ onLeave }: TripShellProps) => {
         />
       ) : null}
       {toast ? <Toast text={toast.text} action={toast.action} /> : null}
+      <InstallHint />
     </div>
   );
 };

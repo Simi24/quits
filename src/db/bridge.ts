@@ -1,6 +1,6 @@
 import { bridgeFrom } from "../boot/bridge-from";
 import type { Bridge, BridgeEntry } from "../boot/cookie-bridge";
-import { readDevice } from "./device";
+import { freshDevice as fresh, readDevice } from "./device";
 import { openQuitsDb } from "./open";
 import type { DeviceRecord, TripMeta } from "./schema";
 
@@ -18,7 +18,7 @@ export async function restoreFromBridge(deviceId: string, entries: BridgeEntry[]
   const db = await openQuitsDb();
   const tx = db.transaction(["device", "trips"], "readwrite");
   const stored = await tx.objectStore("device").get("device");
-  const device: DeviceRecord = { key: "device", lang: null, theme: "system", lastTripId: null, creatorCode: null, ...stored, deviceId };
+  const device: DeviceRecord = { ...fresh(deviceId), ...stored, deviceId };
   await tx.objectStore("device").put(device);
   // The bridge lists the most recent first; the oldest gets the oldest stamp so the order survives.
   const now = Date.now();

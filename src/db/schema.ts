@@ -56,6 +56,10 @@ export interface DeviceRecord {
   lastTripId: string | null;
   /** The creator code this device has used successfully, so it is entered once (SPEC.md §4). */
   creatorCode: string | null;
+  /** "Non ora" on the install card (SPEC.md §5.6). */
+  installDismissed: boolean;
+  /** The one-time hint after the third expense has been shown (SPEC.md §5.6). */
+  installHintShown: boolean;
 }
 
 export interface QuitsDb extends DBSchema {

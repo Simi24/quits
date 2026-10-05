@@ -114,7 +114,13 @@ export const AppScreens = ({ initialTrips, start }: AppScreensProps) => {
       return <ProblemScreen problem={screen.problem} token={screen.token} onRetry={openToken} onBack={() => void goLanding()} />;
     default:
       return (
-        <Landing trips={trips} onOpen={(tripId) => setScreen({ name: "trip", tripId })} onCreate={() => setScreen({ name: "create" })} onRestore={restoreFromLanding} />
+        <Landing
+          trips={trips}
+          onOpen={(tripId) => setScreen({ name: "trip", tripId })}
+          onCreate={() => setScreen({ name: "create" })}
+          onOpenToken={(token) => void openToken(token)}
+          onRestore={restoreFromLanding}
+        />
       );
   }
 };
