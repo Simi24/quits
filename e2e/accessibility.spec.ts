@@ -2,7 +2,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 import { applyTheme, THEMES } from "./themes.ts";
-import { addExpense, createTrip, openCreateForm, sheet, tab } from "./trip-flow.ts";
+import { activateCreatorCode, addExpense, createTrip, fillTripForm, openCreateForm, sheet, tab } from "./trip-flow.ts";
 
 // SPEC.md §12.1: axe runs on the main screens in both themes and blocks on any violation.
 const SCREENS: { name: string; open: (page: Page) => Promise<void> }[] = [
@@ -77,6 +77,60 @@ const SCREENS: { name: string; open: (page: Page) => Promise<void> }[] = [
     open: async (page) => {
       await createTrip(page);
       await tab(page, "Viaggio").click();
+    },
+  },
+  {
+    name: "landing with a creator code active",
+    open: async (page) => {
+      await activateCreatorCode(page);
+    },
+  },
+  {
+    name: "the trip is ready",
+    open: async (page) => {
+      await openCreateForm(page);
+      await fillTripForm(page, "Sardegna 2026", ["Simone", "Sara"]);
+      await expect(page.getByRole("heading", { level: 1, name: "Il viaggio è pronto" })).toBeVisible();
+    },
+  },
+  {
+    name: "link changed",
+    open: async (page) => {
+      const link = await createTrip(page);
+      await tab(page, "Viaggio").click();
+      await page.getByRole("button", { name: "Rigenera il link" }).click();
+      await page.getByRole("button", { name: "Rigenera", exact: true }).click();
+      await expect(page.getByText("Link rigenerato")).toBeVisible();
+      await page.goto("/");
+      await page.goto(link);
+      await expect(page.getByRole("heading", { level: 1, name: "Il link è cambiato" })).toBeVisible();
+    },
+  },
+  {
+    name: "trip not available",
+    open: async (page) => {
+      await page.goto("/v/#AAAAAAAAAAAAAAAAAAAAAA");
+      await expect(page.getByRole("heading", { level: 1, name: "Questo viaggio non è più disponibile." })).toBeVisible();
+    },
+  },
+  {
+    name: "deleted trip",
+    open: async (page) => {
+      await createTrip(page);
+      await tab(page, "Viaggio").click();
+      await page.getByRole("button", { name: "Elimina il viaggio" }).click();
+      await page.getByRole("button", { name: "Sì, elimina per tutti" }).click();
+      await expect(page.getByRole("heading", { level: 1, name: "Questo viaggio è stato eliminato" })).toBeVisible();
+    },
+  },
+  {
+    name: "closed trip Viaggio",
+    open: async (page) => {
+      await createTrip(page);
+      await tab(page, "Viaggio").click();
+      await page.getByRole("button", { name: "Chiudi il viaggio" }).click();
+      await expect(page.getByTestId("closed-bar")).toBeVisible();
+      await expect(page.getByText("Viaggio chiuso", { exact: true })).toBeHidden({ timeout: 10_000 });
     },
   },
   {
