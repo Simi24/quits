@@ -207,6 +207,19 @@ test("only the row just added prints in", async ({ page }) => {
   await expect(page.locator(".anim-print")).toHaveCount(0);
 });
 
+test("the new row prints once: a search that hides and shows it again does not replay it", async ({ page }) => {
+  await seedTrip(page, "Sardegna", dinner());
+  await addExpense(page, { description: "Gelati", amount: "12,00" });
+  const printing = page.locator(".anim-print");
+  await expect(printing).toHaveCount(1);
+  await expect(printing).toHaveCount(0);
+  const search = page.getByPlaceholder("Cerca tra le spese");
+  await search.fill("Cena");
+  await search.fill("");
+  await expect(page.getByTestId("expense-row").filter({ hasText: "Gelati" })).toBeVisible();
+  await expect(printing).toHaveCount(0);
+});
+
 test("the balance mark closes when a balance reaches zero", async ({ page }) => {
   await seedTrip(page, "Sardegna", dinner());
   await tab(page, "Saldi").click();

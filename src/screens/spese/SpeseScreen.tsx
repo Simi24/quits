@@ -11,13 +11,14 @@ import { SummaryReceipt } from "./SummaryReceipt";
 
 interface SpeseScreenProps {
   printId: string | null;
+  onPrinted: () => void;
   onOpenExpense: (id: string) => void;
   onOpenSettlement: (id: string) => void;
   onOpenHistory: () => void;
 }
 
 /** The roll of receipts: summary, search, days newest first (SPEC.md §7.6 item 4). */
-export const SpeseScreen = ({ printId, onOpenExpense, onOpenSettlement, onOpenHistory }: SpeseScreenProps) => {
+export const SpeseScreen = ({ printId, onPrinted, onOpenExpense, onOpenSettlement, onOpenHistory }: SpeseScreenProps) => {
   const { t, lang } = useDevice();
   const { trip, seenConflicts } = useTrip();
   const [query, setQuery] = useState("");
@@ -69,7 +70,7 @@ export const SpeseScreen = ({ printId, onOpenExpense, onOpenSettlement, onOpenHi
       ) : (
         <div className="grid gap-2">
           {days.map((day) => (
-            <DayGroup key={day.date} day={day} printId={printId} onOpenExpense={onOpenExpense} onOpenSettlement={onOpenSettlement} />
+            <DayGroup key={day.date} day={day} printId={printId} onPrinted={onPrinted} onOpenExpense={onOpenExpense} onOpenSettlement={onOpenSettlement} />
           ))}
         </div>
       )}

@@ -92,7 +92,7 @@ export const TripShell = ({ onLeave }: TripShellProps) => {
       <MergedNotice />
       <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         {tab === "spese" ? (
-          <SpeseScreen printId={printId} onOpenExpense={setDetailId} onOpenSettlement={(id) => setSheet({ kind: "settlement", id })} onOpenHistory={() => setHistoryOpen(true)} />
+          <SpeseScreen printId={printId} onPrinted={() => setPrintId(null)} onOpenExpense={setDetailId} onOpenSettlement={(id) => setSheet({ kind: "settlement", id })} onOpenHistory={() => setHistoryOpen(true)} />
         ) : null}
         {tab === "saldi" ? <SaldiScreen onRecord={(prefill) => setSheet({ kind: "settle", prefill })} onRecordAll={(s) => void settleAll.run(s)} /> : null}
         {tab === "grafici" ? (

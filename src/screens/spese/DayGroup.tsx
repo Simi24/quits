@@ -9,6 +9,7 @@ import { SettlementTicket } from "./SettlementTicket";
 interface DayGroupProps {
   day: RollDay;
   printId: string | null;
+  onPrinted: () => void;
   onOpenExpense: (id: string) => void;
   onOpenSettlement: (id: string) => void;
 }
@@ -17,7 +18,7 @@ interface DayGroupProps {
  * One day of the roll: its date and total, then one receipt with the day's expenses as rows
  * separated by dotted rules, then the day's settlements as tickets (SPEC.md §7.6 item 4, changed by #9).
  */
-export const DayGroup = ({ day, printId, onOpenExpense, onOpenSettlement }: DayGroupProps) => {
+export const DayGroup = ({ day, printId, onPrinted, onOpenExpense, onOpenSettlement }: DayGroupProps) => {
   const { lang } = useDevice();
   const { money } = useTrip();
   return (
@@ -30,7 +31,7 @@ export const DayGroup = ({ day, printId, onOpenExpense, onOpenSettlement }: DayG
         <Receipt>
           <ul className="my-2.5 [&>li+li]:border-t-2 [&>li+li]:border-dotted [&>li+li]:border-line">
             {day.expenses.map((expense) => (
-              <ExpenseRow key={expense.id} expense={expense} printing={printId === expense.id} onOpen={() => onOpenExpense(expense.id)} />
+              <ExpenseRow key={expense.id} expense={expense} printing={printId === expense.id} onPrinted={onPrinted} onOpen={() => onOpenExpense(expense.id)} />
             ))}
           </ul>
         </Receipt>
