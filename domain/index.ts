@@ -25,3 +25,5 @@ export type { SettlementDraft } from "./duplicates.ts";
 export { canRemoveParticipant } from "./references.ts";
 export { STANDARD_CATEGORIES, OTHER_CATEGORY_ID, categoryColor, listCategories, resolveCategory } from "./categories.ts";
 export type { CategoryColor, ResolvedCategory } from "./categories.ts";
+export { tripTotals } from "./totals.ts";
+export type { Totals } from "./totals.ts";
