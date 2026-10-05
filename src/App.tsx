@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { bootApp, mirrorBridge } from "./boot";
 import type { Booted } from "./boot";
+import { UpdateBanner } from "./components";
 import { DeviceProvider } from "./device";
 import { AppScreens } from "./screens/AppScreens";
 import { isPrivacyPath, PrivacyScreen } from "./screens/privacy";
@@ -23,6 +24,7 @@ export const App = () => {
           ) : (
             <AppScreens initialTrips={boot.trips} start={boot.open} />
           )}
+          <UpdateBanner />
         </DeviceProvider>
       ) : null}
     </div>

@@ -5,3 +5,4 @@ export { idbSyncStore } from "./sync-store";
 export type { DeviceRecord, ThemeChoice, TripMeta } from "./schema";
 export { restoreFromBridge, snapshotBridge } from "./bridge";
 export { onTripsChanged } from "./changes";
+export { tripIdsWithPending } from "./pending";

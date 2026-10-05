@@ -4,6 +4,7 @@ import { appendOperations, foldStored, loadTrip, logOperations, markTripUsed, se
 import type { StoredTrip } from "../db";
 import { useDevice } from "../device";
 import { formatMoney } from "../format";
+import { requestBackgroundSync } from "../pwa";
 import { deleteTrip, regenerateLink, restoreTrip } from "../sync";
 import { api, store } from "../sync/client";
 import { buildOperation } from "./build-operation";
@@ -68,6 +69,7 @@ export const TripProvider = ({ tripId, fallback, children }: TripProviderProps) 
       if (!stored || !(by ?? meId)) return;
       const operations = payloads.map((payload) => buildOperation({ by: by ?? meId, device: deviceId }, payload));
       await appendOperations(tripId, operations);
+      requestBackgroundSync();
       await changed();
       void syncNow();
     },
