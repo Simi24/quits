@@ -51,6 +51,11 @@
   from { transform: translateX(28%); opacity: 0; }
   to { transform: none; opacity: 1; }
 }
+@keyframes thunk {
+  from { transform: rotate(-8deg) scale(2.2); opacity: 0; }
+  60% { opacity: 1; }
+  to { transform: rotate(-8deg) scale(1); opacity: 1; }
+}
 @keyframes toast {
   from { transform: translateY(16px); opacity: 0; }
 }
@@ -59,6 +64,7 @@
 .anim-rise { animation: rise 0.55s cubic-bezier(0.25, 1.35, 0.45, 1) both; }
 .anim-fade { animation: fade 0.25s ease-out both; }
 .anim-push { animation: push 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.anim-thunk { animation: thunk 0.5s cubic-bezier(0.2, 1.6, 0.4, 1) 0.1s both; }
 .anim-toast { animation: toast 0.35s cubic-bezier(0.25, 1.3, 0.45, 1) both; }
 
 @media (prefers-reduced-motion: reduce) {

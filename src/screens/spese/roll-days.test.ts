@@ -38,4 +38,11 @@ describe("rollDays", () => {
     expect(rollDays(trip, { ...options, query: "trasporti" }).flatMap((d) => d.expenses.map((e) => e.id))).toEqual(["a"]);
     expect(rollDays(trip, { ...options, query: "conad" }).flatMap((d) => d.settlements)).toEqual([]);
   });
+
+  it("filters to the given expenses and hides settlements", () => {
+    const days = rollDays(trip, { ...options, onlyIds: new Set(["a"]) });
+    expect(days.map((d) => d.date)).toEqual(["2026-06-13"]);
+    expect(days[0]?.expenses.map((e) => e.id)).toEqual(["a"]);
+    expect(days.flatMap((d) => d.settlements)).toEqual([]);
+  });
 });

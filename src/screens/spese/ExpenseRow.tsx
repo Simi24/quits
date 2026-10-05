@@ -8,11 +8,13 @@ import { isUnseenConflict, useTrip } from "../../trip";
 interface ExpenseRowProps {
   expense: ExpenseRecord;
   printing: boolean;
+  /** The print has played: it never plays again for this row (SPEC.md §7.9). */
+  onPrinted: () => void;
   onOpen: () => void;
 }
 
 /** One row of the day's receipt: category dot, description, who paid, amount and your share. */
-export const ExpenseRow = ({ expense, printing, onOpen }: ExpenseRowProps) => {
+export const ExpenseRow = ({ expense, printing, onPrinted, onOpen }: ExpenseRowProps) => {
   const { t } = useDevice();
   const { trip, meId, money, nameOf, seenConflicts } = useTrip();
   const { snapshot } = expense;
@@ -25,7 +27,7 @@ export const ExpenseRow = ({ expense, printing, onOpen }: ExpenseRowProps) => {
   const sentence = who.charAt(0).toUpperCase() + who.slice(1);
 
   return (
-    <li className={printing ? "anim-print" : ""}>
+    <li className={printing ? "anim-print" : ""} onAnimationEnd={printing ? onPrinted : undefined}>
       <button
         type="button"
         onClick={onOpen}

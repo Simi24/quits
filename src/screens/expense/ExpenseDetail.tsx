@@ -8,6 +8,7 @@ import type { ExpenseRecord, SplitMethod } from "../../../domain";
 import { categoryName, useTrip } from "../../trip";
 import { ConflictNotice } from "./ConflictNotice";
 import { DetailRow } from "./DetailRow";
+import { ExpenseVersions } from "./ExpenseVersions";
 
 interface ExpenseDetailProps {
   expense: ExpenseRecord;
@@ -15,10 +16,12 @@ interface ExpenseDetailProps {
   onEdit: () => void;
   /** Called once the delete is recorded, so the shell can offer "Annulla". */
   onDeleted: (expenseId: string) => void;
+  /** Called once an older version is put back, so the shell can say so. */
+  onVersionRestored: () => void;
 }
 
 /** The receipt of one expense: category, date, amount, payers, split with each share, the leftover note (SPEC.md §7.6 item 6). */
-export const ExpenseDetail = ({ expense, onClose, onEdit, onDeleted }: ExpenseDetailProps) => {
+export const ExpenseDetail = ({ expense, onClose, onEdit, onDeleted, onVersionRestored }: ExpenseDetailProps) => {
   const { t, lang } = useDevice();
   const { trip, money, nameOf, record, readOnly } = useTrip();
   const [confirming, setConfirming] = useState(false);
@@ -128,6 +131,7 @@ export const ExpenseDetail = ({ expense, onClose, onEdit, onDeleted }: ExpenseDe
             </Button>
           </div>
         )}
+        <ExpenseVersions expense={expense} onRestored={onVersionRestored} />
       </div>
     </Overlay>
   );

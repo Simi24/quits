@@ -1,0 +1,78 @@
+import type { IgnoredReason } from "../../../domain";
+
+export const history = {
+  title: "Cronologia",
+  help: "Ogni modifica resta qui, non si cancella. Spese e pagamenti eliminati si ripristinano da qui.",
+  open: "Cronologia",
+  seeHistory: "Vedi la cronologia",
+  empty: "Ancora niente da raccontare.",
+  restore: "Ripristina",
+  undoMerge: "Annulla unione",
+  mergeUndone: "Unione annullata",
+  // Marks on a line (SPEC.md §3.15).
+  unsent: "non inviata",
+  unsentWhy: (reason: string) =>
+    reason === "unknown_version"
+      ? "Il server non conosce questa versione dell'app. Resta solo su questo dispositivo."
+      : reason === "server_action"
+        ? "Questa azione si fa dall'app con la connessione attiva, non passa dalla coda."
+        : "Il server non l'ha accettata. Resta solo su questo dispositivo e non viene più riprovata.",
+  afterClose: "aggiunta a viaggio chiuso",
+  waiting: "in attesa di invio",
+  ignored: (reason: IgnoredReason): string =>
+    ({
+      currency_has_expenses: "cambio di valuta ignorato: c'erano già spese",
+      unknown_participant: "ignorata: riguarda una persona che non è nel viaggio",
+      unknown_target: "ignorata: riguarda qualcosa che non esiste",
+      participant_in_use: "ignorata: la persona compare ancora in spese o pagamenti",
+      invalid_merge: "ignorata: l'unione non era possibile",
+    })[reason],
+  // What happened (prototype keys h_*, plus the operations the prototype does not draw).
+  h_create: "ha creato il viaggio",
+  h_add: (d: string) => `ha aggiunto ${d}`,
+  h_edit: (d: string) => `ha modificato ${d}`,
+  h_del: (d: string) => `ha eliminato ${d}`,
+  h_restore: (d: string) => `ha ripristinato ${d}`,
+  h_set: (c: string, b: string) => `ha registrato un pagamento di ${c} a ${b}`,
+  h_setdel: (c: string, b: string) => `ha eliminato un pagamento di ${c} a ${b}`,
+  h_setrestore: (c: string, b: string) => `ha ripristinato un pagamento di ${c} a ${b}`,
+  h_person: (n: string) => `ha aggiunto ${n} al viaggio`,
+  h_rename: (a: string, b: string) => `ha rinominato ${a} in ${b}`,
+  h_regen: "ha rigenerato il link",
+  h_close: "ha chiuso il viaggio",
+  h_reopen: "ha riaperto il viaggio",
+  h_cat: (n: string) => `ha aggiunto la categoria ${n}`,
+  h_catdel: (n: string) => `ha eliminato la categoria ${n}`,
+  h_catrename: (n: string) => `ha cambiato la categoria ${n}`,
+  h_conflict: (d: string) => `ha modificato ${d} insieme a un'altra persona`,
+  h_dsplit: "ha cambiato la divisione predefinita",
+  h_tripRename: (n: string) => `ha rinominato il viaggio in ${n}`,
+  h_dates: "ha cambiato le date del viaggio",
+  h_currency: (c: string) => `ha cambiato la valuta in ${c}`,
+  h_personRemoved: (n: string) => `ha tolto ${n} dal viaggio`,
+  h_merge: (x: string, y: string) => `ha unito ${x} in ${y}`,
+  h_mergeUndone: (x: string, y: string) => `ha annullato l'unione di ${x} in ${y}`,
+  h_deleteTrip: "ha eliminato il viaggio",
+  h_restoreTrip: "ha ripristinato il viaggio",
+  // Conflict banner on Spese (SPEC.md §7.6 item 7).
+  conflicts: (n: number) => (n === 1 ? "1 spesa modificata in contemporanea" : `${n} spese modificate in contemporanea`),
+  conflictsShow: "Mostra",
+  conflictsAll: "Mostra tutte le spese",
+  // Versions of one expense.
+  edits: "Modifiche",
+  restoreVersion: "Ripristina questa versione",
+  current: "Versione attuale",
+  created: "ha aggiunto la spesa",
+  changed: (f: string) => `ha cambiato ${f}`,
+  restoredVersion: "ha ripristinato una versione precedente",
+  f_description: "descrizione",
+  f_amount: "importo",
+  f_date: "data",
+  f_category: "categoria",
+  f_payers: "paganti",
+  f_split: "divisione",
+  // Tutti pari (SPEC.md §7.6 item 10).
+  evenTitle: "Tutti pari!",
+  evenHelp: "Nessuno deve più niente a nessuno.",
+  nice: "Bello",
+};
