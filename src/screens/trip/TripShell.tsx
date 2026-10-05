@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import type { SuggestedSettlement } from "../../../domain";
 import { FirstTip, Toast, useSingleFlight } from "../../components";
 import { firstTipVisible, useDevice } from "../../device";
@@ -51,6 +51,11 @@ export const TripShell = ({ onLeave }: TripShellProps) => {
     if (next) hide();
     setSheetState(next);
   };
+
+  // The trip closes under an open sheet (another device, or a sync): the sheets that write give way to the closed-trip bar.
+  useEffect(() => {
+    if (readOnly) setSheetState((open) => (open?.kind === "expense" || open?.kind === "settle" ? null : open));
+  }, [readOnly]);
 
   // One transaction for every suggestion, once: a double tap must not pay anyone twice.
   const settleAll = useSingleFlight(async (suggestions: SuggestedSettlement[]) => {
