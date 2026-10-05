@@ -115,6 +115,14 @@ describe("merge", () => {
     }
   });
 
+  it("sums percentages and shares when a third participant keeps theirs", () => {
+    const percentages = paidBy("p2", 10000, { method: "percentage", percentages: { p1: 20.5, p2: 30, p3: 49.5 } });
+    const shares = paidBy("p2", 9000, { method: "shares", shares: { p1: 1, p2: 1, p3: 2 } });
+    const trip = fold(expenseCreated("e1", percentages), expenseCreated("e2", shares), merge("p3", "p1"));
+    expect(expenseShares(trip, trip.expenses[0]!).shares).toEqual({ p1: 7000, p2: 3000 });
+    expect(expenseShares(trip, trip.expenses[1]!).shares).toEqual({ p1: 6750, p2: 2250 });
+  });
+
   it("keeps the survivor's position in the order of entry", () => {
     const trip = fold(expenseCreated("e1", paidBy("p2", 101, { method: "equal", among: ["p1", "p2", "p3"] })), merge("p1", "p3"));
     expect(ids(trip)).toEqual(["p2", "p3"]);
