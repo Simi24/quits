@@ -6,7 +6,15 @@ import { activateCreatorCode, addExpense, createTrip, fillTripForm, openCreateFo
 
 // SPEC.md §12.1: axe runs on the main screens in both themes and blocks on any violation.
 const SCREENS: { name: string; open: (page: Page) => Promise<void> }[] = [
-  { name: "landing", open: async (page) => void (await page.goto("/")) },
+  {
+    name: "landing",
+    open: async (page) => {
+      await page.goto("/");
+      // The landing draws after IndexedDB answers, and then applies the device's theme: a theme set before
+      // that would be undone (the flake of the Deploy run 37361233649 on a slow runner).
+      await expect(page.getByRole("heading", { level: 1, name: "quits" })).toBeVisible();
+    },
+  },
   {
     name: "create trip",
     open: async (page) => {

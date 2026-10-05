@@ -24,6 +24,7 @@ export const DeviceProvider = ({ device, children }: DeviceProviderProps) => {
   const [theme, setThemeState] = useState<ThemeChoice>(device.theme);
   const [creatorCode, setCreatorCodeState] = useState<string | null>(device.creatorCode);
   const [tipSeen, setTipSeen] = useState(device.tipSeen);
+  const [install, setInstall] = useState({ installDismissed: device.installDismissed, installHintShown: device.installHintShown });
 
   useEffect(() => {
     applyTheme(theme);
@@ -43,6 +44,11 @@ export const DeviceProvider = ({ device, children }: DeviceProviderProps) => {
         setCreatorCodeState(code);
         void updateDevice({ creatorCode: code });
       },
+      ...install,
+      setInstallFlag: (flag) => {
+        setInstall((current) => ({ ...current, [flag]: true }));
+        void updateDevice({ [flag]: true });
+      },
       tipSeen,
       markTipSeen: () => {
         setTipSeen(true);
@@ -57,7 +63,7 @@ export const DeviceProvider = ({ device, children }: DeviceProviderProps) => {
         void updateDevice({ theme: next });
       },
     }),
-    [device.deviceId, lang, theme, creatorCode, tipSeen],
+    [device.deviceId, lang, theme, creatorCode, install, tipSeen],
   );
 
   return <DeviceContext.Provider value={value}>{children}</DeviceContext.Provider>;

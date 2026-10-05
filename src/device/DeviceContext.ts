@@ -11,6 +11,10 @@ export interface DeviceValue {
   creatorCode: string | null;
   /** Null forgets it: a code the server refuses (revoked) must make room for another. */
   setCreatorCode: (code: string | null) => void;
+  /** The install card was dismissed, and the one-time hint shown (SPEC.md §5.6). */
+  installDismissed: boolean;
+  installHintShown: boolean;
+  setInstallFlag: (flag: "installDismissed" | "installHintShown") => void;
   /** Whether the first-use tip beside "+" has been dealt with on this device. */
   tipSeen: boolean;
   markTipSeen: () => void;

@@ -5,17 +5,19 @@ import type { TripSummary } from "../../db";
 import { CreatorCode } from "./CreatorCode";
 import { DeletedTicket } from "./DeletedTicket";
 import { HowItWorks } from "./HowItWorks";
+import { OpenLinkField } from "./OpenLinkField";
 import { TripTicket } from "./TripTicket";
 
 interface LandingProps {
   trips: TripSummary[];
   onOpen: (tripId: string) => void;
   onCreate: () => void;
+  onOpenToken: (token: string) => void;
   onRestore: (tripId: string) => Promise<boolean>;
 }
 
 /** The public landing: wordmark, the trips already opened on this device, creation (SPEC.md §7.6 item 1). */
-export const Landing = ({ trips, onOpen, onCreate, onRestore }: LandingProps) => {
+export const Landing = ({ trips, onOpen, onCreate, onOpenToken, onRestore }: LandingProps) => {
   const { t, lang, setLang } = useDevice();
   const [restoring, setRestoring] = useState<{ tripId: string; failed: boolean } | null>(null);
   const live = trips.filter((s) => s.meta.access !== "deleted" && s.meta.access !== "unavailable");
@@ -82,6 +84,7 @@ export const Landing = ({ trips, onOpen, onCreate, onRestore }: LandingProps) =>
           </div>
         </section>
       ) : null}
+      <OpenLinkField onOpen={onOpenToken} />
       <CreatorCode onCreate={onCreate} />
       <footer className="border-t-2 border-dashed border-line px-4 py-7">
         <nav aria-label={t.manage.footerLabel} className="flex flex-wrap gap-x-5 gap-y-2 text-[14.5px]">

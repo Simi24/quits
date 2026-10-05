@@ -22,6 +22,7 @@ export { useSingleFlight } from "./useSingleFlight";
 export { AmountField } from "./AmountField";
 export { AddNameForm } from "./AddNameForm";
 export { LoadingLine } from "./LoadingLine";
+export { UpdateBanner } from "./UpdateBanner";
 export { useModalFocus } from "./useModalFocus";
 export { EmptyState } from "./EmptyState";
 export { FirstTip } from "./FirstTip";
