@@ -341,3 +341,23 @@ test("the manifest starts at /v/?source=pwa and carries the = icon and the paper
   expect(sizes).toEqual(expect.arrayContaining(["image/svg+xml:any:any", "image/png:192x192:maskable", "image/png:512x512:maskable"]));
   for (const icon of manifest.icons) expect((await page.request.get(icon.src)).ok()).toBe(true);
 });
+
+test("a newer version of the database is never blocked by a tab that has the app open", async ({ page }) => {
+  await createTrip(page);
+
+  // What a later build's upgrade does while this tab (or the service worker) still holds the old connection.
+  const outcome = await page.evaluate(
+    () =>
+      new Promise<string>((resolve) => {
+        const open = indexedDB.open("quits", 99);
+        open.onsuccess = () => {
+          open.result.close();
+          resolve("upgraded");
+        };
+        open.onerror = () => resolve(`error: ${open.error?.message}`);
+        setTimeout(() => resolve("blocked"), 3000);
+      }),
+  );
+
+  expect(outcome).toBe("upgraded");
+});
