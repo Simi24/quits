@@ -56,6 +56,8 @@ export interface DeviceRecord {
   lastTripId: string | null;
   /** The creator code this device has used successfully, so it is entered once (SPEC.md §4). */
   creatorCode: string | null;
+  /** The first-use tip beside "+" was dismissed, or an expense was recorded: it is never shown again on this device (SPEC.md §7.6). */
+  tipSeen: boolean;
 }
 
 export interface QuitsDb extends DBSchema {

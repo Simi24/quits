@@ -11,6 +11,9 @@ export interface DeviceValue {
   creatorCode: string | null;
   /** Null forgets it: a code the server refuses (revoked) must make room for another. */
   setCreatorCode: (code: string | null) => void;
+  /** Whether the first-use tip beside "+" has been dealt with on this device. */
+  tipSeen: boolean;
+  markTipSeen: () => void;
   setLang: (lang: Lang) => void;
   setTheme: (theme: ThemeChoice) => void;
 }
