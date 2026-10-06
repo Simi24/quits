@@ -11,6 +11,7 @@
   --hi: #FFC53D; --on-hi: #1E2638;
   --coral: #F0644C; --sun: #FFC53D; --pool: #2EA3D6; --leaf: #6DB36B; --sea: #3CC0B0; --stone: #B7A79B;
   --pos: #0E7095; --neg: #B9402B; --stamp: #D9472F; --ticket: #FFE3A3;
+  --notice: color-mix(in srgb, var(--sun) 34%, var(--paper)); --notice-rule: transparent;
   /* chart-only, derived */
   --tx: color-mix(in srgb, var(--ink) 52%, transparent);
   --future: color-mix(in srgb, var(--ink) 5%, transparent);
@@ -20,21 +21,23 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --desk: #1A1312; --paper: #241B1A; --paper-2: #2F2423; --receipt: #3A2D2B;
-    --ink: #FCEBDD; --ink-2: #CDB7A9; --line: #4D3C39;
+    --desk: #071A23; --paper: #0B2430; --paper-2: #0F2E3C; --receipt: #143A4B;
+    --ink: #E4F3F7; --ink-2: #A3C4CF; --line: #22495A;
     --lead: #FF7A61; --lead-deep: #C4513C; --on-lead: #2A1512;
     --hi: #FFCC52; --on-hi: #2A1512;
-    --coral: #FF7A61; --sun: #FFCC52; --pool: #5EC2EC; --leaf: #86C784; --sea: #5AD1C1; --stone: #9C8A80;
-    --pos: #7FD3F5; --neg: #FF9A85; --stamp: #FF7A61; --ticket: #4A3826;
+    --coral: #FF7A61; --sun: #FFCC52; --pool: #5EC2EC; --leaf: #A3CF6B; --sea: #3FC9D6; --stone: #9C8A80;
+    --pos: #8EDCF8; --neg: #FFA192; --stamp: #FF7A61; --ticket: #123847;
+    --notice: var(--receipt); --notice-rule: var(--hi);
   }
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --desk: #1A1312; --paper: #241B1A; --paper-2: #2F2423; --receipt: #3A2D2B;
-  --ink: #FCEBDD; --ink-2: #CDB7A9; --line: #4D3C39;
+  --desk: #071A23; --paper: #0B2430; --paper-2: #0F2E3C; --receipt: #143A4B;
+  --ink: #E4F3F7; --ink-2: #A3C4CF; --line: #22495A;
   --lead: #FF7A61; --lead-deep: #C4513C; --on-lead: #2A1512;
   --hi: #FFCC52; --on-hi: #2A1512;
-  --coral: #FF7A61; --sun: #FFCC52; --pool: #5EC2EC; --leaf: #86C784; --sea: #5AD1C1; --stone: #9C8A80;
-  --pos: #7FD3F5; --neg: #FF9A85; --stamp: #FF7A61; --ticket: #4A3826;
+  --coral: #FF7A61; --sun: #FFCC52; --pool: #5EC2EC; --leaf: #A3CF6B; --sea: #3FC9D6; --stone: #9C8A80;
+  --pos: #8EDCF8; --neg: #FFA192; --stamp: #FF7A61; --ticket: #123847;
+  --notice: var(--receipt); --notice-rule: var(--hi);
 }

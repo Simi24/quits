@@ -22,6 +22,7 @@
   --color-neg: var(--neg);
   --color-stamp: var(--stamp);
   --color-ticket: var(--ticket);
+  --color-notice: var(--notice);
   --font-display: var(--f-display);
   --font-text: var(--f-text);
 }
