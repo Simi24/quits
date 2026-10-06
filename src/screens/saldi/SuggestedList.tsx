@@ -52,7 +52,7 @@ export const SuggestedList = ({ suggestions, onRecord, onRecordAll, onRecordOthe
           )}
         </>
       ) : (
-        <div className="grid grid-cols-[auto_1fr] gap-2.5 rounded-[14px] bg-[color-mix(in_srgb,var(--sun)_34%,var(--paper))] p-3.5 text-[14.5px]">
+        <div className="grid grid-cols-[auto_1fr] gap-2.5 rounded-[14px] bg-notice shadow-[inset_4px_0_0_var(--notice-rule)] p-3.5 text-[14.5px]">
           <Check size={20} weight="bold" className="mt-0.5" aria-hidden="true" />
           <div>
             <b>{t.balances.allEven}</b>

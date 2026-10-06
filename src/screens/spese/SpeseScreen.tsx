@@ -41,7 +41,7 @@ export const SpeseScreen = ({ printId, onPrinted, onOpenExpense, onOpenSettlemen
     <div className="grid gap-3.5 px-4 pt-1.5 pb-24">
       {/* At the top of Spese, before the summary: it is what changed while you were away (SPEC.md §7.6 item 7). */}
       {conflicts.length ? (
-        <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-2.5 rounded-[14px] bg-[color-mix(in_srgb,var(--sun)_34%,var(--paper))] p-3.5 text-[14.5px]" data-testid="conflict-banner">
+        <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-2.5 rounded-[14px] bg-notice shadow-[inset_4px_0_0_var(--notice-rule)] p-3.5 text-[14.5px]" data-testid="conflict-banner">
           <Warning size={20} weight="fill" className="mt-0.5" aria-hidden="true" />
           <div className="grid justify-items-start gap-2.5">
             <b>{t.history.conflicts(conflicts.length)}</b>

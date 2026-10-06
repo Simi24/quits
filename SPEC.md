@@ -286,10 +286,12 @@ Two Durable Object classes, both SQLite-backed and in the EU jurisdiction.
 ## 7. Interface
 
 ### 7.1 Direction and contract
-**"Cartolina d'estate"** ([#4](https://github.com/Simi24/quits/issues/4)): an identity entirely its own, unrelated to simonepetta.com, **playful** in tone. Warm, full colours on a paper background, rounded shapes. **Signature object: the receipt**: expenses are receipts with a zig-zag edge, the expense list is a roll of receipts, settlements are stamped tickets, being even is a stamped ticket. The object carries real data, it is not decoration. **Brand**: the "=" sign (two equal bars, "pari"), plus the wordmark "quits". Final look ([#9](https://github.com/Simi24/quits/issues/9)): **Ombrellone's palette** (coral leads; sun yellow and pool blue around it; peach paper by day, cocoa by night) **with Piscina's fonts**. This is variant **Scelta** in [`grafici.html`](docs/prototype/grafici.html). The variants "Piscina" and "Saluti da" are discarded.
+**"Cartolina d'estate"** ([#4](https://github.com/Simi24/quits/issues/4)): an identity entirely its own, unrelated to simonepetta.com, **playful** in tone. Warm, full colours on a paper background, rounded shapes. **Signature object: the receipt**: expenses are receipts with a zig-zag edge, the expense list is a roll of receipts, settlements are stamped tickets, being even is a stamped ticket. The object carries real data, it is not decoration. **Brand**: the "=" sign (two equal bars, "pari"), plus the wordmark "quits". Final look ([#9](https://github.com/Simi24/quits/issues/9)): **Ombrellone's palette** (coral leads; sun yellow and pool blue around it; peach paper by day; by night the hybrid dark below: Piscina's navy surfaces with Ombrellone's coral lead) **with Piscina's fonts**. This is variant **Scelta** in [`grafici.html`](docs/prototype/grafici.html). The variants "Piscina" and "Saluti da" are discarded.
 
 ### 7.2 Tokens
 Copied from the prototypes (Ombrellone light/dark from [`flussi.html`](docs/prototype/flussi.html), font tuning from Piscina, chart tokens from [`grafici.html`](docs/prototype/grafici.html)). Both themes are designed, not inverted; text is WCAG AA ([#4](https://github.com/Simi24/quits/issues/4)).
+
+**Dark theme: hybrid** (chosen by the author on 2026-10-06, replacing Ombrellone's cocoa dark, which he disliked on a phone): Piscina's dark surfaces and inks (`desk`, `paper`, `paper-2`, `receipt`, `ink`, `ink-2`, `line`, `pos`, `neg`, from `grafici.html`) with Ombrellone's dark accents (coral `lead`, `hi`, `stamp` and the category hues). The light theme is unchanged. Adjustments to the prototype values, all for contrast or colour-blind separation: `ticket` is `#123847` (stamp coral on it is 4.88:1; Piscina's `#1F4D61` gave 3.58:1); `leaf` is `#A3CF6B` and `sea` `#3FC9D6` in dark (the prototype's pair was only ΔE 7.8 apart for deuteranopes, now above 15 for normal vision; the hues keep their identity, yellower green and bluer cyan). The new token `--notice` / `--notice-rule` is the surface of the conflict banner, the notices and the first-use tip: in light it is the sun at 34% over the paper, as before, with no rule; in dark it is the receipt colour with a 4 px sun rule on its left edge, so the yellow accent reads on navy instead of turning khaki.
 
 ```css
 :root {
@@ -303,6 +305,7 @@ Copied from the prototypes (Ombrellone light/dark from [`flussi.html`](docs/prot
   --hi: #FFC53D; --on-hi: #1E2638;
   --coral: #F0644C; --sun: #FFC53D; --pool: #2EA3D6; --leaf: #6DB36B; --sea: #3CC0B0; --stone: #B7A79B;
   --pos: #0E7095; --neg: #B9402B; --stamp: #D9472F; --ticket: #FFE3A3;
+  --notice: color-mix(in srgb, var(--sun) 34%, var(--paper)); --notice-rule: transparent;
   /* chart-only, derived */
   --tx: color-mix(in srgb, var(--ink) 52%, transparent);
   --future: color-mix(in srgb, var(--ink) 5%, transparent);
@@ -311,12 +314,13 @@ Copied from the prototypes (Ombrellone light/dark from [`flussi.html`](docs/prot
 /* dark: the same block under @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { ... } } and under :root[data-theme="dark"] */
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --desk: #1A1312; --paper: #241B1A; --paper-2: #2F2423; --receipt: #3A2D2B;
-  --ink: #FCEBDD; --ink-2: #CDB7A9; --line: #4D3C39;
+  --desk: #071A23; --paper: #0B2430; --paper-2: #0F2E3C; --receipt: #143A4B;
+  --ink: #E4F3F7; --ink-2: #A3C4CF; --line: #22495A;
   --lead: #FF7A61; --lead-deep: #C4513C; --on-lead: #2A1512;
   --hi: #FFCC52; --on-hi: #2A1512;
-  --coral: #FF7A61; --sun: #FFCC52; --pool: #5EC2EC; --leaf: #86C784; --sea: #5AD1C1; --stone: #9C8A80;
-  --pos: #7FD3F5; --neg: #FF9A85; --stamp: #FF7A61; --ticket: #4A3826;
+  --coral: #FF7A61; --sun: #FFCC52; --pool: #5EC2EC; --leaf: #A3CF6B; --sea: #3FC9D6; --stone: #9C8A80;
+  --pos: #8EDCF8; --neg: #FFA192; --stamp: #FF7A61; --ticket: #123847;
+  --notice: var(--receipt); --notice-rule: var(--hi);
 }
 ```
 
