@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLandingBeacon } from "../../analytics";
-import { EqualMark, FooterLinks, Segmented, ThemeButton } from "../../components";
+import { EqualMark, FooterLinks, LangButton, ThemeButton } from "../../components";
 import { useDevice } from "../../device";
 import type { TripSummary } from "../../db";
 import { CreatorCode } from "./CreatorCode";
@@ -19,7 +19,7 @@ interface LandingProps {
 
 /** The public landing: wordmark, the trips already opened on this device, creation (SPEC.md §7.6 item 1). */
 export const Landing = ({ trips, onOpen, onCreate, onOpenToken, onRestore }: LandingProps) => {
-  const { t, lang, setLang } = useDevice();
+  const { t } = useDevice();
   useLandingBeacon();
   const [restoring, setRestoring] = useState<{ tripId: string; failed: boolean } | null>(null);
   const live = trips.filter((s) => s.meta.access !== "deleted" && s.meta.access !== "unavailable");
@@ -35,24 +35,13 @@ export const Landing = ({ trips, onOpen, onCreate, onOpenToken, onRestore }: Lan
   return (
     <main className="h-full overflow-y-auto">
       <section className="relative grid gap-[18px] px-5 pt-6 pb-[26px]">
-        <div className="absolute top-2 right-4 flex items-center gap-1.5">
-          <div className="w-[97px]">
-            <Segmented
-              compact
-              label={t.settings.lang}
-              value={lang}
-              onChange={setLang}
-              options={[
-                { value: "it", label: "IT" },
-                { value: "en", label: "EN" },
-              ]}
-            />
-          </div>
+        <div data-testid="landing-corner" className="absolute top-2 right-4 grid gap-2">
+          <LangButton />
           <ThemeButton />
         </div>
-        <div className="flex items-center gap-4">
+        <div data-testid="brand-row" className="flex items-center gap-4">
           <EqualMark />
-          <h1 className="display text-[calc(76px*var(--d-scale))] leading-[.9]">quits</h1>
+          <h1 className="display text-[calc(min(76px,20vw)*var(--d-scale))] leading-[.9]">quits</h1>
         </div>
         <p className="max-w-[30ch] text-[19px] leading-[1.35]">{t.shell.tagline}</p>
       </section>

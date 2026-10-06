@@ -26,5 +26,7 @@ export const settings = {
   light: "Chiaro",
   dark: "Scuro",
   lang: "Lingua",
+  langSwitch: (current: string, next: string) => `Lingua: ${current}. Passa all'${next}`,
+  langNames: { it: "italiano", en: "inglese" },
   personAdded: "Partecipante aggiunto",
 };
