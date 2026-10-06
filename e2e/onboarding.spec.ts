@@ -7,8 +7,10 @@ import { storedDevice, tab } from "./trip-flow.ts";
 // Issue #28: a compact IT/EN switch, "Come funziona", explanatory empty states, one first-use tip (SPEC.md §7.6).
 
 const PHONE = { width: 390, height: 844 };
-// The corner pill is the only language switch on the landing (SPEC.md §7.8).
-const langSwitch = (page: Page) => page.getByRole("group", { name: /^(Lingua|Language)$/ });
+// The corner round button is the only language control on the landing (SPEC.md §7.8).
+const langButton = (page: Page) => page.getByRole("button", { name: /^(Lingua|Language): / });
+const themeButton = (page: Page) => page.getByRole("button", { name: /^(Tema|Theme): / });
+const WIDTHS = [320, 360, 390, 430];
 const tip = (page: Page) => page.getByTestId("first-tip");
 const leaveTrip = async (page: Page) => {
   await page.getByRole("button", { name: "Torna all'inizio" }).click();
@@ -20,50 +22,71 @@ const emptyTrip = () => [tripCreated({ name: "Estate" })];
 test.describe("landing", () => {
   test.use({ viewport: PHONE });
 
-  test("the IT/EN switch sits on the brand row and never moves the title", async ({ page }) => {
-    await page.goto("/");
-    const title = page.getByRole("heading", { level: 1, name: "quits" });
-    await expect(title).toBeVisible();
-    const before = await title.boundingBox();
-    const box = await langSwitch(page).boundingBox();
-    // The title is up in the first 90 px, and the switch shares its row instead of sitting above it.
-    expect(before!.y).toBeLessThan(90);
-    expect(box!.y).toBeLessThan(before!.y + before!.height);
-    expect(box!.y + box!.height).toBeLessThan(before!.y + before!.height + 20);
-    // Compact, and inside the screen.
-    expect(box!.height).toBeLessThan(44);
-    expect(box!.x + box!.width).toBeLessThanOrEqual(PHONE.width);
+  for (const width of WIDTHS) {
+    test(`the corner buttons never move or touch the wordmark at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto("/");
+      const title = page.getByRole("heading", { level: 1, name: "quits" });
+      const mark = page.getByTestId("brand-row");
+      await expect(title).toBeVisible();
+      const corner = page.getByTestId("landing-corner");
+      const shown = await mark.boundingBox();
+      await corner.evaluate((el) => ((el as HTMLElement).style.display = "none"));
+      const reference = await mark.boundingBox();
+      await corner.evaluate((el) => ((el as HTMLElement).style.display = ""));
+      expect(Math.abs(shown!.y - reference!.y)).toBeLessThanOrEqual(1);
 
-    await langSwitch(page).getByRole("button", { name: "EN" }).click();
-    await expect(page.getByText("Who paid for what on holiday, and how to get even.")).toBeVisible();
-    expect(await title.boundingBox()).toEqual(before);
-    expect(await langSwitch(page).boundingBox()).toEqual(box);
-    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(PHONE.width);
-  });
+      const brand = { right: (await title.boundingBox())!.x + (await title.boundingBox())!.width };
+      for (const button of [langButton(page), themeButton(page)]) {
+        const box = (await button.boundingBox())!;
+        // The 44 px hit area is the button plus its invisible margin.
+        const hit = await button.evaluate((el) => {
+          const after = getComputedStyle(el, "::before");
+          return { w: parseFloat(after.width), h: parseFloat(after.height) };
+        });
+        expect(hit.w).toBeGreaterThanOrEqual(44);
+        expect(hit.h).toBeGreaterThanOrEqual(44);
+        expect(box.x + box.width).toBeLessThanOrEqual(width);
+        // No intersection with the wordmark row: the button is wholly to the right of it.
+        expect(box.x).toBeGreaterThanOrEqual(brand.right);
+      }
+      const [a, b] = [(await langButton(page).boundingBox())!, (await themeButton(page).boundingBox())!];
+      expect(a.width).toBeCloseTo(b.width, 0);
+      expect(a.height).toBeCloseTo(b.height, 0);
+      // The two 44 px hit areas do not overlap.
+      expect(b.y - a.y).toBeGreaterThanOrEqual(44);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    });
+  }
 
-  test("the footer has no big selectors; the corner has the language pill and a theme button", async ({ page }) => {
+  test("the corner language button shows the language, switches with one tap and keeps the device's choice", async ({ page }) => {
     await page.goto("/");
-    await expect(langSwitch(page)).toHaveCount(1);
     await expect(page.getByRole("group", { name: "Tema" })).toHaveCount(0);
     await expect(page.getByLabel("Informazioni su Quits").getByRole("group")).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Tema: sistema" })).toBeVisible();
-  });
-
-  test("the theme button cycles system, light, dark and keeps the title and the pill where they are", async ({ page }) => {
-    await page.goto("/");
     const title = page.getByRole("heading", { level: 1, name: "quits" });
     const titleBox = await title.boundingBox();
-    const pill = await langSwitch(page).boundingBox();
-    const button = page.getByRole("button", { name: /^Tema: / });
-    const buttonBox = await button.boundingBox();
-    // Same height as the pill, on the same row, inside the screen.
-    expect(buttonBox!.height).toBeCloseTo(pill!.height, 0);
-    expect(buttonBox!.y).toBeCloseTo(pill!.y, 0);
-    expect(buttonBox!.x + buttonBox!.width).toBeLessThanOrEqual(PHONE.width);
-    expect(buttonBox!.x).toBeGreaterThan(pill!.x + pill!.width - 1);
-    // It does not sit over the wordmark.
-    expect(Math.max(buttonBox!.x, pill!.x)).toBeGreaterThanOrEqual(titleBox!.x + titleBox!.width - 4);
+    const button = page.getByRole("button", { name: "Lingua: italiano. Passa all'inglese" });
+    await expect(button).toHaveText("IT");
+    const box = await button.boundingBox();
 
+    await button.click();
+    await expect(page.getByText("Who paid for what on holiday, and how to get even.")).toBeVisible();
+    const english = page.getByRole("button", { name: "Language: English. Switch to Italian" });
+    await expect(english).toHaveText("EN");
+    await expect.poll(async () => (await storedDevice(page))?.lang).toBe("en");
+    expect(await title.boundingBox()).toEqual(titleBox);
+    expect(await english.boundingBox()).toEqual(box);
+
+    await page.reload();
+    await expect(page.getByRole("button", { name: "Language: English. Switch to Italian" })).toHaveText("EN");
+    await page.getByRole("button", { name: "Language: English. Switch to Italian" }).click();
+    await expect(page.getByRole("button", { name: "Lingua: italiano. Passa all'inglese" })).toHaveText("IT");
+    await expect.poll(async () => (await storedDevice(page))?.lang).toBe("it");
+  });
+
+  test("the theme button cycles system, light, dark", async ({ page }) => {
+    await page.goto("/");
+    const button = page.getByRole("button", { name: "Tema: sistema" });
     const root = page.locator("html");
     await button.click();
     await expect(page.getByRole("button", { name: "Tema: chiaro" })).toBeVisible();
@@ -73,11 +96,8 @@ test.describe("landing", () => {
     await page.getByRole("button", { name: "Tema: scuro" }).click();
     await expect(root).not.toHaveAttribute("data-theme");
     await expect(page.getByRole("button", { name: "Tema: sistema" })).toBeVisible();
-
-    await langSwitch(page).getByRole("button", { name: "EN" }).click();
+    await langButton(page).click();
     await expect(page.getByRole("button", { name: "Theme: system" })).toBeVisible();
-    expect(await title.boundingBox()).toEqual(titleBox);
-    expect(await langSwitch(page).boundingBox()).toEqual(pill);
   });
 
   test("the theme chosen on the landing is kept on the device", async ({ page }) => {
@@ -94,7 +114,7 @@ test.describe("landing", () => {
     await expect(how.getByRole("heading", { level: 2, name: "Come funziona" })).toBeVisible();
     await expect(how.getByRole("listitem")).toHaveText([/Crea il viaggio/, /Manda il link/, /Segnate le spese.*chi deve dare cosa a chi/]);
 
-    await langSwitch(page).getByRole("button", { name: "EN" }).click();
+    await langButton(page).click();
     await expect(how.getByRole("heading", { level: 2, name: "How it works" })).toBeVisible();
     await expect(how.getByRole("listitem")).toHaveText([/Create the trip/, /Send the link/, /Record the expenses.*who owes what to whom/]);
   });

@@ -28,5 +28,7 @@ export const settings: Dictionary["settings"] = {
   light: "Light",
   dark: "Dark",
   lang: "Language",
+  langSwitch: (current: string, next: string) => `Language: ${current}. Switch to ${next}`,
+  langNames: { it: "Italian", en: "English" },
   personAdded: "Participant added",
 };

@@ -1,5 +1,6 @@
 import { Moon, Sun, SunHorizon } from "@phosphor-icons/react";
 import { useDevice } from "../device";
+import { CORNER_BUTTON_CLASS } from "./cornerButton";
 import type { ThemeChoice } from "../db";
 
 const NEXT: Record<ThemeChoice, ThemeChoice> = { system: "light", light: "dark", dark: "system" };
@@ -14,7 +15,7 @@ export const ThemeButton = () => {
       type="button"
       aria-label={`${t.settings.theme}: ${names[theme].toLowerCase()}`}
       onClick={() => setTheme(NEXT[theme])}
-      className="relative grid size-[38px] shrink-0 place-items-center rounded-full bg-paper-2 text-ink before:absolute before:-inset-1.5 before:content-['']"
+      className={CORNER_BUTTON_CLASS}
     >
       <Icon size={18} weight="bold" aria-hidden="true" />
     </button>
