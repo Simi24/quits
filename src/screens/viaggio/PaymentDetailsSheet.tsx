@@ -97,7 +97,7 @@ export const PaymentDetailsSheet = ({ participantId, onClose, onSaved }: Payment
         {field("paypal", t.payment.paypal, t.payment.paypalHint, t.payment.paypalInvalid)}
         {field("revolut", t.payment.revolut, t.payment.revolutHint, t.payment.revolutInvalid)}
         {field("satispayPhone", t.payment.satispay, t.payment.satispayHint, t.payment.satispayInvalid, { placeholder: t.payment.satispayPlaceholder, inputMode: "tel" })}
-        <p className="text-[13.5px] text-ink-2">{t.payment.clearedNote}</p>
+        {current ? <p className="text-[13.5px] text-ink-2">{t.payment.clearedNote}</p> : null}
       </form>
     </Sheet>
   );
