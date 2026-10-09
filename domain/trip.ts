@@ -2,6 +2,7 @@ import type { DefaultSplit } from "./split.ts";
 import type { ExpenseSnapshot } from "./expense.ts";
 import type { ParticipantId } from "./ids.ts";
 import type { OperationType } from "./operations.ts";
+import type { PaymentDetails } from "./payment-details.ts";
 
 export type Participant = { id: ParticipantId; name: string };
 
@@ -99,6 +100,8 @@ export type Trip = {
   /** For each merged-away participant, the one they were folded into. */
   mergedInto: Record<ParticipantId, ParticipantId>;
   merges: Merge[];
+  /** What each participant wrote about how to be paid, as written: read it with `paymentDetailsOf`, which applies merges (SPEC.md §3.16). */
+  paymentDetails: Record<ParticipantId, PaymentDetails>;
   expenses: ExpenseRecord[];
   settlements: SettlementRecord[];
   categories: CustomCategory[];

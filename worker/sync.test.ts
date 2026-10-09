@@ -99,6 +99,30 @@ describe("push and pull", () => {
     expect(pushed.body.results[0]).toMatchObject({ id: "old", status: "appended" });
   });
 
+  it("stores payment details and rejects malformed ones like any other operation, naming fields only", async () => {
+    const { token } = await newTrip();
+    const set = (id: string, details: Record<string, string>) => op({ type: "ParticipantPaymentDetailsSet", participantId: "p2", details }, { id });
+    const good = set("pay-ok", { iban: "IT60X0542811101000000123456", paypal: "sara" });
+    const cleared = set("pay-clear", {});
+    const badChecksum = set("pay-bad", { iban: "IT60X0542811101000000123457" });
+    const spaced = set("pay-spaced", { iban: "IT60 X054 2811 1010 0000 0123 456" });
+    const noPrefix = set("pay-phone", { satispayPhone: "3331234567" });
+
+    const pushed = await pushOps(token, [good, cleared, badChecksum, spaced, noPrefix]);
+    expect(pushed.body.results).toEqual([
+      { id: "pay-ok", status: "appended", seq: 2 },
+      { id: "pay-clear", status: "appended", seq: 3 },
+      { id: "pay-bad", status: "rejected", reason: "malformed", detail: "details.iban: custom" },
+      { id: "pay-spaced", status: "rejected", reason: "malformed", detail: "details.iban: custom" },
+      { id: "pay-phone", status: "rejected", reason: "malformed", detail: "details.satispayPhone: custom" },
+    ]);
+    const all = await pullAfter(token, 1);
+    expect(all.body.operations).toEqual([
+      { seq: 2, operation: good },
+      { seq: 3, operation: cleared },
+    ]);
+  });
+
   it("pulls in pages and says when there is more", async () => {
     const { token } = await newTrip();
     for (let batch = 0; batch < 6; batch++) {

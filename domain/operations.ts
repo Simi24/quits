@@ -2,6 +2,7 @@ import { z } from "zod";
 import { dateSchema, expenseSnapshotSchema } from "./expense.ts";
 import { idSchema } from "./ids.ts";
 import { positiveMinorUnits } from "./money.ts";
+import { paymentDetailsSchema } from "./payment-details.ts";
 import { defaultSplitSchema } from "./split.ts";
 import { validateExpense } from "./validate.ts";
 
@@ -70,6 +71,7 @@ function operationSchemaOf<V extends number, S extends z.ZodType>(v: V, expense:
     kind("ParticipantRemoved", { participantId: idSchema }),
     kind("ParticipantsMerged", { fromParticipantId: idSchema, intoParticipantId: idSchema }),
     kind("MergeUndone", { mergeOpId: idSchema }),
+    kind("ParticipantPaymentDetailsSet", { participantId: idSchema, details: paymentDetailsSchema }),
     kind("ExpenseCreated", { expenseId: idSchema, expense }),
     kind("ExpenseEdited", { expenseId: idSchema, baseOpId: idSchema, expense }),
     kind("ExpenseDeleted", { expenseId: idSchema }),

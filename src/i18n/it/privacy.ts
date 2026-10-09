@@ -5,6 +5,7 @@ export const privacy = {
   storedH: "Cosa viene salvato",
   stored: [
     "Quello che inserisci in un viaggio: il nome del viaggio, i nomi dei partecipanti, le spese con importi, descrizioni, categorie e date, i pagamenti.",
+    "Se vuoi, come ricevere i soldi: IBAN, nome su PayPal.me, nome su Revolut e numero di telefono per Satispay. Sono facoltativi, li inseriscono i partecipanti del viaggio, stanno nel viaggio (Cloudflare, UE) e li vede chiunque abbia il link. Togliere i dati li nasconde nell'app, ma come ogni modifica restano nella cronologia del viaggio e nell'esportazione JSON finché il viaggio non viene eliminato. Quits non muove soldi: apre PayPal o Revolut, oppure copia il dato.",
     "Un identificativo anonimo del dispositivo, scritto in ogni modifica. Non contiene dati personali e serve solo a distinguere i dispositivi di uno stesso viaggio.",
     "Sul server il link del viaggio è conservato solo come impronta (hash SHA-256), mai in chiaro.",
     "Su questo dispositivo restano i viaggi, chi sei in ognuno, la lingua, il tema e le modifiche non ancora inviate. Sono dati tecnici necessari al funzionamento, per questo non c'è un banner dei cookie.",
