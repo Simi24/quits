@@ -1,4 +1,4 @@
-import { Check, HandCoins } from "@phosphor-icons/react";
+import { Check, HandCoins, ShareNetwork } from "@phosphor-icons/react";
 import { Button, Ticket } from "../../components";
 import { useDevice } from "../../device";
 import type { SuggestedSettlement } from "../../../domain";
@@ -9,10 +9,11 @@ interface SuggestedListProps {
   onRecord: (suggestion: SuggestedSettlement) => void;
   onRecordAll: () => void;
   onRecordOther: () => void;
+  onShare: () => void;
 }
 
 /** "Pagamenti suggeriti": one ticket per suggestion, "Registra tutti", or the all-even notice (SPEC.md §7.6 item 8). */
-export const SuggestedList = ({ suggestions, onRecord, onRecordAll, onRecordOther }: SuggestedListProps) => {
+export const SuggestedList = ({ suggestions, onRecord, onRecordAll, onRecordOther, onShare }: SuggestedListProps) => {
   const { t } = useDevice();
   const { money, nameOf, readOnly } = useTrip();
   return (
@@ -66,6 +67,10 @@ export const SuggestedList = ({ suggestions, onRecord, onRecordAll, onRecordOthe
           {t.balances.recordOther}
         </Button>
       )}
+      <Button wide variant="ghost" onClick={onShare}>
+        <ShareNetwork size={20} weight="bold" aria-hidden="true" />
+        {t.balances.share}
+      </Button>
     </>
   );
 };

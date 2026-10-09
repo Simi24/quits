@@ -101,7 +101,7 @@ export const TripShell = ({ onLeave }: TripShellProps) => {
         {tab === "spese" ? (
           <SpeseScreen printId={printId} onPrinted={() => setPrintId(null)} onOpenExpense={setDetailId} onOpenSettlement={(id) => setSheet({ kind: "settlement", id })} onOpenHistory={() => setHistoryOpen(true)} />
         ) : null}
-        {tab === "saldi" ? <SaldiScreen onRecord={(prefill) => setSheet({ kind: "settle", prefill })} onRecordAll={(s) => void settleAll.run(s)} /> : null}
+        {tab === "saldi" ? <SaldiScreen onRecord={(prefill) => setSheet({ kind: "settle", prefill })} onRecordAll={(s) => void settleAll.run(s)} notify={(text) => show({ text })} /> : null}
         {tab === "grafici" ? (
           <Suspense fallback={null}>
             <GraficiScreen />
