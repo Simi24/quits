@@ -18,7 +18,8 @@ export const PaymentDetailsSheet = ({ participantId, onClose, onSaved }: Payment
   const { t } = useDevice();
   const { trip, record, nameOf } = useTrip();
   const current = paymentDetailsOf(trip, participantId);
-  const inherited = current !== undefined && trip.paymentDetails[participantId] === undefined;
+  const own = trip.paymentDetails[participantId] !== undefined;
+  const inherited = current !== undefined && !own;
   const [typed, setTyped] = useState<Typed>({
     iban: current?.iban ? formatIban(current.iban) : "",
     paypal: current?.paypal ?? "",
@@ -76,7 +77,7 @@ export const PaymentDetailsSheet = ({ participantId, onClose, onSaved }: Payment
           <Button wide disabled={write.busy} onClick={() => void save()}>
             {t.payment.save}
           </Button>
-          {current ? (
+          {own ? (
             <Button wide variant="ghost" disabled={write.busy} onClick={() => void clear()}>
               {t.payment.clear}
             </Button>
@@ -97,7 +98,7 @@ export const PaymentDetailsSheet = ({ participantId, onClose, onSaved }: Payment
         {field("paypal", t.payment.paypal, t.payment.paypalHint, t.payment.paypalInvalid)}
         {field("revolut", t.payment.revolut, t.payment.revolutHint, t.payment.revolutInvalid)}
         {field("satispayPhone", t.payment.satispay, t.payment.satispayHint, t.payment.satispayInvalid, { placeholder: t.payment.satispayPlaceholder, inputMode: "tel" })}
-        {current ? <p className="text-[13.5px] text-ink-2">{t.payment.clearedNote}</p> : null}
+        {own ? <p className="text-[13.5px] text-ink-2">{t.payment.clearedNote}</p> : null}
       </form>
     </Sheet>
   );

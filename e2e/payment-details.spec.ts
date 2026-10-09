@@ -88,6 +88,17 @@ test("clearing the details hides the Pay action again", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Paga Sara" })).toHaveCount(0);
 });
 
+test("details a participant only inherits through a merge are not offered for clearing: that would change nothing", async ({ page }) => {
+  const lucaDetails = op({ type: "ParticipantPaymentDetailsSet", participantId: "p3", details: { paypal: "luca" } }, { id: "luca-pay", by: "p3" });
+  const merged = op({ type: "ParticipantsMerged", fromParticipantId: "p3", intoParticipantId: "p2" }, { id: "merge-p3-p2" });
+  await seedTrip(page, "Sardegna", [...saraPaid(), lucaDetails, merged]);
+  await tab(page, "Viaggio").click();
+  await paySection(page).getByRole("button", { name: "Modifica come ricevere i soldi di Sara" }).click();
+  const dialog = sheet(page, "Come ricevere i soldi: Sara");
+  await expect(dialog.getByText(/arrivano da un partecipante unito/)).toBeVisible();
+  await expect(dialog.getByRole("button", { name: "Togli tutto" })).toHaveCount(0);
+});
+
 test("Pay offers every method the creditor filled in, then records the payment", async ({ page }) => {
   await stubOutside(page);
   await seedTrip(page, "Sardegna", [...saraPaid(), saraDetails()]);
