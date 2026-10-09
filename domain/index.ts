@@ -28,5 +28,7 @@ export { STANDARD_CATEGORIES, OTHER_CATEGORY_ID, categoryColor, listCategories, 
 export type { CategoryColor, ResolvedCategory } from "./categories.ts";
 export { tripTotals } from "./totals.ts";
 export type { Totals } from "./totals.ts";
+export { buildRecap } from "./recap.ts";
+export type { RecapInput } from "./recap.ts";
 export { minorDigits } from "./money.ts";
 export * from "./charts/index.ts";
