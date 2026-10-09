@@ -11,7 +11,7 @@ export type PaymentDetails = { [F in PaymentField]?: string };
 
 const IBAN = /^[A-Z]{2}\d{2}[A-Z0-9]{11,30}$/;
 const PAYPAL = /^[A-Za-z0-9]{1,20}$/;
-const REVOLUT = /^[A-Za-z0-9._-]{1,32}$/;
+const REVOLUT = /^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$/;
 const PHONE = /^\+[1-9]\d{7,14}$/;
 
 /** ISO 13616 check: move the first four characters to the end, letters become 10..35, the number mod 97 must be 1. */

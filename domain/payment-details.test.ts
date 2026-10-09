@@ -47,6 +47,11 @@ describe("payment details: normalising what a person typed", () => {
     expect(checkPaymentDetails({ revolut: "mario rossi" }).errors).toEqual({ revolut: "invalid" });
   });
 
+  it("refuses a Revolut name that is only dots, so the link can never point above the profile path", () => {
+    for (const revolut of [".", "..", ".mario", "-mario"]) expect(checkPaymentDetails({ revolut }).errors).toEqual({ revolut: "invalid" });
+    expect(paymentDetailsSchema.safeParse({ revolut: ".." }).success).toBe(false);
+  });
+
   it("writes the Satispay phone in international form, from the usual ways people write it", () => {
     for (const typed of ["+39 333 123 4567", "0039 333-123-4567", "+39 (333) 123.4567", "+393331234567"]) {
       expect(checkPaymentDetails({ satispayPhone: typed }).details).toEqual({ satispayPhone: "+393331234567" });
