@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { foldTrip, parseOperation, paymentDetailsOf } from "./index.ts";
+import { CURRENT_VERSION, foldTrip, parseOperation, paymentDetailsOf } from "./index.ts";
 import { op, sequence, tripCreated } from "./testing.ts";
 
 const IT = "IT60X0542811101000000123456";
@@ -78,6 +78,10 @@ describe("payment details and merges (SPEC.md §3.16)", () => {
 describe("payment details and older apps (SPEC.md §3.13)", () => {
   const written = setDetails("p2", { iban: IT });
 
+  it("is written in the current version, not a new one: an app that cannot read it holds it back alone (src/sync/sync-trip.test.ts) and keeps reading everything else", () => {
+    expect(written.v).toBe(CURRENT_VERSION);
+  });
+
   it("is a well-formed operation of the current version", () => {
     expect(parseOperation(JSON.parse(JSON.stringify(written)))).toEqual({ ok: true, operation: written });
   });
@@ -86,11 +90,5 @@ describe("payment details and older apps (SPEC.md §3.13)", () => {
     for (const details of [{ iban: "IT60X0542811101000000123457" }, { iban: "it60 x054" }, { phone: "+393331234567" }, { paypal: "a b" }]) {
       expect(parseOperation(setDetails("p2", details))).toMatchObject({ ok: false, reason: "malformed" });
     }
-  });
-
-  it("an app that does not know the type cannot read it, so it keeps it out of its log instead of misreading it", () => {
-    // What an installed app does with the unreadable operation is SPEC.md §5.1 and src/sync/sync-trip.test.ts:
-    // it stays out of `confirmed` and the saved cursor stops before it. Here: the version it is written in is the one old apps know.
-    expect(written.v).toBe(2);
   });
 });
