@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { buildRecap } from "../../../domain";
+import { buildRecap, paymentRecapLines } from "../../../domain";
 import { useDevice } from "../../device";
 import { tripLinkOf, useTrip } from "../../trip";
 
@@ -13,7 +13,7 @@ export function useShareRecap(notify: (text: string) => void) {
   const [manualText, setManualText] = useState<string | null>(null);
 
   const share = async () => {
-    const text = buildRecap({ trip, lang, money, link: token ? tripLinkOf(token) : null });
+    const text = buildRecap({ trip, lang, money, link: token ? tripLinkOf(token) : null, extraLines: (creditorId) => paymentRecapLines(trip, creditorId) });
     if (typeof navigator.share === "function") {
       try {
         await navigator.share({ title: trip.name, text });

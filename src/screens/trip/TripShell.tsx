@@ -8,7 +8,7 @@ import type { OperationPayload } from "../../trip";
 import { ExpenseDetail, ExpenseSheet } from "../expense";
 import { HistoryOverlay } from "../history";
 import { InAppBanner, InstallHint } from "../install";
-import { SaldiScreen, SettlementDetail, SettlementSheet } from "../saldi";
+import { PaySheet, SaldiScreen, SettlementDetail, SettlementSheet } from "../saldi";
 import { SpeseScreen } from "../spese";
 import { ViaggioScreen } from "../viaggio";
 import { WhoAreYou } from "../who";
@@ -27,6 +27,7 @@ const GraficiScreen = lazy(() => import("../grafici").then((m) => ({ default: m.
 type OpenSheet =
   | { kind: "expense"; editingId: string | null }
   | { kind: "settle"; prefill: SuggestedSettlement | null }
+  | { kind: "pay"; suggestion: SuggestedSettlement }
   | { kind: "settlement"; id: string };
 
 interface TripShellProps {
@@ -43,6 +44,7 @@ export const TripShell = ({ onLeave }: TripShellProps) => {
   const [sheet, setSheetState] = useState<OpenSheet | null>(null);
   const [printId, setPrintId] = useState<string | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [scrollToPayment, setScrollToPayment] = useState(false);
   const celebration = useCelebration(trip);
   const { toast, show, hide } = useToast();
 
@@ -54,7 +56,7 @@ export const TripShell = ({ onLeave }: TripShellProps) => {
 
   // The trip closes under an open sheet (another device, or a sync): the sheets that write give way to the closed-trip bar.
   useEffect(() => {
-    if (readOnly) setSheetState((open) => (open?.kind === "expense" || open?.kind === "settle" ? null : open));
+    if (readOnly) setSheetState((open) => (open?.kind === "expense" || open?.kind === "settle" || open?.kind === "pay" ? null : open));
   }, [readOnly]);
 
   // One transaction for every suggestion, once: a double tap must not pay anyone twice.
@@ -72,6 +74,14 @@ export const TripShell = ({ onLeave }: TripShellProps) => {
     );
     show({ text: t.balances.recordedAll });
   });
+
+  // "Aggiungi i tuoi dati" on a suggestion leads to the section in Viaggio, once the tab has drawn.
+  useEffect(() => {
+    if (tab === "viaggio" && scrollToPayment) {
+      document.getElementById("payment-details")?.scrollIntoView({ block: "start" });
+      setScrollToPayment(false);
+    }
+  }, [tab, scrollToPayment]);
 
   if (choosingWho) return <WhoAreYou onDone={() => setChoosingWho(false)} />;
 
@@ -101,7 +111,18 @@ export const TripShell = ({ onLeave }: TripShellProps) => {
         {tab === "spese" ? (
           <SpeseScreen printId={printId} onPrinted={() => setPrintId(null)} onOpenExpense={setDetailId} onOpenSettlement={(id) => setSheet({ kind: "settlement", id })} onOpenHistory={() => setHistoryOpen(true)} />
         ) : null}
-        {tab === "saldi" ? <SaldiScreen onRecord={(prefill) => setSheet({ kind: "settle", prefill })} onRecordAll={(s) => void settleAll.run(s)} notify={(text) => show({ text })} /> : null}
+        {tab === "saldi" ? (
+          <SaldiScreen
+            onRecord={(prefill) => setSheet({ kind: "settle", prefill })}
+            onRecordAll={(s) => void settleAll.run(s)}
+            notify={(text) => show({ text })}
+            onPay={(suggestion) => setSheet({ kind: "pay", suggestion })}
+            onAddPaymentDetails={() => {
+              setScrollToPayment(true);
+              setTab("viaggio");
+            }}
+          />
+        ) : null}
         {tab === "grafici" ? (
           <Suspense fallback={null}>
             <GraficiScreen />
@@ -156,6 +177,16 @@ export const TripShell = ({ onLeave }: TripShellProps) => {
           prefill={sheet.prefill}
           onClose={() => setSheet(null)}
           onSaved={() => {
+            setSheet(null);
+            show({ text: t.balances.recorded });
+          }}
+        />
+      ) : null}
+      {sheet?.kind === "pay" ? (
+        <PaySheet
+          suggestion={sheet.suggestion}
+          onClose={() => setSheet(null)}
+          onRecorded={() => {
             setSheet(null);
             show({ text: t.balances.recorded });
           }}

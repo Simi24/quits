@@ -2,6 +2,7 @@ import { categoryHandlers } from "./handlers/categories.ts";
 import { expenseHandlers } from "./handlers/expenses.ts";
 import type { HandlerContext, FoldEntry, Handlers } from "./handlers/context.ts";
 import { participantHandlers } from "./handlers/participants.ts";
+import { paymentDetailsHandlers } from "./handlers/payment-details.ts";
 import { settlementHandlers } from "./handlers/settlements.ts";
 import { tripHandlers } from "./handlers/trip.ts";
 import { mergeDefaultSplit } from "./merge.ts";
@@ -9,7 +10,7 @@ import { upcastOperation } from "./operations.ts";
 import type { Operation, SequencedOperation, StoredOperation } from "./operations.ts";
 import type { IgnoredReason, Trip } from "./trip.ts";
 
-const handlers: Handlers = { ...tripHandlers, ...expenseHandlers, ...settlementHandlers, ...participantHandlers, ...categoryHandlers };
+const handlers: Handlers = { ...tripHandlers, ...expenseHandlers, ...settlementHandlers, ...participantHandlers, ...paymentDetailsHandlers, ...categoryHandlers };
 
 /** Server actions and the close itself are not "changes that arrived after closing". */
 const notAChange = new Set<Operation["type"]>([
@@ -33,6 +34,7 @@ const emptyTrip = (): Trip => ({
   participants: [],
   mergedInto: {},
   merges: [],
+  paymentDetails: {},
   expenses: [],
   settlements: [],
   categories: [],

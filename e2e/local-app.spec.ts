@@ -219,12 +219,12 @@ test("Viaggio: adds and renames participants, sets the default split, adds and d
 
   await page.getByLabel("Aggiungi un nome").fill("Luca");
   await page.getByRole("button", { name: "Aggiungi", exact: true }).click();
-  await expect(page.getByRole("listitem").filter({ hasText: "Luca" })).toBeVisible();
+  await expect(page.getByRole("listitem").filter({ hasText: "Luca" }).first()).toBeVisible();
 
   await page.getByRole("button", { name: "Rinomina Sara" }).click();
   await page.getByLabel("Rinomina Sara").fill("Sara R.");
   await page.getByRole("button", { name: "Salva", exact: true }).click();
-  await expect(page.getByText("Sara R.")).toBeVisible();
+  await expect(page.getByText("Sara R.").first()).toBeVisible();
 
   await page.getByRole("button", { name: "Per quote" }).click();
   await page.getByRole("group", { name: "Luca" }).getByRole("button", { name: "+1" }).click();

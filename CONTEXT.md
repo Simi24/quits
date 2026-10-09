@@ -26,6 +26,10 @@ _Avoid_: Admin, owner, organiser
 A name inside one trip, standing for one person or for a unit that pays together (a couple, a family). There are no accounts: a participant exists only within its trip.
 _Avoid_: Member, user, friend
 
+**Payment details**:
+What a participant chose to share about how to receive money (an IBAN, a PayPal.me name, a Revolut name, a phone number for Satispay), all optional. They let whoever owes that participant pay in one tap. Shown in the Italian interface as "Come ricevere i soldi". Quits never moves the money itself.
+_Avoid_: Bank details, payment method, wallet
+
 **Trip currency**:
 The single currency every amount in a trip is expressed in. There is no conversion between currencies.
 

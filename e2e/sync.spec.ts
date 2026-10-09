@@ -33,7 +33,7 @@ test("a friend who is not on the list adds their name", async ({ page, browser, 
   await expect(friend.page.getByRole("button", { name: "Sei Carla" })).toBeVisible();
   await eventually(page, async () => {
     await tab(page, "Viaggio").click();
-    await expect(page.getByText("Carla", { exact: true })).toBeVisible({ timeout: 1000 });
+    await expect(page.getByText("Carla", { exact: true }).first()).toBeVisible({ timeout: 1000 });
   });
   await friend.context.close();
 });

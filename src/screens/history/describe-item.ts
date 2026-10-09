@@ -1,3 +1,4 @@
+import { hasPaymentDetails } from "../../../domain";
 import type { Operation, Trip } from "../../../domain";
 import type { Dictionary } from "../../i18n";
 import type { HistoryItem } from "../../history";
@@ -56,6 +57,12 @@ export function describeItem(item: HistoryItem, { t, trip, nameOf, money, operat
       return h.h_merge(nameOf(op.fromParticipantId), nameOf(op.intoParticipantId));
     case "MergeUndone":
       return h.h_mergeUndone(...merged(op.mergeOpId));
+    case "ParticipantPaymentDetailsSet": {
+      const cleared = !hasPaymentDetails(op.details);
+      const other = op.participantId === item.by ? null : nameOf(op.participantId);
+      if (other === null) return cleared ? t.payment.hCleared : t.payment.hSet;
+      return cleared ? t.payment.hClearedFor(other) : t.payment.hSetFor(other);
+    }
     case "ExpenseCreated":
       return h.h_add(expenseName(op.expenseId));
     case "ExpenseEdited":

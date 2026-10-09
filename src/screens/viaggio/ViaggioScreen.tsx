@@ -9,6 +9,7 @@ import { ExportSection } from "./ExportSection";
 import { HistorySection } from "./HistorySection";
 import { IdentitySection } from "./IdentitySection";
 import { ParticipantsSection } from "./ParticipantsSection";
+import { PaymentDetailsSection } from "./PaymentDetailsSection";
 import { CloseSection } from "./CloseSection";
 import { DeleteSection } from "./DeleteSection";
 import { Setting } from "./Setting";
@@ -34,6 +35,7 @@ export const ViaggioScreen = ({ onNotMe, notify, onOpenHistory }: ViaggioScreenP
       <TripDetailsSection key={`${trip.name}|${trip.from}|${trip.to}`} onSaved={() => notify(t.manage.tripSaved)} />
       <TripLinkSection notify={notify} />
       <ParticipantsSection notify={notify} />
+      <PaymentDetailsSection notify={notify} />
       <DefaultSplitSection key={JSON.stringify(trip.defaultSplit)} onSaved={() => notify(t.expenses.savedEdit)} />
       <CategoriesSection notify={notify} />
       <CurrencySection onChanged={() => notify(t.manage.currencyChanged)} />

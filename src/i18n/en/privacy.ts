@@ -6,6 +6,7 @@ export const privacy: Dictionary["privacy"] = {
   storedH: "What is stored",
   stored: [
     "What you enter in a trip: the trip name, the participants' names, expenses with amounts, descriptions, categories and dates, and payments.",
+    "If you want, how to get paid: an IBAN, a PayPal.me name, a Revolut name and a phone number for Satispay. They are optional, entered by the trip's participants, kept with the trip (Cloudflare, EU) and visible to anyone with the link. Removing them hides them in the app, but like every change they stay in the trip's history and in the JSON export until the trip is deleted. Quits does not move money: it opens PayPal or Revolut, or copies the detail.",
     "An anonymous device id, written into every change. It holds no personal data and only tells the devices of one trip apart.",
     "On the server the trip link is stored only as a fingerprint (a SHA-256 hash), never in clear.",
     "On this device stay your trips, who you are in each, the language, the theme and the changes not yet sent. This is technical data the app needs to work, which is why there is no cookie banner.",

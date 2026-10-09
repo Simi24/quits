@@ -17,11 +17,13 @@ type View = "saldi" | "totali";
 interface SaldiScreenProps {
   onRecord: (suggestion: SuggestedSettlement | null) => void;
   onRecordAll: (suggestions: SuggestedSettlement[]) => void;
+  onPay: (suggestion: SuggestedSettlement) => void;
+  onAddPaymentDetails: () => void;
   notify: (text: string) => void;
 }
 
 /** Two views in one tab: Saldi, balances and suggested settlements, and Totali (SPEC.md §7.6 item 8). */
-export const SaldiScreen = ({ onRecord, onRecordAll, notify }: SaldiScreenProps) => {
+export const SaldiScreen = ({ onRecord, onRecordAll, onPay, onAddPaymentDetails, notify }: SaldiScreenProps) => {
   const { t } = useDevice();
   const { trip, meId, readOnly } = useTrip();
   const [view, setView] = useState<View>("saldi");
@@ -67,7 +69,7 @@ export const SaldiScreen = ({ onRecord, onRecordAll, notify }: SaldiScreenProps)
               <BalanceRow key={p.id} participant={p} balance={owed[p.id] ?? 0} />
             ))}
           </ul>
-          <SuggestedList suggestions={suggestions} onRecord={onRecord} onRecordAll={() => onRecordAll(suggestions)} onRecordOther={() => onRecord(null)} onShare={() => void recap.share()} />
+          <SuggestedList suggestions={suggestions} onRecord={onRecord} onRecordAll={() => onRecordAll(suggestions)} onRecordOther={() => onRecord(null)} onShare={() => void recap.share()} onPay={onPay} onAddPaymentDetails={onAddPaymentDetails} />
         </>
       )}
       {recap.manualText ? <RecapSheet text={recap.manualText} onClose={recap.closeManual} /> : null}

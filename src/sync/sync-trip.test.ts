@@ -120,6 +120,22 @@ describe("syncTrip", () => {
     expect(server.pullCalls).toEqual([0, 1]);
   });
 
+  it("a kind of operation this version does not know, written in a version it does, is held back alone like a future version: older apps meet the payment details this way", async () => {
+    const { server, store, run } = setup();
+    server.external(op({ type: "TripRenamed", name: "A" }, { id: "x1" }));
+    server.external(op({ type: "SomethingNewer", participantId: "p2" }, { id: "newer-kind" }));
+    server.external(op({ type: "TripRenamed", name: "C" }, { id: "x3" }));
+    store.write(expenseCreated("mine"));
+
+    const outcome = await run();
+    await run();
+
+    expect(outcome).toMatchObject({ status: "synced", pushed: 1, rejected: 0 });
+    expect(store.outbox).toEqual([]);
+    expect(store.confirmedLog().map((e) => e.operation.id)).toEqual(["x1", "x3", "create-mine"]);
+    expect(store.lastSeq).toBe(1);
+  });
+
   it("offline: the outbox stays as it is", async () => {
     const { server, store, run } = setup();
     server.failure = { kind: "offline" };
