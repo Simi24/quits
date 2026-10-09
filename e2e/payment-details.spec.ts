@@ -140,6 +140,23 @@ test("PayPal opens the profile alone for a currency it does not take, and says s
   expect(await opened(page)).toEqual(["https://paypal.me/sara"]);
 });
 
+test("the shared recap carries the creditor's details, one line, and nothing for one without", async ({ page }) => {
+  await page.addInitScript(() => {
+    const w = window as unknown as { __shared: string[] };
+    w.__shared = [];
+    Object.defineProperty(navigator, "share", { value: async (data: { text: string }) => void w.__shared.push(data.text), configurable: true });
+  });
+  await seedTrip(page, "Sardegna", [...saraPaid(), saraDetails()]);
+  await tab(page, "Saldi").click();
+  await page.getByRole("button", { name: "Condividi riepilogo" }).click();
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __shared: string[] }).__shared.length)).toBe(1);
+  const [text] = await page.evaluate(() => (window as unknown as { __shared: string[] }).__shared);
+  const lines = (text ?? "").split("\n");
+  const last = lines.findLastIndex((l) => l.startsWith("•"));
+  expect(lines[last + 1]).toBe(`Sara: IBAN ${GROUPED_IBAN} | paypal.me/sara | revolut.me/sara1 | Satispay +393331234567`);
+  expect(lines[last + 2]).toMatch(/^Totale del viaggio/);
+});
+
 for (const theme of THEMES) {
   test(`the details form and the Pay sheet have no axe violations, ${theme} theme`, async ({ page }) => {
     await seedTrip(page, "Sardegna", [...saraPaid(), saraDetails()]);

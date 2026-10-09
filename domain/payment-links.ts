@@ -1,5 +1,8 @@
+import type { ParticipantId } from "./ids.ts";
 import { minorDigits } from "./money.ts";
+import { formatIban, hasPaymentDetails, paymentDetailsOf } from "./payment-details.ts";
 import type { PaymentDetails } from "./payment-details.ts";
+import type { Trip } from "./trip.ts";
 
 export type PaymentAction =
   | { method: "iban" | "satispay"; kind: "copy"; value: string }
@@ -41,4 +44,18 @@ export function paymentActions(details: PaymentDetails, pay: { amount: number; c
   if (details.revolut) actions.push({ method: "revolut", kind: "open", url: `https://revolut.me/${details.revolut}`, withAmount: false });
   if (details.satispayPhone) actions.push({ method: "satispay", kind: "copy", value: details.satispayPhone });
   return actions;
+}
+
+/** The recap's line for a creditor, `Name: IBAN ... | paypal.me/x | revolut.me/y | Satispay +39...`, or no line when they have no details. */
+export function paymentRecapLines(trip: Trip, creditorId: ParticipantId): string[] {
+  const details = paymentDetailsOf(trip, creditorId);
+  if (!hasPaymentDetails(details)) return [];
+  const methods = [
+    details.iban && `IBAN ${formatIban(details.iban)}`,
+    details.paypal && `paypal.me/${details.paypal}`,
+    details.revolut && `revolut.me/${details.revolut}`,
+    details.satispayPhone && `Satispay ${details.satispayPhone}`,
+  ].filter(Boolean);
+  const name = trip.participants.find((p) => p.id === creditorId)?.name ?? creditorId;
+  return [`${name}: ${methods.join(" | ")}`];
 }

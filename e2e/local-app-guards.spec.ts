@@ -95,5 +95,6 @@ test("names longer than the log accepts are cut while typing, never lost on save
   await tab(page, "Viaggio").click();
   await page.getByLabel("Aggiungi un nome").fill("L".repeat(140));
   await page.getByRole("button", { name: "Aggiungi", exact: true }).click();
-  await expect(page.getByText("L".repeat(100), { exact: true })).toBeVisible();
+  // The name is in the participants and in "Come ricevere i soldi": the first is enough.
+  await expect(page.getByText("L".repeat(100), { exact: true }).first()).toBeVisible();
 });

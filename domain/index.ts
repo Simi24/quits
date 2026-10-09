@@ -34,5 +34,5 @@ export { minorDigits } from "./money.ts";
 export * from "./charts/index.ts";
 export { PAYMENT_FIELDS, checkPaymentDetails, formatIban, hasPaymentDetails, paymentDetailsOf, paymentDetailsSchema } from "./payment-details.ts";
 export type { PaymentDetails, PaymentDetailsCheck, PaymentField } from "./payment-details.ts";
-export { paymentActions } from "./payment-links.ts";
+export { paymentActions, paymentRecapLines } from "./payment-links.ts";
 export type { PaymentAction } from "./payment-links.ts";

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { foldTrip, buildRecap } from "./index.ts";
+import { foldTrip, buildRecap, paymentRecapLines } from "./index.ts";
 import { op, sequence, tripCreated } from "./testing.ts";
 import { sardegnaOperations } from "./sardegna.fixture.ts";
 
@@ -59,5 +59,28 @@ describe("buildRecap", () => {
     const text = buildRecap({ trip: sardegna(), lang: "it", money, link: LINK, extraLines: (id) => (id === "p2" ? ["Sara: IBAN IT00"] : []) });
     const lines = text.split("\n");
     expect(lines.indexOf("Sara: IBAN IT00")).toBe(lines.indexOf("• Luca → Simone: 69.11 EUR") + 1);
+  });
+
+  describe("with payment details (SPEC.md §3.16)", () => {
+    const details = (participantId: string, d: Record<string, string>) => op({ type: "ParticipantPaymentDetailsSet", participantId, details: d }, { id: `pay-${participantId}` });
+    const withDetails = () =>
+      foldTrip(sequence([...sardegnaOperations(), details("p2", { iban: "IT60X0542811101000000123456", paypal: "sara", revolut: "sara1", satispayPhone: "+393331234567" }), details("p1", { revolut: "simo" })]));
+    const recap = (lang: "it" | "en") => buildRecap({ trip: withDetails(), lang, money, link: LINK, extraLines: (id) => paymentRecapLines(withDetails(), id) }).split("\n");
+
+    it("adds one line per creditor who has details, after the payments, with every method they filled in", () => {
+      const lines = recap("it");
+      const last = lines.indexOf("• Luca → Simone: 69.11 EUR");
+      expect(lines.slice(last + 1, last + 3)).toEqual([
+        "Sara: IBAN IT60 X054 2811 1010 0000 0123 456 | paypal.me/sara | revolut.me/sara1 | Satispay +393331234567",
+        "Simone: revolut.me/simo",
+      ]);
+      expect(lines[last + 3]).toBe("Totale del viaggio: 4565.18 EUR");
+    });
+
+    it("adds nothing for a creditor with none, and nothing for a debtor who has some", () => {
+      expect(paymentRecapLines(sardegna(), "p2")).toEqual([]);
+      const lines = recap("en");
+      expect(lines.some((l) => l.startsWith("Chiara:"))).toBe(false);
+    });
   });
 });
