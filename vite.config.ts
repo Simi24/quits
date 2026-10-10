@@ -7,6 +7,8 @@ import { VitePWA } from "vite-plugin-pwa";
 const PAPER = "#FBEBDD";
 
 export default defineConfig({
+  // The dev container sets this so the forwarded port reaches the server (listens on 0.0.0.0 there only).
+  server: { host: process.env.QUITS_DEV_CONTAINER ? true : undefined },
   plugins: [
     react(),
     tailwindcss(),
