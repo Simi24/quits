@@ -583,6 +583,7 @@ The only configuration outside code; the author provides them when the slice ask
 - Branches `<type>/<short-description>` (ralph-gh: `ralph/issue-<N>-<slug>`), ASCII only. Commits `<type>: <gitmoji> <description>`, e.g. `feat: ✨ add the expense sheet`. **Never a `Co-Authored-By` trailer** (the author's hook refuses it).
 - **Never push to `main`**: always a PR.
 - Micro-files, named exports (tool configs keep their required default export), English in code, comments, commits and PRs; Italian for tickets.
+- A dev container (`.devcontainer/`, also for GitHub Codespaces) runs `npm run check` end to end with no credentials; its Node major follows `.nvmrc`.
 
 ---
 

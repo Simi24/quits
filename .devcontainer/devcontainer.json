@@ -1,0 +1,37 @@
+{
+  "name": "Quits",
+  // Ubuntu 24.04 is a platform Playwright supports for Chromium and WebKit, on x64 and arm64 (Apple silicon).
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    // The Node major must equal .nvmrc (the postCreate script fails if it does not). Bump both together.
+    "ghcr.io/devcontainers/features/node:1": { "version": "24" },
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {}
+  },
+  "containerEnv": {
+    // Makes `npm run dev` listen on 0.0.0.0 (vite.config.ts), so the forwarded port reaches it.
+    "QUITS_DEV_CONTAINER": "1",
+    "WRANGLER_SEND_METRICS": "false"
+  },
+  "mounts": [
+    // node_modules on a bind mount is slow on macOS and must be Linux-built anyway; browsers are ~700 MB.
+    "source=quits-node-modules,target=${containerWorkspaceFolder}/node_modules,type=volume",
+    "source=quits-playwright,target=/home/vscode/.cache/ms-playwright,type=volume"
+  ],
+  "forwardPorts": [5173, 8787, 8976],
+  "portsAttributes": {
+    "5173": { "label": "Vite dev server (npm run dev)", "onAutoForward": "notify" },
+    "8787": { "label": "wrangler dev (Playwright, npm run check)", "onAutoForward": "silent" },
+    "8976": { "label": "wrangler login callback", "onAutoForward": "silent" }
+  },
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "bradlc.vscode-tailwindcss",
+        "ms-playwright.playwright",
+        "vitest.explorer"
+      ]
+    }
+  }
+}
