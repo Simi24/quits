@@ -123,6 +123,17 @@ describe("push and pull", () => {
     ]);
   });
 
+  it("stores a change of identity and rejects one to the same participant, naming fields only", async () => {
+    const { token } = await newTrip();
+    const change = (id: string, by: string, participantId: string) => op({ type: "IdentityChanged", participantId }, { id, by });
+
+    const pushed = await pushOps(token, [change("who-ok", "p1", "p2"), change("who-same", "p1", "p1")]);
+    expect(pushed.body.results).toEqual([
+      { id: "who-ok", status: "appended", seq: 2 },
+      { id: "who-same", status: "rejected", reason: "malformed", detail: "participantId: custom" },
+    ]);
+  });
+
   it("pulls in pages and says when there is more", async () => {
     const { token } = await newTrip();
     for (let batch = 0; batch < 6; batch++) {

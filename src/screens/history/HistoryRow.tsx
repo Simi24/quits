@@ -29,7 +29,8 @@ export const HistoryRow = ({ item, onAct }: HistoryRowProps) => {
       <Avatar name={author?.name ?? "?"} index={avatarIndex(trip, item.by)} size="sm" />
       <div className="grid min-w-0 gap-1.5">
         <p>
-          <b>{nameOf(item.by)}</b> {describeItem(item, { t, trip, nameOf, money, operations })}
+          {item.op.type === "IdentityChanged" ? null : <b>{nameOf(item.by)} </b>}
+          {describeItem(item, { t, trip, nameOf, money, operations })}
         </p>
         <p className="flex flex-wrap items-center gap-x-2.5 text-[13px] text-ink-2">
           <time dateTime={item.at} className="num">

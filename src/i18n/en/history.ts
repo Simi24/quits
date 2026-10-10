@@ -49,6 +49,7 @@ export const history: Dictionary["history"] = {
   h_currency: (c) => `changed the currency to ${c}`,
   h_personRemoved: (n) => `removed ${n} from the trip`,
   h_merge: (x, y) => `merged ${x} into ${y}`,
+  h_identity: (x, y) => `From this phone, ${x} is now ${y}`,
   h_mergeUndone: (x, y) => `undid the merge of ${x} into ${y}`,
   h_deleteTrip: "deleted the trip",
   h_restoreTrip: "restored the trip",

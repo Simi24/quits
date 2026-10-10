@@ -63,6 +63,8 @@ export function describeItem(item: HistoryItem, { t, trip, nameOf, money, operat
       if (other === null) return cleared ? t.payment.hCleared : t.payment.hSet;
       return cleared ? t.payment.hClearedFor(other) : t.payment.hSetFor(other);
     }
+    case "IdentityChanged":
+      return h.h_identity(nameOf(item.by), nameOf(op.participantId));
     case "ExpenseCreated":
       return h.h_add(expenseName(op.expenseId));
     case "ExpenseEdited":

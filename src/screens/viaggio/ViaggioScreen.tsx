@@ -18,18 +18,17 @@ import { TripFooter } from "./TripFooter";
 import { TripLinkSection } from "./TripLinkSection";
 
 interface ViaggioScreenProps {
-  onNotMe: () => void;
   notify: (text: string) => void;
   onOpenHistory: () => void;
 }
 
 /** Viaggio: identity, the trip's name and dates, participants, default split, categories, currency, export, this device, the footer (SPEC.md §7.6 item 12). */
-export const ViaggioScreen = ({ onNotMe, notify, onOpenHistory }: ViaggioScreenProps) => {
+export const ViaggioScreen = ({ notify, onOpenHistory }: ViaggioScreenProps) => {
   const { t } = useDevice();
   const { trip } = useTrip();
   return (
     <div className="px-4 pt-0.5 pb-8">
-      <IdentitySection onNotMe={onNotMe} />
+      <IdentitySection notify={notify} />
       <InstallCard />
       {/* Keyed by what they show, so a change that arrives from elsewhere (a rename, a merge) resets the form. */}
       <TripDetailsSection key={`${trip.name}|${trip.from}|${trip.to}`} onSaved={() => notify(t.manage.tripSaved)} />

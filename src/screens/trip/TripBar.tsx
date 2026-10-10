@@ -6,11 +6,10 @@ import { useTrip } from "../../trip";
 
 interface TripBarProps {
   onLeave: () => void;
-  onWho: () => void;
 }
 
-/** Back to the landing, trip name and dates, the "Sei X" chip and the sync line (SPEC.md §7.5). */
-export const TripBar = ({ onLeave, onWho }: TripBarProps) => {
+/** Back to the landing, trip name and dates, the "Sei X" label and the sync line (SPEC.md §7.5). */
+export const TripBar = ({ onLeave }: TripBarProps) => {
   const { t, lang } = useDevice();
   const { trip, meId, nameOf, sync, readOnly, record } = useTrip();
   const line = {
@@ -31,10 +30,10 @@ export const TripBar = ({ onLeave, onWho }: TripBarProps) => {
           <h1 className="display truncate text-[calc(23px*var(--d-scale))]">{trip.name}</h1>
           <p className="text-[13.5px] text-ink-2">{dateRange(trip.from, trip.to, lang)}</p>
         </div>
-        <button type="button" onClick={onWho} className="inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-full bg-paper-2 px-3 text-sm font-semibold">
+        <p className="inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap px-2 text-sm font-semibold text-ink-2" data-testid="me-label">
           <Users size={16} weight="fill" aria-hidden="true" />
           {t.shell.youAre(nameOf(meId))}
-        </button>
+        </p>
       </div>
       <p className="flex items-center gap-1.5 px-4 pb-1.5 text-[13px] text-ink-2" data-testid="sync-line">
         <LineIcon size={16} weight="fill" aria-hidden="true" />

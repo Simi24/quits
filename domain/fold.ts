@@ -1,6 +1,7 @@
 import { categoryHandlers } from "./handlers/categories.ts";
 import { expenseHandlers } from "./handlers/expenses.ts";
 import type { HandlerContext, FoldEntry, Handlers } from "./handlers/context.ts";
+import { identityHandlers } from "./handlers/identity.ts";
 import { participantHandlers } from "./handlers/participants.ts";
 import { paymentDetailsHandlers } from "./handlers/payment-details.ts";
 import { settlementHandlers } from "./handlers/settlements.ts";
@@ -10,15 +11,16 @@ import { upcastOperation } from "./operations.ts";
 import type { Operation, SequencedOperation, StoredOperation } from "./operations.ts";
 import type { IgnoredReason, Trip } from "./trip.ts";
 
-const handlers: Handlers = { ...tripHandlers, ...expenseHandlers, ...settlementHandlers, ...participantHandlers, ...paymentDetailsHandlers, ...categoryHandlers };
+const handlers: Handlers = { ...tripHandlers, ...expenseHandlers, ...settlementHandlers, ...participantHandlers, ...paymentDetailsHandlers, ...identityHandlers, ...categoryHandlers };
 
-/** Server actions and the close itself are not "changes that arrived after closing". */
+/** Server actions, the close itself and a device changing who it is are not "changes that arrived after closing". */
 const notAChange = new Set<Operation["type"]>([
   "TripClosed",
   "TripReopened",
   "TripDeleted",
   "TripRestored",
   "LinkRegenerated",
+  "IdentityChanged",
 ]);
 
 const emptyTrip = (): Trip => ({

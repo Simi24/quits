@@ -1,6 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
+import { forgetWho } from "./idb.ts";
 import { applyTheme, THEMES } from "./themes.ts";
 import { activateCreatorCode, addExpense, createTrip, fillTripForm, openCreateForm, sheet, tab } from "./trip-flow.ts";
 
@@ -151,8 +152,9 @@ const SCREENS: { name: string; open: (page: Page) => Promise<void> }[] = [
   {
     name: "who are you",
     open: async (page) => {
-      await createTrip(page);
-      await page.getByRole("button", { name: /^Sei / }).click();
+      const link = await createTrip(page);
+      await forgetWho(page);
+      await page.goto(link);
     },
   },
 ];

@@ -1,6 +1,11 @@
 export const settings = {
   identity: "Su questo dispositivo",
-  notMe: "Non sono io",
+  identityTitle: (n: string) => `Su questo telefono sei ${n}`,
+  notMe: (n: string) => `Non sei ${n}? Cambia`,
+  changeTitle: "Chi sei su questo telefono?",
+  changeHelp: "Il cambio compare per tutti nella cronologia del viaggio. Non cambia spese, saldi o totali.",
+  changeWho: "Scegli chi sei",
+  changeCta: (n: string) => `Sono ${n}`,
   participants: "Partecipanti",
   rename: "Rinomina",
   renameSave: "Salva",

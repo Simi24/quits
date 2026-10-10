@@ -81,7 +81,7 @@ The minor unit left over when a share cannot be divided exactly; it goes to a pa
 ### History
 
 **Operation**:
-One recorded change to a trip (an expense added, edited, deleted or restored; a settlement recorded; a participant added, renamed or merged), with its author and time. The trip is whatever its operations add up to.
+One recorded change to a trip (an expense added, edited, deleted or restored; a settlement recorded; a participant added, renamed or merged, a phone changing who it is), with its author and time. The trip is whatever its operations add up to.
 _Avoid_: Event, activity, log entry
 
 **History**:
@@ -90,6 +90,10 @@ _Avoid_: Activity feed, audit log
 
 **Conflict**:
 Two operations on the same expense made without knowledge of each other. The later one wins on the whole expense; the other stays in the history.
+
+**Identity (of a device)**:
+Which participant a phone is in a trip, answered once by "chi sei?" ("Sei Simone"). It is sticky: changing it is a deliberate act in Viaggio that everyone sees in the history. It is a label on the phone, not an account.
+_Avoid_: Profile, login, user
 
 **Merge**:
 Folding one participant into another when the same person was added twice.

@@ -25,3 +25,21 @@ export interface StoredTripMeta {
 export const tripMetas = (page: Page) => readStore<StoredTripMeta>(page, "trips");
 export const outboxOf = async (page: Page, tripId: string) => (await readStore<{ tripId: string }>(page, "outbox")).filter((e) => e.tripId === tripId);
 export const deviceId = async (page: Page) => (await readStore<{ deviceId: string }>(page, "device"))[0]?.deviceId;
+
+/** The device forgets who it is in every trip, as before its first "chi sei?": the next open of the trip asks again. */
+export const forgetWho = (page: Page) =>
+  page.evaluate(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        const open = indexedDB.open("quits");
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+          const tx = open.result.transaction("trips", "readwrite");
+          const store = tx.objectStore("trips");
+          const all = store.getAll();
+          all.onsuccess = () => (all.result as { meId: string | null }[]).forEach((meta) => store.put({ ...meta, meId: null }));
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error);
+        };
+      }),
+  );

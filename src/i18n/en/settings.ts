@@ -2,7 +2,12 @@ import type { Dictionary } from "../dictionary";
 
 export const settings: Dictionary["settings"] = {
   identity: "On this device",
-  notMe: "That's not me",
+  identityTitle: (n) => `On this phone you are ${n}`,
+  notMe: (n) => `Not ${n}? Change`,
+  changeTitle: "Who are you on this phone?",
+  changeHelp: "The change is shown to everyone in the trip's history. It changes no expense, balance or total.",
+  changeWho: "Pick who you are",
+  changeCta: (n) => `I'm ${n}`,
   participants: "Participants",
   rename: "Rename",
   renameSave: "Save",

@@ -54,13 +54,13 @@ test.describe("the cookie bridge, on an iPhone", () => {
     await installed.page.goto(START_URL);
 
     await expect(heading(installed.page, "Toscana")).toBeVisible();
-    await expect(installed.page.getByRole("button", { name: "Sei Simone" })).toBeVisible();
+    await expect(installed.page.getByTestId("me-label")).toHaveText("Sei Simone");
     expect(await deviceId(installed.page)).toBe(originalDevice);
 
     await installed.page.getByRole("button", { name: "Torna all'inizio" }).click();
     await installed.page.getByRole("button", { name: /Sardegna 2026/ }).click();
     await expect(heading(installed.page, "Sardegna 2026")).toBeVisible();
-    await expect(installed.page.getByRole("button", { name: "Sei Simone" })).toBeVisible();
+    await expect(installed.page.getByTestId("me-label")).toHaveText("Sei Simone");
     await installed.context.close();
   });
 
@@ -92,7 +92,7 @@ test.describe("the cookie bridge, on an iPhone", () => {
 
 test("off iOS the token stays out of cookies: no bridge is written", async ({ page, context }) => {
   await createTrip(page);
-  await expect(page.getByRole("button", { name: "Sei Simone" })).toBeVisible();
+  await expect(page.getByTestId("me-label")).toHaveText("Sei Simone");
   await page.waitForTimeout(300);
   expect(await bridgeOf(context)).toEqual([]);
 });
