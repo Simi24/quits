@@ -11,7 +11,6 @@ import { InAppBanner, InstallHint } from "../install";
 import { PaySheet, SaldiScreen, SettlementDetail, SettlementSheet } from "../saldi";
 import { SpeseScreen } from "../spese";
 import { ViaggioScreen } from "../viaggio";
-import { WhoAreYou } from "../who";
 import { Fab } from "./Fab";
 import { MergedNotice } from "./MergedNotice";
 import { PariCelebration } from "./PariCelebration";
@@ -39,7 +38,6 @@ export const TripShell = ({ onLeave }: TripShellProps) => {
   const { t, tipSeen, markTipSeen } = useDevice();
   const { trip, record, recordMany, readOnly } = useTrip();
   const [tab, setTab] = useState<Tab>("spese");
-  const [choosingWho, setChoosingWho] = useState(false);
   const [detailId, setDetailId] = useState<string | null>(null);
   const [sheet, setSheetState] = useState<OpenSheet | null>(null);
   const [printId, setPrintId] = useState<string | null>(null);
@@ -83,8 +81,6 @@ export const TripShell = ({ onLeave }: TripShellProps) => {
     }
   }, [tab, scrollToPayment]);
 
-  if (choosingWho) return <WhoAreYou onDone={() => setChoosingWho(false)} />;
-
   const detail = detailId ? trip.expenses.find((e) => e.id === detailId && !e.deleted) : undefined;
   const editing = sheet?.kind === "expense" && sheet.editingId ? trip.expenses.find((e) => e.id === sheet.editingId) : undefined;
   const openedSettlement = sheet?.kind === "settlement" ? trip.settlements.find((s) => s.id === sheet.id && !s.deleted) : undefined;
@@ -104,7 +100,7 @@ export const TripShell = ({ onLeave }: TripShellProps) => {
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-paper">
-      <TripBar onLeave={onLeave} onWho={() => setChoosingWho(true)} />
+      <TripBar onLeave={onLeave} />
       <MergedNotice />
       <InAppBanner />
       <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
@@ -128,7 +124,7 @@ export const TripShell = ({ onLeave }: TripShellProps) => {
             <GraficiScreen />
           </Suspense>
         ) : null}
-        {tab === "viaggio" ? <ViaggioScreen onNotMe={() => setChoosingWho(true)} notify={(text) => show({ text })} onOpenHistory={() => setHistoryOpen(true)} /> : null}
+        {tab === "viaggio" ? <ViaggioScreen notify={(text) => show({ text })} onOpenHistory={() => setHistoryOpen(true)} /> : null}
       </main>
       {tab === "spese" && !readOnly ? (
         <Fab

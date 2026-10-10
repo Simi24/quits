@@ -67,11 +67,11 @@ test("a device that was X becomes Y and is told", async ({ page }) => {
   const dialog = sheet(page, "Unisci Simone");
   await dialog.getByRole("button", { name: "Sara", exact: true }).click();
   await dialog.getByRole("button", { name: "Unisci Simone in Sara" }).click();
-  await expect(page.getByRole("button", { name: "Sei Sara" })).toBeVisible();
+  await expect(page.getByTestId("me-label")).toHaveText("Sei Sara");
   await expect(page.getByText("Simone è stato unito in Sara: da ora su questo dispositivo sei Sara.")).toBeVisible();
   await page.getByRole("button", { name: "Ho capito" }).click();
   await expect(page.getByText("da ora su questo dispositivo")).toBeHidden();
-  await expect(page.getByRole("button", { name: "Sei Sara" })).toBeVisible();
+  await expect(page.getByTestId("me-label")).toHaveText("Sei Sara");
 });
 
 test("someone is removed only while they are in nothing", async ({ page }) => {

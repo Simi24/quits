@@ -52,6 +52,7 @@ export const history = {
   h_personRemoved: (n: string) => `ha tolto ${n} dal viaggio`,
   h_merge: (x: string, y: string) => `ha unito ${x} in ${y}`,
   h_mergeUndone: (x: string, y: string) => `ha annullato l'unione di ${x} in ${y}`,
+  h_identity: (x: string, y: string) => `Da questo telefono, ${x} ora è ${y}`,
   h_deleteTrip: "ha eliminato il viaggio",
   h_restoreTrip: "ha ripristinato il viaggio",
   // Conflict banner on Spese (SPEC.md §7.6 item 7).

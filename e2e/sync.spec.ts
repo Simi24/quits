@@ -16,7 +16,7 @@ test("a creator creates a trip, a friend joins from the link on another device a
   const friend = await newDevice(browser, baseURL as string);
   await joinTrip(friend.page, link, "Sardegna 2026", "Sara");
 
-  await expect(friend.page.getByRole("button", { name: "Sei Sara" })).toBeVisible();
+  await expect(friend.page.getByTestId("me-label")).toHaveText("Sei Sara");
   await expect(rowOf(friend.page, "Traghetto")).toContainText("tua parte 30,00");
   await friend.context.close();
 });
@@ -30,7 +30,7 @@ test("a friend who is not on the list adds their name", async ({ page, browser, 
   await friend.page.getByLabel("Il tuo nome").fill("Carla");
   await friend.page.getByRole("button", { name: "Aggiungimi" }).click();
 
-  await expect(friend.page.getByRole("button", { name: "Sei Carla" })).toBeVisible();
+  await expect(friend.page.getByTestId("me-label")).toHaveText("Sei Carla");
   await eventually(page, async () => {
     await tab(page, "Viaggio").click();
     await expect(page.getByText("Carla", { exact: true }).first()).toBeVisible({ timeout: 1000 });

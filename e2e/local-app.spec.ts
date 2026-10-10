@@ -256,14 +256,16 @@ test("reload keeps the trip, the expenses, the payments and who you are", async 
   await page.getByRole("button", { name: "Registra", exact: true }).first().click();
   await sheet(page, "Registra un pagamento").getByRole("button", { name: "Registra", exact: true }).click();
   await tab(page, "Viaggio").click();
-  await page.getByRole("button", { name: "Non sono io" }).click();
-  await page.getByRole("button", { name: "Sara", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Sei Sara" })).toBeVisible();
+  await page.getByRole("button", { name: "Non sei Simone? Cambia" }).click();
+  const change = sheet(page, "Chi sei su questo telefono?");
+  await change.getByRole("button", { name: "Sara", exact: true }).click();
+  await change.getByRole("button", { name: "Sono Sara" }).click();
+  await expect(page.getByTestId("me-label")).toHaveText("Sei Sara");
 
   await page.reload();
 
   await expect(page.getByRole("heading", { level: 1, name: "Sardegna 2026" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Sei Sara" })).toBeVisible();
+  await expect(page.getByTestId("me-label")).toHaveText("Sei Sara");
   await expect(page.getByTestId("expense-row")).toContainText("Cena");
   await expect(page.getByTestId("settlement-ticket")).toHaveCount(1);
 });
