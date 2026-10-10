@@ -72,6 +72,7 @@ function operationSchemaOf<V extends number, S extends z.ZodType>(v: V, expense:
     kind("ParticipantsMerged", { fromParticipantId: idSchema, intoParticipantId: idSchema }),
     kind("MergeUndone", { mergeOpId: idSchema }),
     kind("ParticipantPaymentDetailsSet", { participantId: idSchema, details: paymentDetailsSchema }),
+    kind("IdentityChanged", { participantId: idSchema }),
     kind("ExpenseCreated", { expenseId: idSchema, expense }),
     kind("ExpenseEdited", { expenseId: idSchema, baseOpId: idSchema, expense }),
     kind("ExpenseDeleted", { expenseId: idSchema }),
@@ -112,6 +113,17 @@ const withDistinctSettlementParties = <T extends z.ZodType>(schema: T) =>
     { path: ["toParticipantId"] },
   );
 
+/** A change of identity moves the device to someone else: `by` is who it was, the payload who it becomes (SPEC.md §3.17). */
+const withNewIdentity = <T extends z.ZodType>(schema: T) =>
+  schema.refine(
+    (o) => {
+      const operation = o as { type: string; by?: string; participantId?: string };
+      return operation.type !== "IdentityChanged" || operation.by !== operation.participantId;
+    },
+    { path: ["participantId"] },
+  );
+const withValidParties = <T extends z.ZodType>(schema: T) => withNewIdentity(withDistinctSettlementParties(schema));
+
 /** An operation in the current schema version. */
 export type Operation = z.infer<typeof operationSchemaV2>;
 /** An operation as an older client wrote it (version 1). */
@@ -125,8 +137,8 @@ export type ParseResult =
   | { ok: false; reason: "malformed" | "unknown_version"; detail: string };
 
 const knownSchemas = {
-  1: withDistinctSettlementParties(operationSchemaV1),
-  2: withDistinctSettlementParties(operationSchemaV2),
+  1: withValidParties(operationSchemaV1),
+  2: withValidParties(operationSchemaV2),
 };
 
 /**
